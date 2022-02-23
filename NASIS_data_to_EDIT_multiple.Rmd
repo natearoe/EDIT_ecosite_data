@@ -1,0 +1,456 @@
+---
+title: "NASIS data to EDIT"
+author: "Nathan Roe"
+date: "2/10/2022"
+output: html_document
+params:
+  ecosites_of_interest: 'placeholder'
+---
+
+This is the final step in the 'EDIT ecosite data' workflow. It will produce reports for all the ecosites that you provide
+to the corresponding for_loop_file.R. 
+
+Note: You will need to change the file path on line 28. The easiest way to do that is to find the file that you created in
+Step 2, your NASIS ecosite report. It should be in the folder with all your other 'EDIT ecosite data' files. Shift + right click > copy as path. Then paste the path in, replacing the existing one. That path will have backslashes \ these all need to be changed to forwardslashes /. 
+
+#### Packages
+```{r, message=FALSE, warning=FALSE}
+library(plyr)
+library(dplyr)
+library(httr)
+library(wordcloud)
+library(wordcloud2)
+library(pander)
+```
+
+**Read in NASIS report**
+```{r}
+EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_data_for_EDIT.csv")
+```
+
+**Remove miscellaneous areas**
+```{r}
+EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
+```
+
+
+**Define ecosite of interest**
+```{r}
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
+```
+
+#### **Physiographic features tab:**
+
+**Landform**
+
+Add the most relevant landforms. Try to keep it to 3-4. 
+```{r}
+landform <- as.data.frame(table(EDIT_updates_filtered$landform)) %>% 
+  dplyr::rename(Landform = Var1) %>% arrange(desc(Freq)) %>% mutate_if(is.factor, as.character)
+
+landform
+```
+
+**Landform words**
+```{r, warning=FALSE, message=FALSE}
+landform_text <- paste(landform$Landform, collapse = " ")
+
+words <- strsplit(landform_text, "[[:space:]]+")[[1]]
+
+if(length(words) == 0){print("No landform descriptions")} else{wordcloud::wordcloud(words)
+}
+```
+
+**Runoff class**
+```{r}
+# This field is obsolete and will be removed from EDIT. Enter medium for all values. 
+```
+
+**Flooding**
+
+Put "--" for duration if frequency is "none"
+```{r}
+Flood.freq <- ifelse(EDIT_updates_filtered$flood_freq == "", "none", EDIT_updates_filtered$flood_freq)
+
+as.data.frame(table(Flood.freq)) %>% 
+  arrange(desc(Freq))
+
+barplot(table(Flood.freq), main = "Flooding frequency")
+```
+
+```{r}
+Flood.duration <- ifelse(EDIT_updates_filtered$flood_dur == "", "none", EDIT_updates_filtered$flood_dur)
+
+
+as.data.frame(table(Flood.duration)) %>% arrange(desc(Freq))
+
+barplot(table(Flood.duration), main = "Flooding duration")
+```
+
+**Ponding**
+
+Put "--" for duration if frequency is "none"
+```{r}
+as.data.frame(table(EDIT_updates_filtered$pond_freq)) %>% 
+  rename("Ponding Freq" = Var1) %>% arrange(desc(Freq))
+
+barplot(table(EDIT_updates_filtered$pond_freq), main = "Ponding frequency")
+```
+
+```{r}
+Pond.dur <- ifelse(EDIT_updates_filtered$pond_dur == "", "none", EDIT_updates_filtered$pond_dur)
+
+as.data.frame(table(EDIT_updates_filtered$pond_dur)) %>% 
+  rename("Ponding Duration" = Var1) %>% arrange(desc(Freq))
+
+barplot(table(Pond.dur), main = "Ponding duration")
+```
+
+**Elevation range**
+```{r, figures-side, fig.show="hold", out.width="50%"}
+{hist(EDIT_updates_filtered$elev_h_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
+                                                    round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
+      main = "Elevation high", xlab = "Elevation (ft)")
+axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), 
+     labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
+
+{hist(EDIT_updates_filtered$elev_l_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
+                                                    round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
+      main = "Elevation low", xlab = "Elevation (ft)")
+axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
+
+{hist(EDIT_updates_filtered$elev_r_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
+      main = "Elevation representative", xlab = "Elevation (ft)")
+axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
+```
+
+Elevation (high) summary
+```{r}
+summary(EDIT_updates_filtered$elev_h_ft)
+```
+
+Elevation (low) summary
+```{r}
+summary(EDIT_updates_filtered$elev_l_ft)
+```
+
+Elevation (representative) summary
+```{r}
+summary(EDIT_updates_filtered$elev_r_ft)
+```
+
+**Slope**
+```{r, fig.show="hold", out.width="50%"}
+{hist(EDIT_updates_filtered$slope_h, breaks = seq(0, 200, 10), xaxt = "n",
+      main = "Slope high", xlab = "Slope (%)")
+axis(side = 1, at = seq(0, 200, 10), 
+     labels = seq(0, 200, 10))}
+
+{hist(EDIT_updates_filtered$slope_l, breaks = seq(0, 200, 10), xaxt = "n",
+      main = "Slope low", xlab = "Slope (%)")
+axis(side = 1, at = seq(0, 200, 10), labels = seq(0, 200, 10))}
+
+{hist(EDIT_updates_filtered$slope_r, breaks = seq(0, 200, 10), xaxt = "n",
+      main = "Slope representative", xlab = "Slope (%)")
+axis(side = 1, at = seq(0, 200, 10), labels = seq(0, 200, 10))}
+```
+
+Slope low
+```{r}
+summary(EDIT_updates_filtered$slope_l)
+```
+
+Slope high
+```{r}
+summary(EDIT_updates_filtered$slope_h)
+```
+
+Slope representative
+```{r}
+summary(EDIT_updates_filtered$slope_r)
+```
+
+
+**Water table depth**
+
+If ecosite does not seem to be associated with a water table, enter "NA"
+```{r, fig.show="hold", out.width="50%"}
+
+if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No recorded values for water table low. Enter NA.")
+  
+} else{
+  {hist(EDIT_updates_filtered$water_table_l_in, breaks = seq(plyr::round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
+                                                    plyr::round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10), xaxt = "n",
+      main = "Water table depth - low", xlab = "Depth (in)")
+axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
+                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10),
+     labels = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
+                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10))}
+  
+}
+
+
+if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No recorded values for water table high. Enter NA.")
+  
+} else{
+  {hist(EDIT_updates_filtered$water_table_h_in, breaks = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
+                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10), xaxt = "n",
+      main = "Water table depth - high", xlab = "Depth (in)")
+axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
+                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10),
+     labels = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
+                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10))}
+  
+}
+```
+
+```{r}
+EDIT_updates_filtered_for_pie_h <- ifelse(is.na(EDIT_updates_filtered$water_table_h_in) | EDIT_updates_filtered$water_table_h_in == "", "no water table", "water table present")
+pie(table(EDIT_updates_filtered_for_pie_h), main = "Proportion with/without water table high")
+
+
+EDIT_updates_filtered_for_pie_l <- ifelse(is.na(EDIT_updates_filtered$water_table_l_in) | EDIT_updates_filtered$water_table_l_in == "", "no water table", "water table present")
+pie(table(EDIT_updates_filtered_for_pie_l), main = "Proportion with/without water table low")
+
+
+as.data.frame(table(EDIT_updates_filtered$water_table_h_in, useNA = "always")) %>%
+  rename('Water table depth high' = Var1) %>% arrange(desc(Freq))
+
+as.data.frame(table(EDIT_updates_filtered$water_table_l_in, useNA = "always")) %>%
+  rename('Water table depth low' = Var1) %>% arrange(desc(Freq))
+```
+
+
+
+**Aspect**
+
+If aspect is not strongly associated with a particular aspect, select "not applicable"
+```{r}
+hist(EDIT_updates_filtered$aspect_rep, breaks = seq(0, 360, 30), 
+     main = "Aspect histogram binned by 30 degrees", xlab = "Aspect")
+```
+
+#### **Climate features tab:**
+
+This tab should have climate stations selected and data should be autopopulated. If the climate stations are not selected, notify Nate. 
+
+#### **Water features tab:**
+
+Canned statement for both 'Water features narrative' and 'Wetland description':
+Due to the topographic position, this site does not have water features or wetlands. 
+
+#### **Soil features tab:**
+
+**Parent material**
+```{r, warning=FALSE}
+pm_table <- as.data.frame(table(EDIT_updates_filtered$parent_material)) %>% 
+  rename(PM = Var1) %>% arrange(desc(Freq))
+
+pandoc.table(pm_table, split.cells = c(60, 10))
+
+PM <- paste(EDIT_updates_filtered$parent_material, collapse = " ")
+
+pm_words <- strsplit(PM, "[[:space:]]+")[[1]]
+
+wordcloud::wordcloud(pm_words)
+```
+
+**Surface texture**
+```{r}
+as.data.frame(table(EDIT_updates_filtered$surf_texture)) %>% 
+  rename("Surface texture" = Var1) %>% arrange(desc(Freq))
+```
+
+**Drainage class**
+
+Drainage class does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
+```{r}
+drainage_class_levels <- c("very poorly", "poorly", "somewhat poorly", "moderately well", "well", "somewhat excessively",
+                           "excessively")
+
+
+drainage_factor <- factor(EDIT_updates_filtered$drainage_class, levels = drainage_class_levels[drainage_class_levels %in% EDIT_updates_filtered$drainage_class])
+
+barplot(table(drainage_factor), main = "Drainage class", xlab = "Drainage class (low to high)")
+
+as.data.frame(table(EDIT_updates_filtered$drainage_class)) %>% 
+  rename("Drainage class" = Var1) %>% arrange(desc(Freq))
+```
+
+**Permeability class**
+
+Permeability class does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
+
+```{r, fig.show="hold", out.width="50%", message=FALSE}
+my_levels <- c("very slow", "slow", "moderately slow", "moderate", "moderately rapid", "rapid", "very rapid")
+
+perm_0_10 <- mapvalues(EDIT_updates_filtered$ksat_l_0_10_in, from = c("very low", "low", "moderately low", "moderate", "moderately high",
+                                                                      "high", "very high"), to = c("very slow", "slow", "moderately slow", 
+                                                                                                   "moderate", "moderately rapid", "rapid",
+                                                                                                   "very rapid"))
+
+
+perm_0_10 <- factor(perm_0_10, levels = my_levels[my_levels %in% perm_0_10])
+
+
+if(all(is.na(perm_0_10))){print("All permeability values NA.")} else {barplot(table(perm_0_10), main = "Permeability class 0-10 inches", xlab = "Permeability class (low to high)")}
+
+as.data.frame(table(EDIT_updates_filtered$ksat_l_0_10_in)) %>% 
+  rename("Permeability class" = Var1) %>% arrange(desc(Freq))
+```
+
+**Depth to restrictive layer**
+```{r, fig.show="hold", out.width="50%"}
+{hist(EDIT_updates_filtered$restrict_depth_h_in, breaks = seq(0,200, 10), xaxt = "n",
+      main = "Depth - deep value", xlab = "depth")
+axis(side = 1, at = seq(0, 200, 10), labels = seq(0,200, 10))}
+
+{hist(EDIT_updates_filtered$restrict_depth_l_in, breaks = seq(0,200, 10), xaxt = "n",
+      main = "Depth - shallow value", xlab = "depth")
+axis(side = 1, at = seq(0, 200, 10), labels = seq(0,200, 10))}
+
+{hist(EDIT_updates_filtered$restrict_depth_r_in, breaks = seq(0,200, 10), xaxt = "n",
+      main = "Representative depth", xlab = "depth")
+axis(side = 1, at = seq(0, 200, 10), labels = seq(0,200, 10))}
+```
+
+**Soil depth**
+
+Soil depth is the same as depth to restrictive layer. 
+
+
+```{r}
+summary(EDIT_updates_filtered$restrict_depth_h_in)
+summary(EDIT_updates_filtered$restrict_depth_l_in)
+summary(EDIT_updates_filtered$restrict_depth_r_in)
+
+EDIT_updates_filtered$dept
+```
+
+
+**Surface frag cover**
+
+Surface frag does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
+NOTE: Notice that there is a calculation of what % of frags are zero. This can't be seen in the histogram because it is binned. It is possible that the representative values could be a low of zero and a high of zero if a high percentage are zero. I would say over 75% 0's would be sufficient to have representative 0 to 0. 
+
+```{r}
+frags2mm3in <- ifelse(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf), 0, 
+                EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
+
+frags3plus <- ifelse(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf), 0,
+                     EDIT_updates_filtered$frags_r_gt_3in_on_surf)
+
+{hist(frags2mm3in, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 2mm to 3in",
+     xlab = "Frag %")
+axis(side = 1, at = seq(0, 100, 10), labels = seq(0,100, 10))}
+
+summary(frags2mm3in)
+# Percent of frags 2mm - 3in values equal to zero
+length(frags2mm3in[frags2mm3in == 0])*100/length(frags2mm3in)
+
+{hist(frags3plus, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 3in+",
+     xlab = "Frag %")
+axis(side = 1, at = seq(0, 100, 10), labels = seq(0,100, 10))}
+
+summary(frags3plus)
+# Percent of frags 3in+ equal to zero
+length(frags3plus[frags3plus == 0])*100/length(frags3plus)
+```
+
+**Available water capacity**
+```{r, fig.show="hold", out.width="50%"}
+{hist(EDIT_updates_filtered$awc_l_0_40_in, breaks = seq(0,10, 1), xaxt = "n",
+      main = "AWC low", xlab = "depth")
+axis(side = 1, at = seq(0, 10, 1), labels = seq(0, 10, 1))}
+
+{hist(EDIT_updates_filtered$awc_h_0_40_in, breaks = seq(0, 10, 1), xaxt = "n",
+      main = "AWC high", xlab = "depth")
+axis(side = 1, at = seq(0, 10, 1), labels = seq(0, 10, 1))}
+
+{hist(EDIT_updates_filtered$awc_r_0_40_in, breaks = seq(0,20, 1), xaxt = "n",
+      main = "Representative awc", xlab = "depth")
+axis(side = 1, at = seq(0, 10, 1), labels = seq(0,10, 1))}
+```
+
+```{r}
+summary(EDIT_updates_filtered$awc_l_0_40_in)
+summary(EDIT_updates_filtered$awc_h_0_40_in)
+summary(EDIT_updates_filtered$awc_r_0_40_in)
+```
+
+
+**Soil reaction**
+
+There is no pH representative value. Use your best judgement. 
+
+0-10
+```{r, fig.show="hold", out.width="50%"}
+{hist(EDIT_updates_filtered$pH_h_0_10in, breaks = seq(1,13, 0.5), xaxt = "n",
+     main = "pH 0-10 high", xlab = "pH")
+axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+
+{hist(EDIT_updates_filtered$pH_l_0_10in, breaks = seq(1, 13, 0.5), xaxt = "n",
+     main = "pH 0-10 low", xlab = "pH")
+axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+```
+
+```{r}
+summary(EDIT_updates_filtered$pH_h_0_10in)
+summary(EDIT_updates_filtered$pH_l_0_10in)
+```
+
+10-40
+```{r, fig.show="hold", out.width="50%"}
+{hist(EDIT_updates_filtered$pH_h_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
+     main = "pH 10-40 high", xlab = "pH")
+axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+
+{hist(EDIT_updates_filtered$pH_l_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
+     main = "pH 10-40 low", xlab = "pH")
+axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+```
+
+```{r}
+summary(EDIT_updates_filtered$pH_h_10_40in)
+summary(EDIT_updates_filtered$pH_l_10_40in)
+```
+
+**Subsurface frag**
+
+Subsurface frags are depth 0-60in.
+
+2mm-3in
+```{r, fig.show="hold", out.width="50%"}
+{hist(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, breaks = seq(0, 100, 10),
+     main = "Subsurface frags 2mm - 3in", xlab = "Frag %", xaxt = "n")
+axis(side = 1, at = seq(0, 100, 10), labels = seq(0, 100, 10))}
+```
+
+% frags 2mm-3in equal to zero
+```{r}
+length(EDIT_updates_filtered$subsurf_frags_r_2mm.3in[EDIT_updates_filtered$subsurf_frags_r_2mm.3in == 0]) * 
+  100/length(EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
+```
+
+```{r}
+summary(EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
+```
+
+3in+
+```{r}
+{hist(EDIT_updates_filtered$subsurf_frags_r_gt_3in, breaks = seq(0, 100, 10),
+     main = "Subsurface frags 3in+", xlab = "Frag %", xaxt = "n")
+axis(side = 1, at = seq(0, 100, 10), labels = seq(0, 100, 10))}
+```
+
+% frags 3in+ equal to zero
+```{r}
+length(EDIT_updates_filtered$subsurf_frags_r_gt_3in[EDIT_updates_filtered$subsurf_frags_r_gt_3in == 0]) * 
+  100/length(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
+```
+
+```{r}
+summary(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
+```
+
+

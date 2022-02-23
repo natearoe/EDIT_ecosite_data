@@ -1,0 +1,52 @@
+---
+title: "mapunits_in_MLRA"
+author: "Nathan Roe"
+date: "2/22/2022"
+output: html_document
+---
+
+This file is used to determine what mapunits are in an MLRA. The relationship between
+map unit and MLRA has been developed by Dylan Beaudette. Determining the mapunits in an MLRA
+is a necessary step in the 'EDIT ecosite data' workflow.
+
+This file considers a mapunit to be part of an MLRA if greater than 15% of its total area is within
+an MLRA. This threshold can be adjusted on line 41. 
+
+Note: The relationships between map unit and MLRA are determined using map unit boundaries and 
+MLRA boundaries. These data sources use different spatial scales. Therefore, there is some fuzziness 
+in calculations of membership. Refer to https://github.com/ncss-tech/SoilWeb-data and dylan.beaudette@usda.gov for details. 
+
+Necessary changes: You will need enter your MLRA of interest on line 43. 
+
+library
+```{r, message=FALSE, warning=FALSE}
+library(sf)
+library(dplyr)
+library(RCurl)
+library(data.table)
+```
+
+Access the mukey, mlra relationships that Dylan Beaudette has developed
+```{r}
+url <- "https://github.com/ncss-tech/SoilWeb-data/raw/main/files/mukey-mlra-overlap.csv.gz"
+
+tmp <- tempfile()
+
+download.file(url, tmp)
+
+mu_mlra_assignment <- read.csv(tmp,
+                 stringsAsFactors = FALSE)
+```
+
+Reduce to MLRA of interest. I am interested in MLRA 18. Change the 18 below to define your MLRA of interest. 
+```{r}
+mu_mlra_reduced <- mu_mlra_assignment %>% filter(mlra == "18") %>% filter(membership > 0.15)
+```
+
+Comma separated list of mukeys. Select and copy this comma separated list excluding the outer quotation marks. For example 463903, 2924960, 2218095, 2924975, 462063, 462481, 2924970. This will be pasted into the NASIS report as described in the read_me.doc file. 
+
+Consider saving the html output for easy access to a list of map units in your MLRA. In the output, click open in browser, then right click and save. 
+```{r}
+paste(mu_mlra_reduced$mukey, collapse = ", ")
+```
+
