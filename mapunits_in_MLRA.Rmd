@@ -38,15 +38,42 @@ mu_mlra_assignment <- read.csv(tmp,
                  stringsAsFactors = FALSE)
 ```
 
-Reduce to MLRA of interest. I am interested in MLRA 18. Change the 18 below to define your MLRA of interest. 
+Reduce to MLRA of interest. I am interested in MLRA 18. Change the 18 below to define your MLRA of interest. This is case sensitive, so if your MLRA is 22A, enter "22A" not "22a". 
 ```{r}
-mu_mlra_reduced <- mu_mlra_assignment %>% filter(mlra == "18") %>% filter(membership > 0.15)
+mu_mlra_reduced <- mu_mlra_assignment %>% filter(mlra == "15") %>% filter(membership > 0.15)
 ```
 
-Comma separated list of mukeys. Select and copy this comma separated list excluding the outer quotation marks. For example 463903, 2924960, 2218095, 2924975, 462063, 462481, 2924970. This will be pasted into the NASIS report as described in the read_me.doc file. 
-
-Consider saving the html output for easy access to a list of map units in your MLRA. In the output, click open in browser, then right click and save. 
+More than 2100 mapunits?
 ```{r}
-paste(mu_mlra_reduced$mukey, collapse = ", ")
+nrow(mu_mlra_reduced) > 2100
 ```
+
+If FALSE, then you have 2100 or less mapunits in your MLRA. That makes things easy because NASIS queries/reports work well with 2100 or less mapunits. 
+
+If TRUE, you have more than 2100 mapunits in your MLRA. Some NASIS queries/reports will not run with more than 2100 mapunits. Therefore, this script will split the mapunits up into two lists. 
+
+If you have 2100 mapunits or less, they will be listed below:
+```{r}
+if(length(mu_mlra_reduced$mukey) <= 2100){
+  paste(mu_mlra_reduced$mukey, collapse = ", ")} else{print("More than 2100 mapunits. The list will need to be split into two parts to be compatible with many NASIS reports.")}
+```
+
+If you have more than 2100 mapunits, the first 1-2100 will be listed here:
+```{r}
+if(length(mu_mlra_reduced$mukey) > 2100){
+  paste(mu_mlra_reduced$mukey[1:2100], collapse = ", ")}else{print("There are 2100 or fewer mapunits. The full list is above.")}
+```
+
+If you have more than 2100 mapunits, any mapunits remaining beyond the first 2100 will be listed here:
+```{r}
+if(length(mu_mlra_reduced$mukey) > 2100){
+  paste(mu_mlra_reduced$mukey[2100:length(mu_mlra_reduced)], collapse = ", ")}else{print("There are 2100 or fewer mapunits. The full list is above.")}
+```
+
+You will either have one or two comma separated list of mapunits depending on the number of mapunits in your MLRA. Select and copy your comma separated list excluding the outer quotation marks. For example 463903, 2924960, 2218095, 2924975, 462063, 462481, 2924970. This will be pasted into the NASIS report as described in the read_me.doc file if your are following 'EDIT ecosite data' workflow. 
+
+If you have more than 2100 mapunits, you will have to run the NASIS report on the two groups individually. Once you have run the first group and copy/pasted the results into an Excel speadsheet, run the second group and paste the results into the same Excel spreadsheet below the first results. Now you will have both groups compiled into one spreadsheet and you can continue with the workflow. 
+
+Consider saving this html output for easy access to a list of map units in your MLRA. To do so, click 'Open in Browser' at the top of this window, then right click and save. 
+
 
