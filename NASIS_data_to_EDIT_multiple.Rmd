@@ -5,6 +5,9 @@ date: "2/10/2022"
 output: html_document
 params:
   ecosites_of_interest: 'placeholder'
+  mapunit_boundaries: 'placeholder'
+  ecoregion_boundaries: 'placeholder'
+  mlra_boundary: 'placeholder'
 ---
 
 This is the final step in the 'EDIT ecosite data' workflow. It will produce reports for all the ecosites that you provide
@@ -21,18 +24,20 @@ library(httr)
 library(wordcloud)
 library(wordcloud2)
 library(pander)
+library(sf)
+library(ggplot2)
+library(maps)
 ```
 
 **Read in NASIS report**
 ```{r}
-EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_data_for_EDIT.csv")
+EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/Darren/mlra_23.csv")
 ```
 
 **Remove miscellaneous areas**
 ```{r}
 EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 ```
-
 
 **Define ecosite of interest**
 ```{r}
@@ -44,7 +49,7 @@ EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_inter
 **Landform**
 
 Add the most relevant landforms. Try to keep it to 3-4. 
-```{r}
+```{r, results='asis'}
 landform <- as.data.frame(table(EDIT_updates_filtered$landform)) %>% 
   dplyr::rename(Landform = Var1) %>% arrange(desc(Freq)) %>% mutate_if(is.factor, as.character)
 
@@ -69,7 +74,7 @@ if(length(words) == 0){print("No landform descriptions")} else{wordcloud::wordcl
 **Flooding**
 
 Put "--" for duration if frequency is "none"
-```{r}
+```{r, results='asis'}
 Flood.freq <- ifelse(EDIT_updates_filtered$flood_freq == "", "none", EDIT_updates_filtered$flood_freq)
 
 as.data.frame(table(Flood.freq)) %>% 
@@ -78,7 +83,7 @@ as.data.frame(table(Flood.freq)) %>%
 barplot(table(Flood.freq), main = "Flooding frequency")
 ```
 
-```{r}
+```{r, results='asis'}
 Flood.duration <- ifelse(EDIT_updates_filtered$flood_dur == "", "none", EDIT_updates_filtered$flood_dur)
 
 
@@ -90,7 +95,7 @@ barplot(table(Flood.duration), main = "Flooding duration")
 **Ponding**
 
 Put "--" for duration if frequency is "none"
-```{r}
+```{r, results='asis'}
 as.data.frame(table(EDIT_updates_filtered$pond_freq)) %>% 
   rename("Ponding Freq" = Var1) %>% arrange(desc(Freq))
 
@@ -246,7 +251,7 @@ Due to the topographic position, this site does not have water features or wetla
 pm_table <- as.data.frame(table(EDIT_updates_filtered$parent_material)) %>% 
   rename(PM = Var1) %>% arrange(desc(Freq))
 
-pandoc.table(pm_table, split.cells = c(60, 10))
+knitr::kable(pm_table, split.cells = c(60, 10))
 
 PM <- paste(EDIT_updates_filtered$parent_material, collapse = " ")
 
@@ -301,22 +306,22 @@ as.data.frame(table(EDIT_updates_filtered$ksat_l_0_10_in)) %>%
 
 **Depth to restrictive layer**
 ```{r, fig.show="hold", out.width="50%"}
-{hist(EDIT_updates_filtered$restrict_depth_h_in, breaks = seq(0,200, 10), xaxt = "n",
-      main = "Depth - deep value", xlab = "depth")
-axis(side = 1, at = seq(0, 200, 10), labels = seq(0,200, 10))}
+{hist(EDIT_updates_filtered$restrict_depth_h_in, breaks = seq(0,90, 5), xaxt = "n",
+      main = "Depth - deep value", xlab = "depth (inches)")
+axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
 
-{hist(EDIT_updates_filtered$restrict_depth_l_in, breaks = seq(0,200, 10), xaxt = "n",
-      main = "Depth - shallow value", xlab = "depth")
-axis(side = 1, at = seq(0, 200, 10), labels = seq(0,200, 10))}
+{hist(EDIT_updates_filtered$restrict_depth_l_in, breaks = seq(0,90, 5), xaxt = "n",
+      main = "Depth - shallow value", xlab = "depth (inches)")
+axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
 
-{hist(EDIT_updates_filtered$restrict_depth_r_in, breaks = seq(0,200, 10), xaxt = "n",
-      main = "Representative depth", xlab = "depth")
-axis(side = 1, at = seq(0, 200, 10), labels = seq(0,200, 10))}
+{hist(EDIT_updates_filtered$restrict_depth_r_in, breaks = seq(0,90, 5), xaxt = "n",
+      main = "Representative depth", xlab = "depth (inches)")
+axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
 ```
 
 **Soil depth**
 
-Soil depth is the same as depth to restrictive layer. 
+Soil depth (inches) is the same as depth to restrictive layer. 
 
 
 ```{r}
@@ -359,17 +364,17 @@ length(frags3plus[frags3plus == 0])*100/length(frags3plus)
 
 **Available water capacity**
 ```{r, fig.show="hold", out.width="50%"}
-{hist(EDIT_updates_filtered$awc_l_0_40_in, breaks = seq(0,10, 1), xaxt = "n",
+{hist(EDIT_updates_filtered$awc_l_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
       main = "AWC low", xlab = "depth")
-axis(side = 1, at = seq(0, 10, 1), labels = seq(0, 10, 1))}
+axis(side = 1, at = seq(0, 26, 2), labels = seq(0, 26, 2))}
 
-{hist(EDIT_updates_filtered$awc_h_0_40_in, breaks = seq(0, 10, 1), xaxt = "n",
+{hist(EDIT_updates_filtered$awc_h_0_40_in, breaks = seq(0, 26, 2), xaxt = "n",
       main = "AWC high", xlab = "depth")
-axis(side = 1, at = seq(0, 10, 1), labels = seq(0, 10, 1))}
+axis(side = 1, at = seq(0, 26, 2), labels = seq(0, 26, 2))}
 
-{hist(EDIT_updates_filtered$awc_r_0_40_in, breaks = seq(0,20, 1), xaxt = "n",
+{hist(EDIT_updates_filtered$awc_r_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
       main = "Representative awc", xlab = "depth")
-axis(side = 1, at = seq(0, 10, 1), labels = seq(0,10, 1))}
+axis(side = 1, at = seq(0, 26, 2), labels = seq(0,26, 2))}
 ```
 
 ```{r}
@@ -452,5 +457,26 @@ length(EDIT_updates_filtered$subsurf_frags_r_gt_3in[EDIT_updates_filtered$subsur
 ```{r}
 summary(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
 ```
+**Component name**
+```{r}
+as.data.frame(table(EDIT_updates_filtered$compname)) %>% 
+  rename(`Component name` = Var1) %>% arrange(desc(Freq))
+```
 
+
+
+**Spatial distribution of ecosite**
+
+For this methodology, the ecological site is mapped in all map units containing a component correlated to the ecological site. The alternative would be to map the ecological site only in map units where the dominant component is correlated to the ecological site of interest. I am more interest in the full extent of the ecological site, so I am using the less restrictive of the two. 
+
+```{r}
+mapunit_boundaries_of_interest <- mapunit_boundaries %>% dplyr::filter(MUKEY %in% EDIT_updates_filtered$mukey) %>% sf::st_transform("+proj=longlat +datum=WGS84")
+mlra_boundaries_reduced <- mlra_boundaries %>% dplyr::filter(MLRARSYM == 23) %>% sf::st_transform("+proj=longlat +datum=WGS84")
+
+ca <- st_as_sf(maps::map("state", fill = TRUE, plot = FALSE)) %>% dplyr::filter(ID == "california") %>% sf::st_transform("+proj=longlat +datum=WGS84")
+```
+
+```{r}
+ggplot() + theme_minimal() +  geom_sf(data = ca) + geom_sf(data = mlra_boundaries_reduced) + geom_sf(data = mapunit_boundaries_of_interest, col = "hotpink", alpha = 0, size = 2) + ggtitle(paste0("Distribution of ecological site - ", ecosites_of_interest))
+```
 
