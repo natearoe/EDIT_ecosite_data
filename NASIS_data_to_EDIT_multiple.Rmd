@@ -16,6 +16,8 @@ to the corresponding for_loop_file.R.
 Note: You will need to change the file path on line 28. The easiest way to do that is to find the file that you created in
 Step 2, your NASIS ecosite report. It should be in the folder with all your other 'EDIT ecosite data' files. Shift + right click > copy as path. Then paste the path in, replacing the existing one. That path will have backslashes \ these all need to be changed to forwardslashes /. 
 
+If you want this file to produce maps of ecosites, you will need to remove the "#" before each line in the last two code blocks and follow the  
+
 #### Packages
 ```{r, message=FALSE, warning=FALSE}
 library(plyr)
@@ -31,7 +33,7 @@ library(maps)
 
 **Read in NASIS report**
 ```{r}
-EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/Darren/mlra_23.csv")
+EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv")
 ```
 
 **Remove miscellaneous areas**
@@ -50,10 +52,20 @@ EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_inter
 
 Add the most relevant landforms. Try to keep it to 3-4. 
 ```{r, results='asis'}
-landform <- as.data.frame(table(EDIT_updates_filtered$landform)) %>% 
+if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  landform <- as.data.frame(table(EDIT_updates_filtered$landform)) %>% 
   dplyr::rename(Landform = Var1) %>% arrange(desc(Freq)) %>% mutate_if(is.factor, as.character)
 
 landform
+
+landform_text <- paste(landform$Landform, collapse = " ")
+
+words <- strsplit(landform_text, "[[:space:]]+")[[1]]
+
+wordcloud::wordcloud(words)
+}
 ```
 
 **Landform words**
@@ -77,102 +89,226 @@ Put "--" for duration if frequency is "none"
 ```{r, results='asis'}
 Flood.freq <- ifelse(EDIT_updates_filtered$flood_freq == "", "none", EDIT_updates_filtered$flood_freq)
 
+if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 as.data.frame(table(Flood.freq)) %>% 
   arrange(desc(Freq))
 
 barplot(table(Flood.freq), main = "Flooding frequency")
+
+}
+
 ```
 
 ```{r, results='asis'}
 Flood.duration <- ifelse(EDIT_updates_filtered$flood_dur == "", "none", EDIT_updates_filtered$flood_dur)
 
+if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NASIS for this field.")
+  
+} else{
 
 as.data.frame(table(Flood.duration)) %>% arrange(desc(Freq))
 
 barplot(table(Flood.duration), main = "Flooding duration")
+
+}
+
 ```
 
 **Ponding**
 
 Put "--" for duration if frequency is "none"
 ```{r, results='asis'}
+if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
 as.data.frame(table(EDIT_updates_filtered$pond_freq)) %>% 
-  rename("Ponding Freq" = Var1) %>% arrange(desc(Freq))
+  dplyr::rename("Ponding Freq" = Var1) %>% arrange(desc(Freq))
 
 barplot(table(EDIT_updates_filtered$pond_freq), main = "Ponding frequency")
+
+}
+
 ```
 
 ```{r}
 Pond.dur <- ifelse(EDIT_updates_filtered$pond_dur == "", "none", EDIT_updates_filtered$pond_dur)
 
+if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 as.data.frame(table(EDIT_updates_filtered$pond_dur)) %>% 
-  rename("Ponding Duration" = Var1) %>% arrange(desc(Freq))
+  dplyr::rename("Ponding Duration" = Var1) %>% arrange(desc(Freq))
 
 barplot(table(Pond.dur), main = "Ponding duration")
+
+}
+
+
 ```
 
 **Elevation range**
 ```{r, figures-side, fig.show="hold", out.width="50%"}
-{hist(EDIT_updates_filtered$elev_h_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
+if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NASIS for this field. That's a real bad sign, boss.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$elev_h_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
       main = "Elevation high", xlab = "Elevation (ft)")
 axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), 
      labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
 
-{hist(EDIT_updates_filtered$elev_l_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
+}
+
+
+if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$elev_l_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
       main = "Elevation low", xlab = "Elevation (ft)")
 axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
 
+}
+
+
+
+if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 {hist(EDIT_updates_filtered$elev_r_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
       main = "Elevation representative", xlab = "Elevation (ft)")
 axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
+  
+}
+
+
+
+
+
+
 ```
 
 Elevation (high) summary
 ```{r}
-summary(EDIT_updates_filtered$elev_h_ft)
+if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$elev_h_ft)
+
+}
+
 ```
 
 Elevation (low) summary
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$elev_l_ft)
+  
+}
+
 ```
 
 Elevation (representative) summary
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$elev_r_ft)
+  
+}
+
 ```
 
 **Slope**
 ```{r, fig.show="hold", out.width="50%"}
+
+if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 {hist(EDIT_updates_filtered$slope_h, breaks = seq(0, 200, 10), xaxt = "n",
       main = "Slope high", xlab = "Slope (%)")
 axis(side = 1, at = seq(0, 200, 10), 
      labels = seq(0, 200, 10))}
+  
+}
 
-{hist(EDIT_updates_filtered$slope_l, breaks = seq(0, 200, 10), xaxt = "n",
+
+if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$slope_l, breaks = seq(0, 200, 10), xaxt = "n",
       main = "Slope low", xlab = "Slope (%)")
 axis(side = 1, at = seq(0, 200, 10), labels = seq(0, 200, 10))}
 
-{hist(EDIT_updates_filtered$slope_r, breaks = seq(0, 200, 10), xaxt = "n",
+}
+
+
+if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$slope_r, breaks = seq(0, 200, 10), xaxt = "n",
       main = "Slope representative", xlab = "Slope (%)")
 axis(side = 1, at = seq(0, 200, 10), labels = seq(0, 200, 10))}
+
+}
+
 ```
 
 Slope low
 ```{r}
-summary(EDIT_updates_filtered$slope_l)
+
+if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$slope_l)
+
+}
+
 ```
 
 Slope high
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$slope_h)
+  
+}
+
 ```
 
 Slope representative
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$slope_r)
+  
+}
+
 ```
 
 
@@ -181,7 +317,7 @@ summary(EDIT_updates_filtered$slope_r)
 If ecosite does not seem to be associated with a water table, enter "NA"
 ```{r, fig.show="hold", out.width="50%"}
 
-if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No recorded values for water table low. Enter NA.")
+if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
   
 } else{
   {hist(EDIT_updates_filtered$water_table_l_in, breaks = seq(plyr::round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
@@ -195,7 +331,7 @@ axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na
 }
 
 
-if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No recorded values for water table high. Enter NA.")
+if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
   
 } else{
   {hist(EDIT_updates_filtered$water_table_h_in, breaks = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
@@ -211,18 +347,47 @@ axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na
 
 ```{r}
 EDIT_updates_filtered_for_pie_h <- ifelse(is.na(EDIT_updates_filtered$water_table_h_in) | EDIT_updates_filtered$water_table_h_in == "", "no water table", "water table present")
+
+if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 pie(table(EDIT_updates_filtered_for_pie_h), main = "Proportion with/without water table high")
+  
+}
+
 
 
 EDIT_updates_filtered_for_pie_l <- ifelse(is.na(EDIT_updates_filtered$water_table_l_in) | EDIT_updates_filtered$water_table_l_in == "", "no water table", "water table present")
-pie(table(EDIT_updates_filtered_for_pie_l), main = "Proportion with/without water table low")
+
+if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  pie(table(EDIT_updates_filtered_for_pie_l), main = "Proportion with/without water table low")
+
+}
 
 
-as.data.frame(table(EDIT_updates_filtered$water_table_h_in, useNA = "always")) %>%
-  rename('Water table depth high' = Var1) %>% arrange(desc(Freq))
+if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
 
-as.data.frame(table(EDIT_updates_filtered$water_table_l_in, useNA = "always")) %>%
-  rename('Water table depth low' = Var1) %>% arrange(desc(Freq))
+  as.data.frame(table(EDIT_updates_filtered$water_table_h_in, useNA = "always")) %>%
+  dplyr::rename('Water table depth high' = Var1) %>% arrange(desc(Freq))
+
+}
+
+
+if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  as.data.frame(table(EDIT_updates_filtered$water_table_l_in, useNA = "always")) %>%
+  dplyr::rename('Water table depth low' = Var1) %>% arrange(desc(Freq))
+
+}
+
 ```
 
 
@@ -231,8 +396,16 @@ as.data.frame(table(EDIT_updates_filtered$water_table_l_in, useNA = "always")) %
 
 If aspect is not strongly associated with a particular aspect, select "not applicable"
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$aspect_rep))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 hist(EDIT_updates_filtered$aspect_rep, breaks = seq(0, 360, 30), 
      main = "Aspect histogram binned by 30 degrees", xlab = "Aspect")
+  
+}
+
 ```
 
 #### **Climate features tab:**
@@ -248,8 +421,13 @@ Due to the topographic position, this site does not have water features or wetla
 
 **Parent material**
 ```{r, warning=FALSE}
-pm_table <- as.data.frame(table(EDIT_updates_filtered$parent_material)) %>% 
-  rename(PM = Var1) %>% arrange(desc(Freq))
+
+if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  pm_table <- as.data.frame(table(EDIT_updates_filtered$parent_material)) %>% 
+  dplyr::rename(PM = Var1) %>% arrange(desc(Freq))
 
 knitr::kable(pm_table, split.cells = c(60, 10))
 
@@ -258,18 +436,33 @@ PM <- paste(EDIT_updates_filtered$parent_material, collapse = " ")
 pm_words <- strsplit(PM, "[[:space:]]+")[[1]]
 
 wordcloud::wordcloud(pm_words)
+
+}
+
 ```
 
 **Surface texture**
 ```{r}
-as.data.frame(table(EDIT_updates_filtered$surf_texture)) %>% 
-  rename("Surface texture" = Var1) %>% arrange(desc(Freq))
+
+if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  as.data.frame(table(EDIT_updates_filtered$surf_texture)) %>% 
+  dplyr::rename("Surface texture" = Var1) %>% arrange(desc(Freq))
+
+}
+
 ```
 
 **Drainage class**
 
 Drainage class does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
 ```{r}
+if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 drainage_class_levels <- c("very poorly", "poorly", "somewhat poorly", "moderately well", "well", "somewhat excessively",
                            "excessively")
 
@@ -279,7 +472,10 @@ drainage_factor <- factor(EDIT_updates_filtered$drainage_class, levels = drainag
 barplot(table(drainage_factor), main = "Drainage class", xlab = "Drainage class (low to high)")
 
 as.data.frame(table(EDIT_updates_filtered$drainage_class)) %>% 
-  rename("Drainage class" = Var1) %>% arrange(desc(Freq))
+  dplyr::rename("Drainage class" = Var1) %>% arrange(desc(Freq))
+  
+}
+
 ```
 
 **Permeability class**
@@ -287,6 +483,11 @@ as.data.frame(table(EDIT_updates_filtered$drainage_class)) %>%
 Permeability class does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
 
 ```{r, fig.show="hold", out.width="50%", message=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$ksat_l_0_10_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 my_levels <- c("very slow", "slow", "moderately slow", "moderate", "moderately rapid", "rapid", "very rapid")
 
 perm_0_10 <- mapvalues(EDIT_updates_filtered$ksat_l_0_10_in, from = c("very low", "low", "moderately low", "moderate", "moderately high",
@@ -301,22 +502,47 @@ perm_0_10 <- factor(perm_0_10, levels = my_levels[my_levels %in% perm_0_10])
 if(all(is.na(perm_0_10))){print("All permeability values NA.")} else {barplot(table(perm_0_10), main = "Permeability class 0-10 inches", xlab = "Permeability class (low to high)")}
 
 as.data.frame(table(EDIT_updates_filtered$ksat_l_0_10_in)) %>% 
-  rename("Permeability class" = Var1) %>% arrange(desc(Freq))
+  dplyr::rename("Permeability class" = Var1) %>% arrange(desc(Freq))
+  
+}
+
 ```
 
 **Depth to restrictive layer**
 ```{r, fig.show="hold", out.width="50%"}
+
+if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 {hist(EDIT_updates_filtered$restrict_depth_h_in, breaks = seq(0,90, 5), xaxt = "n",
       main = "Depth - deep value", xlab = "depth (inches)")
 axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
+  
+}
+
+
+if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
 
 {hist(EDIT_updates_filtered$restrict_depth_l_in, breaks = seq(0,90, 5), xaxt = "n",
       main = "Depth - shallow value", xlab = "depth (inches)")
 axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
+  
+}
+
+
+if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
 
 {hist(EDIT_updates_filtered$restrict_depth_r_in, breaks = seq(0,90, 5), xaxt = "n",
       main = "Representative depth", xlab = "depth (inches)")
 axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
+  
+}
+
 ```
 
 **Soil depth**
@@ -325,11 +551,34 @@ Soil depth (inches) is the same as depth to restrictive layer.
 
 
 ```{r}
-summary(EDIT_updates_filtered$restrict_depth_h_in)
-summary(EDIT_updates_filtered$restrict_depth_l_in)
-summary(EDIT_updates_filtered$restrict_depth_r_in)
 
-EDIT_updates_filtered$dept
+if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$restrict_depth_h_in)
+
+}
+
+
+if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$restrict_depth_l_in)
+
+}
+
+
+
+if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$restrict_depth_r_in)
+
+}
+
 ```
 
 
@@ -339,48 +588,114 @@ Surface frag does not have low, high, and representative. Use your best judgemen
 NOTE: Notice that there is a calculation of what % of frags are zero. This can't be seen in the histogram because it is binned. It is possible that the representative values could be a low of zero and a high of zero if a high percentage are zero. I would say over 75% 0's would be sufficient to have representative 0 to 0. 
 
 ```{r}
-frags2mm3in <- ifelse(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf), 0, 
-                EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
 
-frags3plus <- ifelse(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf), 0,
-                     EDIT_updates_filtered$frags_r_gt_3in_on_surf)
+# frags2mm3in <- ifelse(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf), 0, 
+#                 EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
+# 
+# frags3plus <- ifelse(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf), 0,
+#                      EDIT_updates_filtered$frags_r_gt_3in_on_surf)
 
-{hist(frags2mm3in, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 2mm to 3in",
+if (all(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+{hist(EDIT_updates_filtered$frags_r_2mm_3in_on_surf, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 2mm to 3in",
      xlab = "Frag %")
 axis(side = 1, at = seq(0, 100, 10), labels = seq(0,100, 10))}
 
-summary(frags2mm3in)
+summary(EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
+
 # Percent of frags 2mm - 3in values equal to zero
-length(frags2mm3in[frags2mm3in == 0])*100/length(frags2mm3in)
+length(EDIT_updates_filtered$frags_r_2mm_3in_on_surf[EDIT_updates_filtered$frags_r_2mm_3in_on_surf == 0])*100/length(EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
+  
+}
 
-{hist(frags3plus, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 3in+",
+
+
+if (all(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  
+{hist(EDIT_updates_filtered$frags_r_gt_3in_on_surf, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 3in+",
      xlab = "Frag %")
 axis(side = 1, at = seq(0, 100, 10), labels = seq(0,100, 10))}
 
-summary(frags3plus)
+summary(EDIT_updates_filtered$frags_r_gt_3in_on_surf)
 # Percent of frags 3in+ equal to zero
-length(frags3plus[frags3plus == 0])*100/length(frags3plus)
+length(EDIT_updates_filtered$frags_r_gt_3in_on_surf[EDIT_updates_filtered$frags_r_gt_3in_on_surf == 0])*100/length(EDIT_updates_filtered$frags_r_gt_3in_on_surf)
+
+}
+
 ```
 
 **Available water capacity**
 ```{r, fig.show="hold", out.width="50%"}
-{hist(EDIT_updates_filtered$awc_l_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
+
+if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  {hist(EDIT_updates_filtered$awc_l_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
       main = "AWC low", xlab = "depth")
 axis(side = 1, at = seq(0, 26, 2), labels = seq(0, 26, 2))}
 
-{hist(EDIT_updates_filtered$awc_h_0_40_in, breaks = seq(0, 26, 2), xaxt = "n",
+}
+
+
+if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$awc_h_0_40_in, breaks = seq(0, 26, 2), xaxt = "n",
       main = "AWC high", xlab = "depth")
 axis(side = 1, at = seq(0, 26, 2), labels = seq(0, 26, 2))}
 
-{hist(EDIT_updates_filtered$awc_r_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
+}
+
+
+
+if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$awc_r_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
       main = "Representative awc", xlab = "depth")
 axis(side = 1, at = seq(0, 26, 2), labels = seq(0,26, 2))}
+
+}
+
 ```
 
 ```{r}
-summary(EDIT_updates_filtered$awc_l_0_40_in)
+
+if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$awc_l_0_40_in)
+
+}
+
+
+if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$awc_h_0_40_in)
+
+}
+
+
+
+if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$awc_r_0_40_in)
+
+}
+
 ```
 
 
@@ -390,34 +705,97 @@ There is no pH representative value. Use your best judgement.
 
 0-10
 ```{r, fig.show="hold", out.width="50%"}
+
+if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 {hist(EDIT_updates_filtered$pH_h_0_10in, breaks = seq(1,13, 0.5), xaxt = "n",
      main = "pH 0-10 high", xlab = "pH")
 axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+  
+}
+
+
+
+if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
 
 {hist(EDIT_updates_filtered$pH_l_0_10in, breaks = seq(1, 13, 0.5), xaxt = "n",
      main = "pH 0-10 low", xlab = "pH")
 axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+  
+}
+
 ```
 
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$pH_h_0_10in)
-summary(EDIT_updates_filtered$pH_l_0_10in)
+
+}
+
+
+if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$pH_l_0_10in)
+
+}
+
 ```
 
 10-40
 ```{r, fig.show="hold", out.width="50%"}
-{hist(EDIT_updates_filtered$pH_h_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
+
+if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$pH_h_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
      main = "pH 10-40 high", xlab = "pH")
 axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
 
-{hist(EDIT_updates_filtered$pH_l_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
+}
+
+
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$pH_l_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
      main = "pH 10-40 low", xlab = "pH")
 axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+
+}
+
 ```
 
 ```{r}
-summary(EDIT_updates_filtered$pH_h_10_40in)
+
+if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$pH_h_10_40in)
+
+}
+
+
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 summary(EDIT_updates_filtered$pH_l_10_40in)
+  
+}
+
 ```
 
 **Subsurface frag**
@@ -426,43 +804,100 @@ Subsurface frags are depth 0-60in.
 
 2mm-3in
 ```{r, fig.show="hold", out.width="50%"}
-{hist(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, breaks = seq(0, 100, 10),
+
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  {hist(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, breaks = seq(0, 100, 10),
      main = "Subsurface frags 2mm - 3in", xlab = "Frag %", xaxt = "n")
 axis(side = 1, at = seq(0, 100, 10), labels = seq(0, 100, 10))}
+
+}
+
 ```
 
 % frags 2mm-3in equal to zero
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 length(EDIT_updates_filtered$subsurf_frags_r_2mm.3in[EDIT_updates_filtered$subsurf_frags_r_2mm.3in == 0]) * 
   100/length(EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
+  
+}
+
 ```
 
 ```{r}
-summary(EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
+
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
+
+}
+
 ```
 
 3in+
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 {hist(EDIT_updates_filtered$subsurf_frags_r_gt_3in, breaks = seq(0, 100, 10),
      main = "Subsurface frags 3in+", xlab = "Frag %", xaxt = "n")
 axis(side = 1, at = seq(0, 100, 10), labels = seq(0, 100, 10))}
+  
+}
+
+
 ```
 
 % frags 3in+ equal to zero
 ```{r}
-length(EDIT_updates_filtered$subsurf_frags_r_gt_3in[EDIT_updates_filtered$subsurf_frags_r_gt_3in == 0]) * 
+
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  length(EDIT_updates_filtered$subsurf_frags_r_gt_3in[EDIT_updates_filtered$subsurf_frags_r_gt_3in == 0]) * 
   100/length(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
+
+}
+
+
 ```
 
 ```{r}
-summary(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
+
+if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
+
+}
+
 ```
 **Component name**
 ```{r}
-as.data.frame(table(EDIT_updates_filtered$compname)) %>% 
-  rename(`Component name` = Var1) %>% arrange(desc(Freq))
-```
 
+if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+as.data.frame(table(EDIT_updates_filtered$compname)) %>% 
+  dplyr::rename(`Component name` = Var1) %>% arrange(desc(Freq))
+
+}
+
+```
 
 
 **Spatial distribution of ecosite**
@@ -470,13 +905,13 @@ as.data.frame(table(EDIT_updates_filtered$compname)) %>%
 For this methodology, the ecological site is mapped in all map units containing a component correlated to the ecological site. The alternative would be to map the ecological site only in map units where the dominant component is correlated to the ecological site of interest. I am more interest in the full extent of the ecological site, so I am using the less restrictive of the two. 
 
 ```{r}
-mapunit_boundaries_of_interest <- mapunit_boundaries %>% dplyr::filter(MUKEY %in% EDIT_updates_filtered$mukey) %>% sf::st_transform("+proj=longlat +datum=WGS84")
-mlra_boundaries_reduced <- mlra_boundaries %>% dplyr::filter(MLRARSYM == 23) %>% sf::st_transform("+proj=longlat +datum=WGS84")
-
-ca <- st_as_sf(maps::map("state", fill = TRUE, plot = FALSE)) %>% dplyr::filter(ID == "california") %>% sf::st_transform("+proj=longlat +datum=WGS84")
+# mapunit_boundaries_of_interest <- mapunit_boundaries %>% dplyr::filter(MUKEY %in% EDIT_updates_filtered$mukey) %>% sf::st_transform("+proj=longlat +datum=WGS84")
+# mlra_boundaries_reduced <- mlra_boundaries %>% dplyr::filter(MLRARSYM == 23) %>% sf::st_transform("+proj=longlat +datum=WGS84")
+# 
+# ca <- st_as_sf(maps::map("state", fill = TRUE, plot = FALSE)) %>% dplyr::filter(ID == "california") %>% sf::st_transform("+proj=longlat +datum=WGS84")
 ```
 
 ```{r}
-ggplot() + theme_minimal() +  geom_sf(data = ca) + geom_sf(data = mlra_boundaries_reduced) + geom_sf(data = mapunit_boundaries_of_interest, col = "hotpink", alpha = 0, size = 2) + ggtitle(paste0("Distribution of ecological site - ", ecosites_of_interest))
+# ggplot() + theme_minimal() +  geom_sf(data = ca) + geom_sf(data = mlra_boundaries_reduced) + geom_sf(data = mapunit_boundaries_of_interest, col = "hotpink", alpha = 0, size = 2) + ggtitle(paste0("Distribution of ecological site - ", ecosites_of_interest))
 ```
 

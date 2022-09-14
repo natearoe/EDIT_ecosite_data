@@ -24,7 +24,7 @@ library(stringr)
 ```
 
 ```{r}
-NASIS_report <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_data_for_EDIT.csv")
+NASIS_report <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv")
 ```
 
 only major components and non-miscellaneous areas
@@ -54,7 +54,7 @@ MLRA18_ecosites
 interested in multiple MLRAs? Now I have defined MLRAs 018 and 022. I will continue the script using MLRA18_ecosites, not multiple_ecosites. If you 
 are interested in multiple_MLRAs, you will need to find/replace MLRA18_ecosites for multiple_MLRAs below. 
 ```{r}
-multiple_MLRAs <- ecosite_df$Ecosite[c(str_which(ecosite_df$Ecosite, "(?<=R|F{1})018"), str_which(ecosite_df$Ecosite, "(?<=R|F{1})022"))]
+multiple_MLRAs <- ecosite_df$Ecosite[c(str_which(ecosite_df$Ecosite, "(?<=R|F{1})018"), str_which(ecosite_df$Ecosite, "(?<=R|F{1})018"))]
 ```
 
 create concatenation of ecosites for use in the next step of the 'EDIT ecosite data' workflow. 
