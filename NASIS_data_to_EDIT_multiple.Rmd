@@ -2,7 +2,9 @@
 title: "NASIS data to EDIT"
 author: "Nathan Roe"
 date: "2/10/2022"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 params:
   ecosites_of_interest: 'placeholder'
   mapunit_boundaries: 'placeholder'
@@ -19,7 +21,7 @@ Step 2, your NASIS ecosite report. It should be in the folder with all your othe
 If you want this file to produce maps of ecosites, you will need to remove the "#" before each line in the last two code blocks and follow the  
 
 #### Packages
-```{r, message=FALSE, warning=FALSE}
+```{r class.source = "fold-show", message=FALSE, warning=FALSE}
 library(plyr)
 library(dplyr)
 library(httr)
@@ -32,17 +34,17 @@ library(maps)
 ```
 
 **Read in NASIS report**
-```{r}
+```{r class.source = "fold-show"}
 EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv")
 ```
 
 **Remove miscellaneous areas**
-```{r}
+```{r  class.source = "fold-show"}
 EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 ```
 
 **Define ecosite of interest**
-```{r}
+```{r  class.source = "fold-show"}
 EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
 ```
 
@@ -51,7 +53,7 @@ EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_inter
 **Landform**
 
 Add the most relevant landforms. Try to keep it to 3-4. 
-```{r, results='asis'}
+```{r, results='asis', message=FALSE, warning=FALSE}
 if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
   
 } else{
@@ -68,20 +70,10 @@ wordcloud::wordcloud(words)
 }
 ```
 
-**Landform words**
-```{r, warning=FALSE, message=FALSE}
-landform_text <- paste(landform$Landform, collapse = " ")
-
-words <- strsplit(landform_text, "[[:space:]]+")[[1]]
-
-if(length(words) == 0){print("No landform descriptions")} else{wordcloud::wordcloud(words)
-}
-```
-
 **Runoff class**
-```{r}
-# This field is obsolete and will be removed from EDIT. Enter medium for all values. 
-```
+
+This field is obsolete and will be removed from EDIT. Enter medium for all values.
+
 
 **Flooding**
 
