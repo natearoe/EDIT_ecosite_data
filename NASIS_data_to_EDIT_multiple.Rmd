@@ -45,7 +45,7 @@ EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 
 **Define ecosite of interest**
 ```{r  class.source = "fold-show"}
-EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == "R018XC109CA")
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
 ```
 
 #### **Physiographic features tab:**
