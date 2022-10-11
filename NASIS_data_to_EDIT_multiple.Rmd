@@ -45,7 +45,7 @@ EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 
 **Define ecosite of interest**
 ```{r  class.source = "fold-show"}
-EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == "R018XC109CA")
 ```
 
 #### **Physiographic features tab:**
@@ -69,6 +69,17 @@ words <- strsplit(landform_text, "[[:space:]]+")[[1]]
 wordcloud::wordcloud(words)
 }
 ```
+
+Full landform string by frequency
+```{r}
+if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  as.data.frame(table(EDIT_updates_filtered$landform)) %>% 
+  dplyr::rename(Landform = Var1) %>% arrange(desc(Freq))
+}
+```
+
 
 **Runoff class**
 
