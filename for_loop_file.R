@@ -1,12 +1,12 @@
-# This is a for loop that will produce your reports for all the ecosites provided on line 16. 
+# This is a for loop that will produce your reports for all the ecosites provided on line 19. 
 #
-# Replace the ecosites on line 16 with the list of ecosites that you created in Step 3. 
+# Replace the ecosites on line 19 with the list of ecosites that you created in Step 3. 
 #
 # Remember to perform QC on the list of ecosites. Sometimes, you might find that a component 
 # was correlated to two ecosites. This could result in something like, 'R018XI163CA & R018XD076CA'.
 # These should be removed. Any other ecosites that are clearly erroneous should be removed as well.
 #
-# You will need to change the file path on line 20. The easiest way to do that is to find the
+# You will need to change the file path on line 28. The easiest way to do that is to find the
 # 'NASIS_data_to_EDIT_multiple.Rmd in your directory. It should be in the folder with all your other 
 # 'EDIT ecosite data' files. Shift + right click > copy as path. Then paste the path in, replacing
 # the existing one. That path will have backslashes / these all need to be changed to forwardslashes /. 
