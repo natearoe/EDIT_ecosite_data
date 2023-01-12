@@ -1,7 +1,4 @@
 ---
-title: "NASIS data to EDIT"
-author: "Nathan Roe"
-date: "2/10/2022"
 output: 
   html_document:
     code_folding: hide
@@ -11,17 +8,20 @@ params:
   ecoregion_boundaries: 'placeholder'
   mlra_boundary: 'placeholder'
 ---
+Author: Nathan Roe
 
-This is the final step in the 'EDIT ecosite data' workflow. It will produce reports for all the ecosites that you provide
-to the corresponding for_loop_file.R. 
+Contact: nateroe@gmail.com
 
-Note: You will need to change the file path on line 28. The easiest way to do that is to find the file that you created in
-Step 2, your NASIS ecosite report. It should be in the folder with all your other 'EDIT ecosite data' files. Shift + right click > copy as path. Then paste the path in, replacing the existing one. That path will have backslashes \ these all need to be changed to forwardslashes /. 
+<!-- This is the final step in the 'EDIT ecosite data' workflow. It will produce reports for all the ecosites that you provide -->
+<!-- to the corresponding for_loop_file.R.  -->
 
-If you want this file to produce maps of ecosites, you will need to remove the "#" before each line in the last two code blocks and follow the  
+<!-- Note: You will need to change the file path on line 28. The easiest way to do that is to find the file that you created in -->
+<!-- Step 2, your NASIS ecosite report. It should be in the folder with all your other 'EDIT ecosite data' files. Shift + right click > copy as path. Then paste the path in, replacing the existing one. That path will have backslashes \ these all need to be changed to forwardslashes /.  -->
 
-#### Packages
-```{r class.source = "fold-show", message=FALSE, warning=FALSE}
+<!-- If you want this file to produce maps of ecosites, you will need to remove the "#" before each line in the last two code blocks and follow the   -->
+
+<!-- #### Packages -->
+```{r class.source = "fold-show", message=FALSE, warning=FALSE, echo=FALSE }
 library(plyr)
 library(dplyr)
 library(httr)
@@ -31,28 +31,83 @@ library(pander)
 library(sf)
 library(ggplot2)
 library(maps)
+library(plotly)
+library(gridExtra)
+library(manipulateWidget)
+library(knitr)
 ```
 
-**Read in NASIS report**
-```{r class.source = "fold-show"}
+```{r include = FALSE, echo=FALSE}
+knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
+```
+
+
+<!-- **Read in NASIS report** -->
+```{r class.source = "fold-show", echo=FALSE}
 EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv")
 ```
 
-**Remove miscellaneous areas**
-```{r  class.source = "fold-show"}
+<!-- **Remove miscellaneous areas** -->
+```{r  class.source = "fold-show", echo=FALSE}
 EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 ```
 
-**Define ecosite of interest**
-```{r  class.source = "fold-show"}
-EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
+<!-- **Define ecosite of interest** -->
+```{r  class.source = "fold-show", echo=FALSE}
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == "F018XA201CA")
 ```
 
-#### **Physiographic features tab:**
+---
+title: <center> `r EDIT_updates_filtered$ecosite_id[1]` ecosite report </center>
+---
 
-**Landform**
 
-Add the most relevant landforms. Try to keep it to 3-4. 
+#### **Important Discussion:**
+
+**Purpose of this report:**
+
+This report summarizes data from components correlated to an ecosite. It could be used to populate EDIT, to QC component-ecosite correlations, or as documentation of ecosite properties. Of particular importance to QC, this document allows you to hover your cursor over graphs to see what coiids are being represented. This allows you to hover over values that look like outliers and identify which coiid(s) might be improperly correlated.
+
+**# of components vs. component acreage:**
+
+The following analysis provides two ways of looking at data - (1) by component and (2) by component acreage. Looking at components (1) means that we treat all components equally, regardless of whether one component has a total acreage of 5 acres and another component has a total acreage of 50,000 acres. Looking at data by component acreage (2) acknowledges that components may differ in their importance based on their acreage. Therefore, you will see figures below that summarize data both by component (1) and by component acreage (2). 
+
+I would suggest that looking at components (1) is the best way to QC your data. The correlation of components to ecosites should be assessed based on the *similarity of properties* between the ecosite and component. A bad component-ecosite correlation can just as easily happen for a component with low acreage as it can for a component with high acreage. For the QC process, you should think of component acreage as a metric of how important it is to have a good component-ecosite correlation. A bad component-ecosite correlation for a high acreage component will be more disruptive to the ecosite concept than a bad component-ecosite correlation for a low acreage component. Why? Continue reading...
+
+**Standardized calculations:**
+
+This report provides a standardized way of populating the range of properties for an ecosite. This is accomplished by weighting components by their acreage, hence why good correlations for high acreage components is important. Component properties are replicated by their associated acres. After replication, the following calculations are used:
+
+Low (actual) - 5th percentile of the low values
+High (actual) - 95th percentile of the high values
+Low (RV) - 5th percentile of the RV values
+High (RV) - 95th percentile of the RV values
+
+As an example of the replication process, let's say we have two components - Component A and Component B. Component A has an acreage of 1. Component B has an acreage of 5. The elevation of Component A is 100 ft. The elevation of Component B is 500 ft. The resulting data set would be: 100, 500, 500, 500, 500, 500. Those values would be used to calculate percentiles. 
+
+NA values mean that there are missing values. Figures do not show NA values but summary statistics do, so be sure to observe the summary statistics below figures to understand how many missing values there are. For water table and restriction depth, NAs can be interpreted as an ordinal value that, for most purposes, are greater than quantitative values. Therefore, NAs are included in statistical summaries for these variables, including calculations of percentiles. 
+
+<center><h3> **Physiographic features tab:** </h3></center>
+
+#### **Landform** 
+
+Note: Try to keep landform descriptions to 3-4 words.  
+
+
+**Full landform string table by acreage and number of components**
+```{r}
+if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  EDIT_updates_filtered %>% select(coiid, landform, comp_acres) %>% group_by(landform) %>% 
+    summarise(acres = sum(comp_acres),  '# components' = n()) %>% arrange(desc(acres)) %>% as.data.frame()
+
+}
+```
+Make sure to review the full landform descriptions above to ensure accuracy of wordcloud. Wordcloud relies on prevalence of words used in landform descriptions which is not necessarily associated with the number of components associated with a landform or the number of acres. 
+
+**Landform wordcloud**
 ```{r, results='asis', message=FALSE, warning=FALSE}
 if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
   
@@ -70,359 +125,1675 @@ wordcloud::wordcloud(words)
 }
 ```
 
-Full landform string by frequency
-```{r}
+**Landform wordcloud table**
+```{r, message=FALSE, warning=FALSE}
 if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
   
 } else{
-  as.data.frame(table(EDIT_updates_filtered$landform)) %>% 
-  dplyr::rename(Landform = Var1) %>% arrange(desc(Freq))
+  
+  table(words) %>% as.data.frame() %>% dplyr::arrange(desc(Freq)) %>% dplyr::rename(Words = words) %>% dplyr::top_n(15)
+  
 }
+
 ```
 
-
-**Runoff class**
+#### **Runoff class**
 
 This field is obsolete and will be removed from EDIT. Enter medium for all values.
 
 
-**Flooding**
+#### **Flooding freq.**
 
-Put "--" for duration if frequency is "none"
-```{r, results='asis'}
-Flood.freq <- ifelse(EDIT_updates_filtered$flood_freq == "", "none", EDIT_updates_filtered$flood_freq)
+
+```{r}
+EDIT_updates_filtered$flood_freq <- ifelse(EDIT_updates_filtered$flood_freq == "", "none", EDIT_updates_filtered$flood_freq)
 
 if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in NASIS for this field.")
   
 } else{
+  
+Flood.freq.df <- EDIT_updates_filtered %>% select(coiid, flood_freq, comp_acres)  %>% group_by(flood_freq) %>% summarise(count = n(), acres = sum(comp_acres), coiids = toString(coiid)) %>% ungroup() 
 
-as.data.frame(table(Flood.freq)) %>% 
-  arrange(desc(Freq))
+  
+  
+ff1 <-
+  plot_ly(
+    x = Flood.freq.df$flood_freq,
+    y = Flood.freq.df$count,
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(Flood.freq.df$coiids, 40))
+  ) %>% layout(
+    title = "Flood freq. (# components)",
+    xaxis = list(title = "Flooding frequency"),
+    yaxis = list(title = "# of components"),
+    margin = list(t = 100)
+  )
 
-barplot(table(Flood.freq), main = "Flooding frequency")
+
+ff2 <-
+  plot_ly(
+    x = Flood.freq.df$flood_freq,
+    y = Flood.freq.df$acres,
+    name = "Flood freq. (acres)",
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(Flood.freq.df$coiids, 40))
+  ) %>% layout(
+    title = "Flood freq. (# of acres)",
+    xaxis = list(title = "Flooding frequency"),
+    yaxis = list(title = "# of acres"),
+    margin = list(t = 100)
+  )
+
+manipulateWidget::combineWidgets(ff1,
+                                 ff2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+
+}
+```
+
+**Flooding frequency acreage weighted summary statistics**
+```{r}
+if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+flood_freq_acreage_weighted <- rep(EDIT_updates_filtered$flood_freq, EDIT_updates_filtered$comp_acres)
+table(flood_freq_acreage_weighted, useNA = "ifany") %>% as.data.frame() %>% dplyr::rename("Flood freq (acreage weighted)" = flood_freq_acreage_weighted) %>% dplyr::arrange(desc(Freq))
+
+}
+```
+
+
+
+**Flooding frequency acreage weighted percentiles.**
+
+5th and 95th percentiles should be used for 'low (actual)' and 'high (actual)'. The 25th and 75th percentiles should be used for the 'low (representative)' and 'high (representative)'. 
+```{r}
+if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+data.frame("5%" = flood_freq_acreage_weighted[ceiling(0.05 * length(flood_freq_acreage_weighted))],
+             "25%" = flood_freq_acreage_weighted[ceiling(0.25 * length(flood_freq_acreage_weighted))],
+             "75%" = flood_freq_acreage_weighted[ceiling(0.75 * length(flood_freq_acreage_weighted))],
+             "95%" = flood_freq_acreage_weighted[ceiling(0.95 * length(flood_freq_acreage_weighted))],
+             check.names = FALSE)
 
 }
 
 ```
 
+#### **Flooding duration**
+
+Put "--" for duration if frequency is "none"
+
+
 ```{r, results='asis'}
-Flood.duration <- ifelse(EDIT_updates_filtered$flood_dur == "", "none", EDIT_updates_filtered$flood_dur)
+EDIT_updates_filtered$flood_dur <- ifelse(EDIT_updates_filtered$flood_dur == "", "none", EDIT_updates_filtered$flood_dur)
 
 if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NASIS for this field.")
   
 } else{
+  
+  Flood.duration.df <- EDIT_updates_filtered %>% select(coiid, flood_dur, comp_acres)  %>% group_by(flood_dur) %>% summarise(count = n(), acres = sum(comp_acres),
+                       coiids = toString(coiid)) %>% ungroup() 
 
-as.data.frame(table(Flood.duration)) %>% arrange(desc(Freq))
+  
+  fd1 <-
+  plot_ly(
+    x = Flood.duration.df$flood_dur,
+    y = Flood.duration.df$count,
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(Flood.duration.df$coiids, 40))
+  ) %>% layout(
+    title = "Flood dur. (# components)",
+    xaxis = list(title = "Flooding duration"),
+    yaxis = list(title = "# of components"),
+    margin = list(t = 100)
+  )
 
-barplot(table(Flood.duration), main = "Flooding duration")
+
+fd2 <-
+  plot_ly(
+    x = Flood.duration.df$flood_dur,
+    y = Flood.duration.df$acres,
+    name = "Flood dur. (acres)",
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(Flood.duration.df$coiids, 40))
+  ) %>% layout(
+    title = "Flood dur. (# of acres)",
+    xaxis = list(title = "Flooding duration"),
+    yaxis = list(title = "# of acres"),
+    margin = list(t = 100)
+  )
+
+manipulateWidget::combineWidgets(fd1,
+                                 fd2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+  
+
+}
+```
+
+**Flooding duration acreage weighted summary statistics**
+```{r}
+if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+flood_dur_acreage_weighted <- rep(EDIT_updates_filtered$flood_dur, EDIT_updates_filtered$comp_acres)
+table(flood_dur_acreage_weighted, useNA = "ifany") %>% as.data.frame() %>% dplyr::rename("Flood dur (acreage weighted)" = flood_dur_acreage_weighted) %>% dplyr::arrange(desc(Freq))
+
+}
+```
+
+
+**Flooding duration acreage weighted statistics.**
+
+5th and 95th percentiles should be used for 'low (actual)' and 'high (actual)'. The 25th and 75th percentiles should be used for the 'low (representative)' and 'high (representative)'. 
+```{r}
+if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+data.frame("5%" = flood_dur_acreage_weighted[ceiling(0.05 * length(flood_dur_acreage_weighted))],
+             "25%" = flood_dur_acreage_weighted[ceiling(0.25 * length(flood_dur_acreage_weighted))],
+             "75%" = flood_dur_acreage_weighted[ceiling(0.75 * length(flood_dur_acreage_weighted))],
+             "95%" = flood_dur_acreage_weighted[ceiling(0.95 * length(flood_dur_acreage_weighted))],
+             check.names = FALSE)
 
 }
 
 ```
 
-**Ponding**
+#### **Ponding freq.**
 
-Put "--" for duration if frequency is "none"
 ```{r, results='asis'}
+EDIT_updates_filtered$pond_freq <- ifelse(EDIT_updates_filtered$pond_freq == "", "none", EDIT_updates_filtered$pond_freq)
+
+
 if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NASIS for this field.")
   
 } else{
   
-as.data.frame(table(EDIT_updates_filtered$pond_freq)) %>% 
-  dplyr::rename("Ponding Freq" = Var1) %>% arrange(desc(Freq))
+    
+pond.freq.df <- EDIT_updates_filtered %>% select(coiid, pond_freq, comp_acres)  %>% group_by(pond_freq) %>% summarise(count = n(), acres = sum(comp_acres), coiids = toString(coiid)) %>% ungroup() 
 
-barplot(table(EDIT_updates_filtered$pond_freq), main = "Ponding frequency")
+  
+  
+pf1 <-
+  plot_ly(
+    x = pond.freq.df$pond_freq,
+    y = pond.freq.df$count,
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(pond.freq.df$coiids, 40))
+  ) %>% layout(
+    title = "Pond freq. (# components)",
+    xaxis = list(title = "Ponding frequency"),
+    yaxis = list(title = "# of components"),
+    margin = list(t = 100)
+  )
+
+
+pf2 <-
+  plot_ly(
+    x = pond.freq.df$pond_freq,
+    y = pond.freq.df$acres,
+    name = "Pond freq. (acres)",
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(pond.freq.df$coiids, 40))
+  ) %>% layout(
+    title = "Pond freq. (# of acres)",
+    xaxis = list(title = "Ponding frequency"),
+    yaxis = list(title = "# of acres"),
+    margin = list(t = 100)
+  )
+
+manipulateWidget::combineWidgets(pf1,
+                                 pf2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
+**Ponding frequency acreage weighted summary statistics**
 ```{r}
-Pond.dur <- ifelse(EDIT_updates_filtered$pond_dur == "", "none", EDIT_updates_filtered$pond_dur)
+if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+pond_freq_acreage_weighted <- rep(EDIT_updates_filtered$pond_freq, EDIT_updates_filtered$comp_acres)
+table(pond_freq_acreage_weighted, useNA = "ifany") %>% as.data.frame() %>% dplyr::rename("Pond freq (acreage weighted)" = pond_freq_acreage_weighted) %>% dplyr::arrange(desc(Freq))
+
+}
+```
+
+
+
+**Ponding frequency acreage weighted statistics.**
+
+5th and 95th percentiles should be used for 'low (actual)' and 'high (actual)'. The 25th and 75th percentiles should be used for the 'low (representative)' and 'high (representative)'. 
+```{r}
+if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+data.frame("5%" = pond_freq_acreage_weighted[ceiling(0.05 * length(pond_freq_acreage_weighted))],
+             "25%" = pond_freq_acreage_weighted[ceiling(0.25 * length(pond_freq_acreage_weighted))],
+             "75%" = pond_freq_acreage_weighted[ceiling(0.75 * length(pond_freq_acreage_weighted))],
+             "95%" = pond_freq_acreage_weighted[ceiling(0.95 * length(pond_freq_acreage_weighted))],
+             check.names = FALSE)
+
+}
+
+```
+
+
+#### **Ponding duration**
+
+Put "--" for duration if frequency is "none"
+```{r}
+EDIT_updates_filtered$pond_dur <- ifelse(EDIT_updates_filtered$pond_dur == "", "none", EDIT_updates_filtered$pond_dur)
 
 if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NASIS for this field.")
   
 } else{
+  
+  pond.duration.df <- EDIT_updates_filtered %>% select(coiid, pond_dur, comp_acres)  %>% group_by(pond_dur) %>% summarise(count = n(), acres = sum(comp_acres),
+                       coiids = toString(coiid)) %>% ungroup() 
 
-as.data.frame(table(EDIT_updates_filtered$pond_dur)) %>% 
-  dplyr::rename("Ponding Duration" = Var1) %>% arrange(desc(Freq))
+  
+  pd1 <-
+  plot_ly(
+    x = pond.duration.df$pond_dur,
+    y = pond.duration.df$count,
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(pond.duration.df$coiids, 40))
+  ) %>% layout(
+    title = "Pond dur. (# components)",
+    xaxis = list(title = "Ponding duration"),
+    yaxis = list(title = "# of components"),
+    margin = list(t = 100)
+  )
 
-barplot(table(Pond.dur), main = "Ponding duration")
+
+  pd2 <-
+  plot_ly(
+    x = pond.duration.df$pond_dur,
+    y = pond.duration.df$acres,
+    name = "Pond dur. (acres)",
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(pond.duration.df$coiids, 40))
+  ) %>% layout(
+    title = "Pond dur. (# of acres)",
+    xaxis = list(title = "Ponding duration"),
+    yaxis = list(title = "# of acres"),
+    margin = list(t = 100)
+  )
+
+manipulateWidget::combineWidgets(pd1,
+                                 pd2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+
 
 }
-
-
 ```
 
-**Elevation range**
-```{r, figures-side, fig.show="hold", out.width="50%"}
-if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NASIS for this field. That's a real bad sign, boss.")
-  
-} else{
-
-  {hist(EDIT_updates_filtered$elev_h_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
-                                                    round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
-      main = "Elevation high", xlab = "Elevation (ft)")
-axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), 
-     labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
-
-}
-
-
-if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  {hist(EDIT_updates_filtered$elev_l_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),
-                                                    round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
-      main = "Elevation low", xlab = "Elevation (ft)")
-axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
-
-}
-
-
-
-if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-{hist(EDIT_updates_filtered$elev_r_ft, breaks = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), xaxt = "n",
-      main = "Elevation representative", xlab = "Elevation (ft)")
-axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250), labels = seq(round_any(min(EDIT_updates_filtered$elev_l_ft), 250, f = floor),                                                     round_any(max(EDIT_updates_filtered$elev_h_ft), 250, f = ceiling), 250))}
-  
-}
-
-
-
-
-
-
-```
-
-Elevation (high) summary
+**Ponding duration acreage weighted summary statistics**
 ```{r}
+if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+pond_dur_acreage_weighted <- rep(EDIT_updates_filtered$pond_dur, EDIT_updates_filtered$comp_acres)
+table(pond_dur_acreage_weighted, useNA = "ifany") %>% as.data.frame() %>% dplyr::rename("Pond dur (acreage weighted)" = pond_dur_acreage_weighted) %>% dplyr::arrange(desc(Freq))
+
+}
+```
+
+
+**Ponding duration acreage weighted statistics.**
+
+5th and 95th percentiles should be used for 'low (actual)' and 'high (actual)'. The 25th and 75th percentiles should be used for the 'low (representative)' and 'high (representative)'. 
+```{r}
+if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+data.frame("5%" = pond_dur_acreage_weighted[ceiling(0.05 * length(pond_dur_acreage_weighted))],
+             "25%" = pond_dur_acreage_weighted[ceiling(0.25 * length(pond_dur_acreage_weighted))],
+             "75%" = pond_dur_acreage_weighted[ceiling(0.75 * length(pond_dur_acreage_weighted))],
+             "95%" = pond_dur_acreage_weighted[ceiling(0.95 * length(pond_dur_acreage_weighted))],
+             check.names = FALSE)
+
+}
+
+```
+
+#### **Elevation high**
+
+```{r, warning=FALSE, message=FALSE}
+# Is variable NA?
+
 if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-  summary(EDIT_updates_filtered$elev_h_ft)
+  # Define bin width and round by measures
+
+bin_width <- 250
+round_by <- 500
+
+# Prepare dataframe for component histogram
+
+elev.df <-
+  EDIT_updates_filtered %>% select(coiid, elev_h_ft, elev_l_ft, elev_r_ft, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "elev",
+    values_to = "value",
+    cols = c("elev_h_ft", "elev_l_ft", "elev_r_ft")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+el_h1 <- ggplot(elev.df %>% filter(elev == "elev_h_ft"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Elevation (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Elevation (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+el_h1 <- ggplotly(el_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+elev.df.acres <- elev.df
+elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.1, elev.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(elev) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+elev_h_acres <- do.call(rbind, my_list_summarised)
+
+
+elev_h_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) %>% dplyr::rename(range = elev) %>%
+                        dplyr::left_join(elev_h_acres)
+
+elev_h_acres_prepped$acres <- ifelse(is.na(elev_h_acres_prepped$acres), 0, elev_h_acres_prepped$acres)
+elev_h_acres_prepped$range <- elev_h_acres_prepped$range + 0.1
+
+
+expand_elev_h <- elev_h_acres_prepped[rep(1:nrow(elev_h_acres_prepped), times = elev_h_acres_prepped$acres), c("range", "elev", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+el_h2 <- ggplot(expand_elev_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Elevation (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Elevation (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+el_h2 <- ggplotly(el_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(el_h1,
+                                 el_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
-Elevation (low) summary
+**Elevation high acreage weighted 95th percentile**  -  use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  rep(EDIT_updates_filtered$elev_h_ft, EDIT_updates_filtered$comp_acres) %>% quantile(probs = c(0.95))
+
+}
+
+```
+
+**Elevation high acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(rep(EDIT_updates_filtered$elev_h_ft, EDIT_updates_filtered$comp_acres))
+
+}
+```
+
+ 
+#### **Elevation low**
+```{r, warning=FALSE, message=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+# Define bin width and round by measures
+
+bin_width <- 250
+round_by <- 500
+
+# Prepare dataframe for component histogram
+
+elev.df <-
+  EDIT_updates_filtered %>% select(coiid,  elev_h_ft, elev_l_ft, elev_r_ft, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "elev",
+    values_to = "value",
+    cols = c("elev_h_ft", "elev_l_ft", "elev_r_ft")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+el_l1 <- ggplot(elev.df %>% filter(elev == "elev_l_ft"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Elevation (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Elevation (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+el_l1 <- ggplotly(el_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+elev.df.acres <- elev.df
+elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.1, elev.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(elev) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+elev_l_acres <- do.call(rbind, my_list_summarised)
+
+
+elev_l_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) %>% dplyr::rename(range = elev) %>%
+                        dplyr::left_join(elev_l_acres)
+
+elev_l_acres_prepped$acres <- ifelse(is.na(elev_l_acres_prepped$acres), 0, elev_l_acres_prepped$acres)
+elev_l_acres_prepped$range <- elev_l_acres_prepped$range + 0.1
+
+
+expand_elev_l <- elev_l_acres_prepped[rep(1:nrow(elev_l_acres_prepped), times = elev_l_acres_prepped$acres), c("range", "elev", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+el_l2 <- ggplot(expand_elev_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Elevation (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Elevation (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+el_l2 <- ggplotly(el_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(el_l1,
+                                 el_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Elevation low acreage weighted 5th percentile** - use as 'low (actual)'
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NASIS for this field.")
   
 } else{
-
-summary(EDIT_updates_filtered$elev_l_ft)
   
+
+  elev_l_stats <- elev.df %>% dplyr::filter(elev == "elev_l_ft")
+  elev_l_stats_rep <- rep(elev_l_stats$value, elev_l_stats$acres) 
+  elev_l_stats_rep %>% quantile(probs = c(0.05))
+
 }
 
 ```
 
-Elevation (representative) summary
+**Elevation low acreage weighted summary statistics**
 ```{r}
 
+if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  elev_h_stats <- elev.df %>% dplyr::filter(elev == "elev_h_ft")
+  elev_h_stats_rep <- rep(elev_h_stats$value, elev_h_stats$acres) 
+  summary(elev_h_stats_rep)
+
+}
+
+```
+
+#### **Elevation RV**
+```{r, warning=FALSE, message=FALSE}
 if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NASIS for this field.")
   
 } else{
-
-summary(EDIT_updates_filtered$elev_r_ft)
   
+# Define bin width and round by measures
+
+bin_width <- 250
+round_by <- 500
+
+# Prepare dataframe for component histogram
+
+elev.df <-
+  EDIT_updates_filtered %>% select(coiid,  elev_h_ft, elev_l_ft, elev_r_ft, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "elev",
+    values_to = "value",
+    cols = c("elev_h_ft", "elev_l_ft", "elev_r_ft")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+el_r1 <- ggplot(elev.df %>% filter(elev == "elev_r_ft"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Elevation (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Elevation (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+el_r1 <- ggplotly(el_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+elev.df.acres <- elev.df
+elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.1, elev.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(elev) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+elev_r_acres <- do.call(rbind, my_list_summarised)
+
+
+elev_r_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) %>% dplyr::rename(range = elev) %>%
+                        dplyr::left_join(elev_r_acres)
+
+elev_r_acres_prepped$acres <- ifelse(is.na(elev_r_acres_prepped$acres), 0, elev_r_acres_prepped$acres)
+elev_r_acres_prepped$range <- elev_r_acres_prepped$range + 0.1
+
+
+expand_elev_r <- elev_r_acres_prepped[rep(1:nrow(elev_r_acres_prepped), times = elev_r_acres_prepped$acres), c("range", "elev", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+el_r2 <- ggplot(expand_elev_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Elevation (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Elevation (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+el_r2 <- ggplotly(el_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(el_r1,
+                                 el_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
 }
 
 ```
 
-**Slope**
+**Elevation RV acreage weighted 5th and 95th percentile** - use as 'low (representative)' & 'high (representative)' 
+```{r}
+if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  elev_r_stats <- elev.df %>% dplyr::filter(elev == "elev_r_ft")
+  elev_r_stats_rep <- rep(elev_r_stats$value, elev_r_stats$acres) 
+  elev_r_stats_rep %>% quantile(c(0.05, 0.95))
+
+}
+
+```
+
+**Elevation RV acreage weighted summary statistics**
+```{r}
+if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  elev_r_stats <- elev.df %>% dplyr::filter(elev == "elev_r_ft")
+  elev_r_stats_rep <- rep(elev_r_stats$value, elev_r_stats$acres) 
+  summary(elev_r_stats_rep)
+
+}
+
+```
+
+#### **Slope high**
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+slope.df <-
+  EDIT_updates_filtered %>% select(coiid, slope_h, slope_l, slope_r, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "slope",
+    values_to = "value",
+    cols = c("slope_h", "slope_l", "slope_r")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+slope_h1 <- ggplot(slope.df %>% filter(slope == "slope_h"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Slope (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Slope (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+slope_h1 <- ggplotly(slope_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+slope.df.acres <- slope.df
+slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value + 0.1, slope.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(slope) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+slope_h_acres <- do.call(rbind, my_list_summarised)
+
+
+slope_h_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) %>% dplyr::rename(range = slope) %>%
+                        dplyr::left_join(slope_h_acres)
+
+slope_h_acres_prepped$acres <- ifelse(is.na(slope_h_acres_prepped$acres), 0, slope_h_acres_prepped$acres)
+slope_h_acres_prepped$range <- slope_h_acres_prepped$range + 0.1
+
+
+expand_slope_h <- slope_h_acres_prepped[rep(1:nrow(slope_h_acres_prepped), times = slope_h_acres_prepped$acres), c("range", "slope", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+slope_h2 <- ggplot(expand_slope_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Slope (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Slope (%)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+slope_h2 <- ggplotly(slope_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(slope_h1,
+                                 slope_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Slope high acreage weighted 95th percentile** -  use as 'high (actual)'
 ```{r, fig.show="hold", out.width="50%"}
-
 if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASIS for this field.")
   
 } else{
-
-{hist(EDIT_updates_filtered$slope_h, breaks = seq(0, 200, 10), xaxt = "n",
-      main = "Slope high", xlab = "Slope (%)")
-axis(side = 1, at = seq(0, 200, 10), 
-     labels = seq(0, 200, 10))}
   
-}
 
-
-if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  {hist(EDIT_updates_filtered$slope_l, breaks = seq(0, 200, 10), xaxt = "n",
-      main = "Slope low", xlab = "Slope (%)")
-axis(side = 1, at = seq(0, 200, 10), labels = seq(0, 200, 10))}
-
-}
-
-
-if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  {hist(EDIT_updates_filtered$slope_r, breaks = seq(0, 200, 10), xaxt = "n",
-      main = "Slope representative", xlab = "Slope (%)")
-axis(side = 1, at = seq(0, 200, 10), labels = seq(0, 200, 10))}
+  slope_h_stats <- slope.df %>% dplyr::filter(slope == "slope_h")
+  slope_h_stats_rep <- rep(slope_h_stats$value, slope_h_stats$acres) 
+  slope_h_stats_rep %>% quantile(probs = c(0.95))
 
 }
 
 ```
 
-Slope low
-```{r}
-
-if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  summary(EDIT_updates_filtered$slope_l)
-
-}
-
-```
-
-Slope high
+**Slope high acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASIS for this field.")
   
 } else{
-
-summary(EDIT_updates_filtered$slope_h)
   
+
+  slope_h_stats <-slope.df %>% dplyr::filter(slope == "slope_h")
+  slope_h_stats_rep <- rep(slope_h_stats$value, slope_h_stats$acres) 
+  summary(slope_h_stats_rep)
+
+}
+```
+
+
+#### **Slope low**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+slope.df <-
+  EDIT_updates_filtered %>% select(coiid, slope_h, slope_l, slope_r, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "slope",
+    values_to = "value",
+    cols = c("slope_h", "slope_l", "slope_r")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+slope_l1 <- ggplot(slope.df %>% filter(slope == "slope_l"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Slope (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Slope (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+slope_l1 <- ggplotly(slope_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+slope.df.acres <- slope.df
+slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value + 0.1, slope.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(slope) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+slope_l_acres <- do.call(rbind, my_list_summarised)
+
+
+slope_l_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) %>% dplyr::rename(range = slope) %>%
+                        dplyr::left_join(slope_l_acres)
+
+slope_l_acres_prepped$acres <- ifelse(is.na(slope_l_acres_prepped$acres), 0, slope_l_acres_prepped$acres)
+slope_l_acres_prepped$range <- slope_l_acres_prepped$range + 0.1
+
+
+expand_slope_l <- slope_l_acres_prepped[rep(1:nrow(slope_l_acres_prepped), times = slope_l_acres_prepped$acres), c("range", "slope", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+slope_l2 <- ggplot(expand_slope_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Slope (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Slope (%)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+slope_l2 <- ggplotly(slope_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(slope_l1,
+                                 slope_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
 }
 
 ```
 
-Slope representative
+**Slope low acreage weighted 5th percentile** -  use as 'low (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  slope_l_stats <- slope.df %>% dplyr::filter(slope == "slope_l")
+  slope_l_stats_rep <- rep(slope_l_stats$value, slope_l_stats$acres) 
+  slope_l_stats_rep %>% quantile(probs = c(0.05))
+
+}
+
+```
+
+**Slope low acreage weighted summary statistics**
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  slope_l_stats <- slope.df %>% dplyr::filter(slope == "slope_l")
+  slope_l_stats_rep <- rep(slope_l_stats$value, slope_l_stats$acres) 
+  summary(slope_l_stats_rep)
+
+}
+```
+
+
+#### **Slope RV**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-summary(EDIT_updates_filtered$slope_r)
-  
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+slope.df <-
+  EDIT_updates_filtered %>% select(coiid, slope_h, slope_l, slope_r, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "slope",
+    values_to = "value",
+    cols = c("slope_h", "slope_l", "slope_r")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+slope_r1 <- ggplot(slope.df %>% filter(slope == "slope_r"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Slope (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Slope (ft.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+slope_r1 <- ggplotly(slope_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+slope.df.acres <- slope.df
+slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value + 0.1, slope.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_r") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(slope) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+slope_r_acres <- do.call(rbind, my_list_summarised)
+
+
+slope_r_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) %>% dplyr::rename(range = slope) %>%
+                        dplyr::left_join(slope_r_acres)
+
+slope_r_acres_prepped$acres <- ifelse(is.na(slope_r_acres_prepped$acres), 0, slope_r_acres_prepped$acres)
+slope_r_acres_prepped$range <- slope_r_acres_prepped$range + 0.1
+
+
+expand_slope_r <- slope_r_acres_prepped[rep(1:nrow(slope_r_acres_prepped), times = slope_r_acres_prepped$acres), c("range", "slope", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+slope_r2 <- ggplot(expand_slope_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Slope (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Slope (%)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+slope_r2 <- ggplotly(slope_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(slope_r1,
+                                 slope_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
 }
 
 ```
 
+**Slope RV acreage weighted 5th & 95th percentile** -  use as 'low (representative)' & 'high (respresentative)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
 
-**Water table depth**
+  slope_r_stats <- slope.df %>% dplyr::filter(slope == "slope_r")
+  slope_r_stats_rep <- rep(slope_r_stats$value, slope_r_stats$acres) 
+  slope_r_stats_rep %>% quantile(probs = c(0.05, 0.95))
+
+}
+
+```
+
+**Slope RV acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  slope_r_stats <- slope.df %>% dplyr::filter(slope == "slope_r")
+  slope_r_stats_rep <- rep(slope_r_stats$value, slope_r_stats$acres) 
+  summary(slope_r_stats_rep)
+
+}
+```
+
+
+#### **Water table depth high**
 
 If ecosite does not seem to be associated with a water table, enter "NA"
-```{r, fig.show="hold", out.width="50%"}
 
-if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
-  
-} else{
-  {hist(EDIT_updates_filtered$water_table_l_in, breaks = seq(plyr::round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
-                                                    plyr::round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10), xaxt = "n",
-      main = "Water table depth - low", xlab = "Depth (in)")
-axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
-                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10),
-     labels = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
-                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10))}
-  
-}
-
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
   
 } else{
-  {hist(EDIT_updates_filtered$water_table_h_in, breaks = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
-                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10), xaxt = "n",
-      main = "Water table depth - high", xlab = "Depth (in)")
-axis(side = 1, at = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
-                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10),
-     labels = seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), 10, f = floor),
-                                                    round_any(max(EDIT_updates_filtered$water_table_h_in + 1, na.rm = TRUE), 10, f = ceiling), 10))}
-  
+
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+water_table.df <-
+  EDIT_updates_filtered %>% select(coiid, water_table_l_in, water_table_h_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "water_table",
+    values_to = "value",
+    cols = c("water_table_l_in", "water_table_h_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+water_table_h1 <- ggplot(water_table.df %>% filter(water_table == "water_table_h_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Water table (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Water table (inches)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+water_table_h1 <- ggplotly(water_table_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+water_table.df.acres <- water_table.df
+water_table.df.acres$value <- ifelse(water_table.df.acres$value == 0, water_table.df.acres$value + 0.1, water_table.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
 }
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(water_table) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+water_table_h_acres <- do.call(rbind, my_list_summarised)
+
+water_table_h_acres$numb_coiids <- sapply(water_table_h_acres$coiids, FUN = function(x){
+      x %>% unlist() %>% strsplit(",") %>% unlist() %>% length()
+})
+
+
+water_table_h_acres_na <- water_table.df.acres %>% dplyr::filter(is.na(value)) %>% summarise(acres = sum(acres), 
+                          coiids = n()) %>% cbind(range = NA, water_table = NA)
+
+
+water_table_h_acres_prepped <- data.frame(water_table = my_seq, row.names = NULL) %>% dplyr::rename(range = water_table) %>%
+                        dplyr::left_join(water_table_h_acres)
+
+water_table_na_h <- rbind(water_table_h_acres_prepped %>% select(-coiids) %>% dplyr::rename(coiids = numb_coiids), water_table_h_acres_na)
+
+water_table_h_acres_prepped$acres <- ifelse(is.na(water_table_h_acres_prepped$acres), 0, water_table_h_acres_prepped$acres)
+water_table_h_acres_prepped$range <- water_table_h_acres_prepped$range + 0.1
+
+
+expand_water_table_h <- water_table_h_acres_prepped[rep(1:nrow(water_table_h_acres_prepped), times = water_table_h_acres_prepped$acres), c("range", "water_table", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+water_table_h2 <- ggplot(expand_water_table_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$water_table_l, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Water table (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Water table (inches)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+water_table_h2 <- ggplotly(water_table_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(water_table_h1,
+                                 water_table_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
 ```
 
+NAs in water table likely mean that no water table was observed. NA's are not represented in the figures above. Please observe the table below to understand the relative acreage classified as NA. 
 ```{r}
-EDIT_updates_filtered_for_pie_h <- ifelse(is.na(EDIT_updates_filtered$water_table_h_in) | EDIT_updates_filtered$water_table_h_in == "", "no water table", "water table present")
+water_table_na_h
+```
 
+
+
+
+**Water table high acreage weighted 95th percentile** -  use as 'high (actual)'. This value may be NA.  
+
+The percentile calculation for water table is performed differently because NAs in the water table likely mean no water table was observed. For that reason, we will consider NAs to be an ordinal value that is deeper than all other quantitative values. 
+```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
   
 } else{
-
-pie(table(EDIT_updates_filtered_for_pie_h), main = "Proportion with/without water table high")
+  
+  
+  
+  water_table_na_h_rem <- water_table_na_h %>% dplyr::filter(!is.na(acres))
+  water_table_na_h_rem_expanded <- rep(water_table_na_h_rem$range, water_table_na_h_rem$acres)
+  
+  data.frame("95%" = water_table_na_h_rem_expanded[ceiling(0.95 * length(water_table_na_h_rem_expanded))], check.names = FALSE)
+  
+  
+  
   
 }
 
+```
 
+**Water table high acreage weighted summary statistics**
+```{r}
 
-EDIT_updates_filtered_for_pie_l <- ifelse(is.na(EDIT_updates_filtered$water_table_l_in) | EDIT_updates_filtered$water_table_l_in == "", "no water table", "water table present")
+if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field. For water table, this likely means no water table was observed.")
+  
+} else{
+  
+
+  water_table_h_stats <- water_table.df %>% dplyr::filter(water_table == "water_table_h_in")
+  water_table_h_stats_rep <- rep(water_table_h_stats$value, water_table_h_stats$acres) 
+  summary(water_table_h_stats_rep)
+
+}
+```
+
+#### **Water table depth low**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-  pie(table(EDIT_updates_filtered_for_pie_l), main = "Proportion with/without water table low")
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+water_table.df <-
+  EDIT_updates_filtered %>% select(coiid, water_table_l_in, water_table_h_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "water_table",
+    values_to = "value",
+    cols = c("water_table_l_in", "water_table_h_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+water_table_l1 <- ggplot(water_table.df %>% filter(water_table == "water_table_l_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Water table (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Water table (inches)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+water_table_l1 <- ggplotly(water_table_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+water_table.df.acres <- water_table.df
+water_table.df.acres$value <- ifelse(water_table.df.acres$value == 0, water_table.df.acres$value + 0.1, water_table.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
 
 }
 
-
-if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  as.data.frame(table(EDIT_updates_filtered$water_table_h_in, useNA = "always")) %>%
-  dplyr::rename('Water table depth high' = Var1) %>% arrange(desc(Freq))
-
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
 }
 
 
-if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
-  
-} else{
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(water_table) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
 
-  as.data.frame(table(EDIT_updates_filtered$water_table_l_in, useNA = "always")) %>%
-  dplyr::rename('Water table depth low' = Var1) %>% arrange(desc(Freq))
+water_table_l_acres <- do.call(rbind, my_list_summarised)
+
+
+water_table_l_acres$numb_coiids <- sapply(water_table_l_acres$coiids, FUN = function(x){
+      x %>% unlist() %>% strsplit(",") %>% unlist() %>% length()
+})
+
+
+water_table_l_acres_na <- water_table.df.acres %>% dplyr::filter(is.na(value)) %>% summarise(acres = sum(acres), 
+                          coiids = n()) %>% cbind(range = NA, water_table = NA)
+
+
+water_table_l_acres_prepped <- data.frame(water_table = my_seq, row.names = NULL) %>% dplyr::rename(range = water_table) %>%
+                        dplyr::left_join(water_table_l_acres)
+
+water_table_na_l <- rbind(water_table_l_acres_prepped %>% select(-coiids) %>% dplyr::rename(coiids = numb_coiids), water_table_l_acres_na)
+
+water_table_l_acres_prepped$acres <- ifelse(is.na(water_table_l_acres_prepped$acres), 0, water_table_l_acres_prepped$acres)
+water_table_l_acres_prepped$range <- water_table_l_acres_prepped$range + 0.1
+
+
+expand_water_table <- water_table_l_acres_prepped[rep(1:nrow(water_table_l_acres_prepped), times = water_table_l_acres_prepped$acres), c("range", "water_table", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+water_table_l2 <- ggplot(expand_water_table, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$water_table_l, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Water table (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Water table (inches)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+water_table_l2 <- ggplotly(water_table_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(water_table_l1,
+                                 water_table_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
+NA's in water table likely mean that no water table was observed. NA's are not represented in the figures above. Please observe the table below to understand the relative acreage classified as NA. 
+```{r}
+water_table_na_l
+```
 
+**Water table low acreage weighted 5th percentile** -  use as 'low (actual)'. This value may be NA.  
 
-**Aspect**
+The percentile calculation for water table is performed differently because NAs in the water table likely mean no water table was observed. For that reason, we will consider NAs to be an ordinal value that is deeper than all other quantitative values.
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  
+  
+  water_table_na_l_rem <- water_table_na_l %>% dplyr::filter(!is.na(acres))
+  water_table_na_l_rem_expanded <- rep(water_table_na_l_rem$range, water_table_na_l_rem$acres)
+  
+  data.frame("5%" = water_table_na_l_rem_expanded[ceiling(0.05 * length(water_table_na_l_rem_expanded))], check.names = FALSE)
+  
+}
+
+```
+
+**Water table low acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field. For water table, this likely means no water table was observed.")
+  
+} else{
+  
+
+ water_table_l_stats <- water_table.df %>% dplyr::filter(water_table == "water_table_l_in")
+ water_table_l_stats_rep <- rep(water_table_h_stats$value,water_table_l_stats$acres) 
+  summary(water_table_l_stats_rep)
+
+}
+```
+
+#### **Water table RV**
+
+Water table does not have an RV value, but EDIT asks for a representative range. Here, I define low (RV) as the 25th percentile of the combined high and low values and high (RV) as the 75th percentile of the combined high and low values. 
+```{r}
+if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  
+  
+  combined_water_table_expanded <- sort(c(water_table_na_l_rem_expanded, water_table_na_h_rem_expanded), na.last = TRUE)
+  data.frame("25%" = combined_water_table_expanded[ceiling(0.25 * length(combined_water_table_expanded))],
+             "75%" = combined_water_table_expanded[ceiling(0.75 * length(combined_water_table_expanded))],
+             check.names = FALSE)
+  
+  
+}
+```
+
+#### **Aspect**
 
 If aspect is not strongly associated with a particular aspect, select "not applicable"
-```{r}
+
+I would suggest that we change aspect to be northness [cos(aspect)] and eastness [sin(aspect)]. These are more ecologically meaningful and would allow the statistics to be summarized. 
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$aspect_rep))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-hist(EDIT_updates_filtered$aspect_rep, breaks = seq(0, 360, 30), 
-     main = "Aspect histogram binned by 30 degrees", xlab = "Aspect")
-  
+  # Define bin width and round by measures
+
+bin_width <- 30
+round_by <- 30
+
+# Prepare dataframe for component histogram
+
+aspect.df <-
+  EDIT_updates_filtered %>% select(coiid, aspect_rep, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "aspect",
+    values_to = "value",
+    cols = c("aspect_rep")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+aspect_r1 <- ggplot(aspect.df %>% filter(aspect == "aspect_rep"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$aspect_rep), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Aspect") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Aspect (degrees)") +
+  scale_x_continuous(limits = c(0, 360),
+  breaks = seq(0,360, 30))
+
+# Convert histogram to plotly
+
+aspect_r1 <- ggplotly(aspect_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$aspect_rep), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$aspect_rep), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+aspect.df.acres <- aspect.df
+aspect.df.acres$value <- ifelse(aspect.df.acres$value == 0, aspect.df.acres$value + 0.1, aspect.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- aspect.df.acres %>% filter(aspect == "aspect_rep") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(aspect) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+aspect_r_acres <- do.call(rbind, my_list_summarised)
+
+
+aspect_r_acres_prepped <- data.frame(aspect = my_seq, row.names = NULL) %>% dplyr::rename(range = aspect) %>%
+                        dplyr::left_join(aspect_r_acres)
+
+aspect_r_acres_prepped$acres <- ifelse(is.na(aspect_r_acres_prepped$acres), 0, aspect_r_acres_prepped$acres)
+aspect_r_acres_prepped$range <- aspect_r_acres_prepped$range + 0.1
+
+
+expand_aspect_r <- aspect_r_acres_prepped[rep(1:nrow(aspect_r_acres_prepped), times = aspect_r_acres_prepped$acres), c("range", "aspect", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+aspect_r2 <- ggplot(expand_aspect_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$aspect_rep), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Aspect") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Aspect (degrees)") +
+  scale_x_continuous(limits = c(0, 360),
+  breaks = seq(0,360, 30))
+
+
+# Convert to plotly
+
+aspect_r2 <- ggplotly(aspect_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(aspect_r1,
+                                 aspect_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
 }
 
 ```
 
-#### **Climate features tab:**
+
+<center><h3>**Climate features tab:** </h3></center>
 
 This tab should have climate stations selected and data should be autopopulated. If the climate stations are not selected, notify Nate. 
 
-#### **Water features tab:**
+<center><h3>**Water features tab:** </h3></center>
 
 Canned statement for both 'Water features narrative' and 'Wetland description':
 Due to the topographic position, this site does not have water features or wetlands. 
 
-#### **Soil features tab:**
+<center><h3>**Soil features tab:** </h3></center>
 
-**Parent material**
+#### **Parent material**
+
+**Parent material wordcloud**
 ```{r, warning=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated in NASIS for this field.")
@@ -444,451 +1815,2303 @@ wordcloud::wordcloud(pm_words)
 
 ```
 
-**Surface texture**
-```{r}
+Make sure to review the full parent material descriptions below to ensure accuracy of wordcloud. Wordcloud relies on prevalence of words used in landform descriptions which is not necessarily associated with the number of components associated with a landform or the number of acres.
 
-if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in NASIS for this field.")
+**Parent material table**
+```{r}
+if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-  as.data.frame(table(EDIT_updates_filtered$surf_texture)) %>% 
-  dplyr::rename("Surface texture" = Var1) %>% arrange(desc(Freq))
-
+ test <- EDIT_updates_filtered %>% select(coiid, parent_material, comp_acres) %>% group_by(parent_material) %>% 
+    summarise(acres = sum(comp_acres),  '# components' = n()) %>% arrange(desc(acres)) %>% as.data.frame() 
+ 
+ knitr::kable(test)
+ 
+ 
 }
-
 ```
 
-**Drainage class**
+#### **Surface texture**
 
-Drainage class does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
+**Full texture string by frequency**
+```{r}
+if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  EDIT_updates_filtered %>% select(coiid, surf_texture, comp_acres) %>% group_by(surf_texture) %>% 
+    summarise(acres = sum(comp_acres),  '# components' = n()) %>% arrange(desc(acres)) %>% as.data.frame()
+
+}
+```
+
+
+#### **Drainage class**
+
 ```{r}
 if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated in NASIS for this field.")
   
 } else{
-
-drainage_class_levels <- c("very poorly", "poorly", "somewhat poorly", "moderately well", "well", "somewhat excessively",
-                           "excessively")
-
-
-drainage_factor <- factor(EDIT_updates_filtered$drainage_class, levels = drainage_class_levels[drainage_class_levels %in% EDIT_updates_filtered$drainage_class])
-
-barplot(table(drainage_factor), main = "Drainage class", xlab = "Drainage class (low to high)")
-
-as.data.frame(table(EDIT_updates_filtered$drainage_class)) %>% 
-  dplyr::rename("Drainage class" = Var1) %>% arrange(desc(Freq))
   
-}
+drainage_class_df <- EDIT_updates_filtered %>% select(coiid, drainage_class, comp_acres)  %>% group_by(drainage_class) %>% summarise(count = n(), acres = sum(comp_acres), coiids = toString(coiid)) %>% ungroup() 
 
+  
+  
+drain1 <-
+  plot_ly(
+    x = drainage_class_df$drainage_class,
+    y = drainage_class_df$count,
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(drainage_class_df$coiids, 40))
+  ) %>% layout(
+    title = "Drainage class (# components)",
+    xaxis = list(title = "Drainage class"),
+    yaxis = list(title = "# of components"),
+    margin = list(t = 100)
+  )
+
+
+drain2 <-
+  plot_ly(
+    x = drainage_class_df$drainage_class,
+    y = drainage_class_df$acres,
+    name = "Drainage class (acres)",
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(drainage_class_df$coiids, 40))
+  ) %>% layout(
+    title = "Drainage class (# of acres)",
+    xaxis = list(title = "Flooding frequency"),
+    yaxis = list(title = "# of acres"),
+    margin = list(t = 100)
+  )
+
+manipulateWidget::combineWidgets(drain1,
+                                 drain2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+
+}
 ```
 
-**Permeability class**
+**Drainage class table**
 
-Permeability class does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
+```{r}
+if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  EDIT_updates_filtered %>% select(coiid, drainage_class, comp_acres) %>% group_by(drainage_class) %>% 
+    summarise(acres = sum(comp_acres),  '# components' = n()) %>% arrange(desc(acres)) %>% as.data.frame()
 
-```{r, fig.show="hold", out.width="50%", message=FALSE}
+}
+```
+**Drainage class acreage weighted percentiles**
 
+Representative low (25%) and representative high (75%)
+```{r}
+if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  my_levels <-  c(
+    "subaqueous",
+    "very poorly",
+    "poorly",
+    "somewhat poorly",
+    "moderately well",
+    "well",
+    "somewhat excessively",
+    "excessively"
+  )
+  
+    expanded_drainage_class <- rep(EDIT_updates_filtered$drainage_class, EDIT_updates_filtered$comp_acres)
+    expanded_drainage_class <- expanded_drainage_class[order(match(expanded_drainage_class, my_levels))]
+    
+    data.frame("25%" = expanded_drainage_class[ceiling(0.25 * length(expanded_drainage_class))],
+             "75%" = expanded_drainage_class[ceiling(0.75 * length(expanded_drainage_class))],
+             check.names = FALSE)
+  
+  
+}
+```
+
+Actual high (95%) and actual low (5%)
+```{r}
+    data.frame("5%" = expanded_drainage_class[ceiling(0.05 * length(expanded_drainage_class))],
+             "95%" = expanded_drainage_class[ceiling(0.95 * length(expanded_drainage_class))],
+             check.names = FALSE)
+```
+
+#### **Permeability class**
+```{r}
 if (all(is.na(EDIT_updates_filtered$ksat_l_0_10_in))) {print("No data populated in NASIS for this field.")
   
 } else{
-
-my_levels <- c("very slow", "slow", "moderately slow", "moderate", "moderately rapid", "rapid", "very rapid")
-
-perm_0_10 <- mapvalues(EDIT_updates_filtered$ksat_l_0_10_in, from = c("very low", "low", "moderately low", "moderate", "moderately high",
-                                                                      "high", "very high"), to = c("very slow", "slow", "moderately slow", 
-                                                                                                   "moderate", "moderately rapid", "rapid",
-                                                                                                   "very rapid"))
-
-
-perm_0_10 <- factor(perm_0_10, levels = my_levels[my_levels %in% perm_0_10])
-
-
-if(all(is.na(perm_0_10))){print("All permeability values NA.")} else {barplot(table(perm_0_10), main = "Permeability class 0-10 inches", xlab = "Permeability class (low to high)")}
-
-as.data.frame(table(EDIT_updates_filtered$ksat_l_0_10_in)) %>% 
-  dplyr::rename("Permeability class" = Var1) %>% arrange(desc(Freq))
   
-}
+   my_levels <-  c(
+    "impermeable",
+    "very slow",
+    "slow",
+    "moderately slow",
+    "moderate",
+    "moderately rapid",
+    "rapid",
+    "very rapid"
+  )
+  
+  EDIT_updates_filtered$ksat_l_0_10_in_mod <-
+    mapvalues(
+      EDIT_updates_filtered$ksat_l_0_10_in,
+      from = c(
+        "very low",
+        "low",
+        "moderately low",
+        "moderate",
+        "moderately high",
+        "high",
+        "very high"
+      ),
+      to = c(
+        "very slow",
+        "slow",
+        "moderately slow",
+        "moderate",
+        "moderately rapid",
+        "rapid",
+        "very rapid"
+      )
+    )
+  
+perm_class_df <- EDIT_updates_filtered %>% select(coiid, ksat_l_0_10_in_mod, comp_acres)  %>% group_by(ksat_l_0_10_in_mod) %>% summarise(count = n(), acres = sum(comp_acres), coiids = toString(coiid)) %>% ungroup() 
 
+  
+  
+perm1 <-
+  plot_ly(
+    x = perm_class_df$ksat_l_0_10_in_mod,
+    y = perm_class_df$count,
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(perm_class_df$coiids, 40))
+  ) %>% layout(
+    title = "Permeability class (# components)",
+    xaxis = list(title = "Permeability class"),
+    yaxis = list(title = "# of components"),
+    margin = list(t = 100)
+  )
+
+
+perm2 <-
+  plot_ly(
+    x = perm_class_df$ksat_l_0_10_in_mod,
+    y = perm_class_df$acres,
+    name = "Permeability class (acres)",
+    type = "bar",
+    hoverinfo = "text",
+    hovertext = paste("coiids: ", stringr::str_wrap(perm_class_df$coiids, 40))
+  ) %>% layout(
+    title = "Permeability class (# of acres)",
+    xaxis = list(title = "Permeability class"),
+    yaxis = list(title = "# of acres"),
+    margin = list(t = 100)
+  )
+
+manipulateWidget::combineWidgets(perm1,
+                                 perm2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+
+}
 ```
 
-**Depth to restrictive layer**
-```{r, fig.show="hold", out.width="50%"}
+**Permeability table**
+
+```{r}
+if (all(is.na(EDIT_updates_filtered$ksat_l_0_10_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  EDIT_updates_filtered %>% select(coiid, ksat_l_0_10_in_mod, comp_acres) %>% group_by(ksat_l_0_10_in_mod) %>% 
+    summarise(acres = sum(comp_acres),  '# components' = n()) %>% arrange(desc(acres)) %>% as.data.frame()
+
+}
+```
+
+**Permeability acreage weighted percentiles**
+
+Representative low (25%) and representative high (75%)
+```{r}
+if (all(is.na(EDIT_updates_filtered$ksat_l_0_10_in_mod))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  
+    expanded_perm_class <- rep(EDIT_updates_filtered$ksat_l_0_10_in_mod, EDIT_updates_filtered$comp_acres)
+    expanded_perm_class <- expanded_perm_class[order(match(expanded_perm_class, my_levels))]
+    
+    data.frame("25%" = expanded_perm_class[ceiling(0.25 * length(expanded_perm_class))],
+             "75%" = expanded_perm_class[ceiling(0.75 * length(expanded_perm_class))],
+             check.names = FALSE)
+  
+  
+}
+```
+
+Actual high (95%) and actual low (5%)
+```{r}
+    data.frame("5%" = expanded_perm_class[ceiling(0.05 * length(expanded_perm_class))],
+             "95%" = expanded_perm_class[ceiling(0.95 * length(expanded_perm_class))],
+             check.names = FALSE)
+```
+
+#### **Depth to restriction high**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-{hist(EDIT_updates_filtered$restrict_depth_h_in, breaks = seq(0,90, 5), xaxt = "n",
-      main = "Depth - deep value", xlab = "depth (inches)")
-axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
+  # Define bin width and round by measures
+
+bin_width <- 5
+round_by <- 5
+
+# Prepare dataframe for component histogram
+
+restriction.df <-
+  EDIT_updates_filtered %>% select(coiid, restrict_depth_h_in, restrict_depth_l_in, restrict_depth_r_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "restriction",
+    values_to = "value",
+    cols = c("restrict_depth_h_in", "restrict_depth_l_in", "restrict_depth_r_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+restriction_h1 <- ggplot(restriction.df %>% filter(restriction == "restrict_depth_h_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = 2.5,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Restriction depth (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Restriction depth (in.)") +
+  scale_x_continuous(limits = c(0, 90),
+  breaks = seq(0, 90, 5))
+
+# Convert histogram to plotly
+
+restriction_h1 <- ggplotly(restriction_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(0, 90, 5)
+names(my_seq) <- my_seq
+
+restriction.df.acres <- restriction.df
+restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restriction.df.acres$value + 0.1, restriction.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(restriction) %>% summarise(range = mean(value), acres = sum(acres), coiids = n()) %>% ungroup()
+})
+
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(restriction) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+restriction_h_acres <- do.call(rbind, my_list_summarised)
+
+restriction_h_acres$numb_coiids <- sapply(restriction_h_acres$coiids, FUN = function(x){
+      x %>% unlist() %>% strsplit(",") %>% unlist() %>% length()
+})
+
+
+restriction_h_acres_na <- restriction.df.acres %>% dplyr::filter(is.na(value) &
+                          restriction == "restrict_depth_h_in") %>% summarise(acres = sum(acres),  coiids = n()) %>% cbind(range = NA,      
+                          restriction = NA)
+
+
+restriction_h_acres_prepped <- data.frame(restriction = my_seq, row.names = NULL) %>% dplyr::rename(range = restriction) %>%
+                        dplyr::left_join(restriction_h_acres)
+
+restriction_na_h <- rbind(restriction_h_acres_prepped %>% select(-coiids) %>% dplyr::rename(coiids = numb_coiids), restriction_h_acres_na)
+
+
+restriction_h_acres_prepped$acres <- ifelse(is.na(restriction_h_acres_prepped$acres), 0, restriction_h_acres_prepped$acres)
+restriction_h_acres_prepped$range <- restriction_h_acres_prepped$range + 0.1
+
+
+expand_restriction_h <- restriction_h_acres_prepped[rep(1:nrow(restriction_h_acres_prepped), times = restriction_h_acres_prepped$acres), c("range", "restriction", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+restriction_h2 <- ggplot(expand_restriction_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = 2.5,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Restriction depth (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Restriction depth (in.)") +
+  scale_x_continuous(limits = c(0, 90),
+  breaks = seq(0, 90, 5))
+
+# Convert to plotly
+
+restriction_h2 <- ggplotly(restriction_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(restriction_h1,
+                                 restriction_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+
+**Restriction depth high table**
+
+NAs in restriction likely mean that no restriction was observed. NA's are not represented in the figures above. Please observe the table below to understand the acreage and number of component associated with a restriction of NA. 
+```{r}
+restriction_na_h
+```
+
+**Restriction high acreage weighted 95th percentile** -  use as 'high (actual)'. This value may be NA.  
+
+The percentile calculation for restriction is performed differently because NAs in the restriction likely mean no restriction was observed. For that reason, we will consider NAs to be an ordinal value that is deeper than all other quantitative values.
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  # restriction_na_h_rem <-restriction_na_h %>% dplyr::filter(!is.na(acres))
+  # restriction_na_h_rem_expanded <- rep(restriction_na_h_rem$range, restriction_na_h_rem$acres)
+  # data.frame("95%" = restriction_na_h_rem_expanded[ceiling(0.95 * length(restriction_na_h_rem_expanded))], check.names = FALSE)
+  
+  rest_depth_h_calc <- rep(EDIT_updates_filtered$restrict_depth_h_in, EDIT_updates_filtered$comp_acres) %>% sort(na.last = TRUE)
+  data.frame("95%" = rest_depth_h_calc[ceiling(0.95 * length(rest_depth_h_calc))], check.names = FALSE)
+
+
+  
   
 }
 
+```
+
+**Restriction high acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
+  
+} else{
+
+  restriction_h_stats <- restriction.df %>% dplyr::filter(restriction == "restrict_depth_h_in")
+  restriction_h_stats_rep <- rep(restriction_h_stats$value, restriction_h_stats$acres) 
+  summary(restriction_h_stats_rep)
+  
+  
+
+}
+```
+
+#### **Depth to restriction low**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-{hist(EDIT_updates_filtered$restrict_depth_l_in, breaks = seq(0,90, 5), xaxt = "n",
-      main = "Depth - shallow value", xlab = "depth (inches)")
-axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
+  # Define bin width and round by measures
+
+bin_width <- 5
+round_by <- 5
+
+# Prepare dataframe for component histogram
+
+restriction.df <-
+  EDIT_updates_filtered %>% select(coiid, restrict_depth_h_in, restrict_depth_l_in, restrict_depth_r_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "restriction",
+    values_to = "value",
+    cols = c("restrict_depth_h_in", "restrict_depth_l_in", "restrict_depth_r_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+restriction_l1 <- ggplot(restriction.df %>% filter(restriction == "restrict_depth_l_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = 2.5,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Restriction depth (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Restriction depth (in.)") +
+  scale_x_continuous(limits = c(0, 90),
+  breaks = seq(0, 90, 5))
+
+# Convert histogram to plotly
+
+restriction_l1 <- ggplotly(restriction_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(0, 90, 5)
+names(my_seq) <- my_seq
+
+restriction.df.acres <- restriction.df
+restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restriction.df.acres$value + 0.1, restriction.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(restriction) %>% summarise(range = mean(value), acres = sum(acres), coiids = n()) %>% ungroup()
+})
+
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(restriction) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+restriction_l_acres <- do.call(rbind, my_list_summarised)
+
+restriction_l_acres$numb_coiids <- sapply(restriction_l_acres$coiids, FUN = function(x){
+      x %>% unlist() %>% strsplit(",") %>% unlist() %>% length()
+})
+
+
+restriction_l_acres_na <- restriction.df.acres %>% dplyr::filter(is.na(value) &
+                          restriction == "restrict_depth_l_in") %>% summarise(acres = sum(acres),  coiids = n()) %>% cbind(range = NA,      
+                          restriction = NA)
+
+
+restriction_l_acres_prepped <- data.frame(restriction = my_seq, row.names = NULL) %>% dplyr::rename(range = restriction) %>%
+                        dplyr::left_join(restriction_l_acres)
+
+restriction_na_l <- rbind(restriction_l_acres_prepped %>% select(-coiids) %>% dplyr::rename(coiids = numb_coiids), restriction_l_acres_na)
+
+
+restriction_l_acres_prepped$acres <- ifelse(is.na(restriction_l_acres_prepped$acres), 0, restriction_l_acres_prepped$acres)
+restriction_l_acres_prepped$range <- restriction_l_acres_prepped$range + 0.1
+
+
+expand_restriction_l <- restriction_l_acres_prepped[rep(1:nrow(restriction_l_acres_prepped), times = restriction_l_acres_prepped$acres), c("range", "restriction", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+restriction_l2 <- ggplot(expand_restriction_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = 2.5,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Restriction (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Restriction depth (in.)") +
+  scale_x_continuous(limits = c(0, 90),
+  breaks = seq(0, 90, 5))
+
+# Convert to plotly
+
+restriction_l2 <- ggplotly(restriction_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(restriction_l1,
+                                 restriction_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Restriction depth low table**
+
+NAs in restriction likely mean that no restriction was observed. NA's are not represented in the figures above. Please observe the table below to understand the acreage and number of component associated with a restriction of NA. 
+```{r}
+restriction_na_l
+```
+
+**Restriction low: acreage weighted 5th percentile** -  use as 'low (actual)'. This value may be NA. 
+
+The percentile calculation for water table is performed differently because NAs in the water table likely mean no water table was observed. For that reason, we will consider NAs to be an ordinal value that is deeper than all other quantitative values.
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  rest_depth_l_calc <- EDIT_updates_filtered$restrict_depth_l_in %>% sort(na.last = TRUE)
+  data.frame("5%" = rest_depth_l_calc[ceiling(0.05 * length(rest_depth_l_calc))], check.names = FALSE)
   
 }
 
+```
+
+**Restriction low acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
+  
+} else{
+  
+
+  restriction_l_stats <- restriction.df %>% dplyr::filter(restriction == "restrict_depth_l_in")
+  restriction_l_stats_rep <- rep(restriction_l_stats$value, restriction_l_stats$acres) 
+  summary(restriction_l_stats_rep)
+
+}
+```
+
+#### **Restriction RV**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-{hist(EDIT_updates_filtered$restrict_depth_r_in, breaks = seq(0,90, 5), xaxt = "n",
-      main = "Representative depth", xlab = "depth (inches)")
-axis(side = 1, at = seq(0,90, 5), labels = seq(0,90, 5))}
+  # Define bin width and round by measures
+
+bin_width <- 5
+round_by <- 5
+
+# Prepare dataframe for component histogram
+
+restriction.df <-
+  EDIT_updates_filtered %>% select(coiid, restrict_depth_h_in, restrict_depth_l_in, restrict_depth_r_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "restriction",
+    values_to = "value",
+    cols = c("restrict_depth_h_in", "restrict_depth_l_in", "restrict_depth_r_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+restriction_r1 <- ggplot(restriction.df %>% filter(restriction == "restrict_depth_r_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = 2.5,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Restriction depth (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Restriction depth (in.)") +
+  scale_x_continuous(limits = c(0, 90),
+  breaks = seq(0, 90, 5))
+
+# Convert histogram to plotly
+
+restriction_r1 <- ggplotly(restriction_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(0, 90, 5)
+names(my_seq) <- my_seq
+
+restriction.df.acres <- restriction.df
+restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restriction.df.acres$value + 0.1, restriction.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(restriction) %>% summarise(range = mean(value), acres = sum(acres), coiids = n()) %>% ungroup()
+})
+
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(restriction) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+restriction_r_acres <- do.call(rbind, my_list_summarised)
+
+restriction_r_acres$numb_coiids <- sapply(restriction_r_acres$coiids, FUN = function(x){
+      x %>% unlist() %>% strsplit(",") %>% unlist() %>% length()
+})
+
+
+restriction_r_acres_na <- restriction.df.acres %>% dplyr::filter(is.na(value) &
+                          restriction == "restrict_depth_r_in") %>% summarise(acres = sum(acres),  coiids = n()) %>% cbind(range = NA,      
+                          restriction = NA)
+
+
+restriction_r_acres_prepped <- data.frame(restriction = my_seq, row.names = NULL) %>% dplyr::rename(range = restriction) %>%
+                        dplyr::left_join(restriction_r_acres)
+
+restriction_na_r <- rbind(restriction_r_acres_prepped %>% select(-coiids) %>% dplyr::rename(coiids = numb_coiids), restriction_r_acres_na)
+
+
+restriction_r_acres_prepped$acres <- ifelse(is.na(restriction_r_acres_prepped$acres), 0, restriction_r_acres_prepped$acres)
+restriction_r_acres_prepped$range <- restriction_r_acres_prepped$range + 0.1
+
+
+expand_restriction_r <- restriction_r_acres_prepped[rep(1:nrow(restriction_r_acres_prepped), times = restriction_r_acres_prepped$acres), c("range", "restriction", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+restriction_r2 <- ggplot(expand_restriction_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = 2.5,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Restriction depth (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Restriction depth (in.)") +
+  scale_x_continuous(limits = c(0, 90),
+  breaks = seq(0, 90, 5))
+
+# Convert to plotly
+
+restriction_r2 <- ggplotly(restriction_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(restriction_r1,
+                                 restriction_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Restriction depth RV table**
+
+NAs in restriction likely mean that no restriction was observed. NA's are not represented in the figures above. Please observe the table below to understand the acreage and number of component associated with a restriction of NA. 
+```{r}
+restriction_na_r
+```
+
+
+
+
+**Restriction RV acreage weighted 5th percentile** -  use as 'low (representative)'. acreage weighted 95th percentile - use as 'high (representative)'. This value may be NA.  
+
+The percentile calculation for water table is performed differently because NAs in the water table likely mean no water table was observed. For that reason, we will consider NAs to be an ordinal value that is deeper than all other quantitative values.
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  rest_depth_rv_calc <-
+    rep(EDIT_updates_filtered$restrict_depth_r_in,
+        EDIT_updates_filtered$comp_acres) %>% sort(na.last = TRUE)
+  data.frame("5%" = rest_depth_rv_calc[ceiling(0.05 * length(rest_depth_rv_calc))]
+             ,
+             "95%" = rest_depth_rv_calc[ceiling(0.95 * length(rest_depth_rv_calc))],
+             check.names = FALSE)
   
 }
 
 ```
 
-**Soil depth**
+**Restriction RV acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
+  
+} else{
+  
+
+  restriction_r_stats <- restriction.df %>% dplyr::filter(restriction == "restrict_depth_r_in")
+  restriction_r_stats_rep <- rep(restriction_r_stats$value, restriction_r_stats$acres) 
+  summary(restriction_r_stats_rep)
+
+}
+```
+
+#### **Soil depth**
 
 Soil depth (inches) is the same as depth to restrictive layer. 
 
+#### **Surface frag percent cover (2 mm - 3 in.)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
-```{r}
+EDIT_updates_filtered$surfhzn_frags_r_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), 0, EDIT_updates_filtered$surfhzn_frags_r_2mm.3in)
 
-if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-  summary(EDIT_updates_filtered$restrict_depth_h_in)
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+surf_frag.df <-
+  EDIT_updates_filtered %>% select(coiid, surfhzn_frags_r_2mm.3in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "surf_frag",
+    values_to = "value",
+    cols = c("surfhzn_frags_r_2mm.3in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+surf_frag1 <- ggplot(surf_frag.df %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Surface frag 2mm - 3inches") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Surface frag (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+surf_frag1 <- ggplotly(surf_frag1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+surf_frag.df.acres <- surf_frag.df
+surf_frag.df.acres$value <- ifelse(surf_frag.df.acres$value == 0, surf_frag.df.acres$value + 0.1, surf_frag.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
 
 }
 
-
-if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  summary(EDIT_updates_filtered$restrict_depth_l_in)
-
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
 }
 
 
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(surf_frag) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
 
-if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
-  
-} else{
+surf_frag_r_acres <- do.call(rbind, my_list_summarised)
 
-  summary(EDIT_updates_filtered$restrict_depth_r_in)
+
+surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) %>% dplyr::rename(range = surf_frag) %>%
+                        dplyr::left_join(surf_frag_r_acres)
+
+surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
+surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
+
+
+expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres), c("range", "surf_frag", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+surf_frag2 <- ggplot(expand_surf_frag, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Surface frags 2mm - 3inches") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Surface frags (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+
+# Convert to plotly
+
+surf_frag2 <- ggplotly(surf_frag2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(surf_frag1,
+                                 surf_frag2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
+**Surface frags 2 mm - 3 in. acreage weighted percentiles**
 
-**Surface frag cover**
-
-Surface frag does not have low, high, and representative. Use your best judgement about defining representative and actual values. 
-NOTE: Notice that there is a calculation of what % of frags are zero. This can't be seen in the histogram because it is binned. It is possible that the representative values could be a low of zero and a high of zero if a high percentage are zero. I would say over 75% 0's would be sufficient to have representative 0 to 0. 
-
-```{r}
-
-# frags2mm3in <- ifelse(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf), 0, 
-#                 EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
-# 
-# frags3plus <- ifelse(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf), 0,
-#                      EDIT_updates_filtered$frags_r_gt_3in_on_surf)
-
-if (all(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-{hist(EDIT_updates_filtered$frags_r_2mm_3in_on_surf, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 2mm to 3in",
-     xlab = "Frag %")
-axis(side = 1, at = seq(0, 100, 10), labels = seq(0,100, 10))}
-
-summary(EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
-
-# Percent of frags 2mm - 3in values equal to zero
-length(EDIT_updates_filtered$frags_r_2mm_3in_on_surf[EDIT_updates_filtered$frags_r_2mm_3in_on_surf == 0])*100/length(EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
-  
-}
+Surface frags are only represented as one number, there are not high, low, or RV values. Therefore, 5th and 95th percentiles will be used for the actual values. 25th and 75th percentiles will be used for representative values. 
 
 
-
-if (all(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  
-{hist(EDIT_updates_filtered$frags_r_gt_3in_on_surf, breaks = seq(0, 100, 10), xaxt = "n", main = "Surface frag 3in+",
-     xlab = "Frag %")
-axis(side = 1, at = seq(0, 100, 10), labels = seq(0,100, 10))}
-
-summary(EDIT_updates_filtered$frags_r_gt_3in_on_surf)
-# Percent of frags 3in+ equal to zero
-length(EDIT_updates_filtered$frags_r_gt_3in_on_surf[EDIT_updates_filtered$frags_r_gt_3in_on_surf == 0])*100/length(EDIT_updates_filtered$frags_r_gt_3in_on_surf)
-
-}
-
-```
-
-**Available water capacity**
 ```{r, fig.show="hold", out.width="50%"}
-
-if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
   
 } else{
   
-  {hist(EDIT_updates_filtered$awc_l_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
-      main = "AWC low", xlab = "depth")
-axis(side = 1, at = seq(0, 26, 2), labels = seq(0, 26, 2))}
+  surf_frag_h_stats <- surf_frag.df %>% dplyr::filter(surf_frag == "surfhzn_frags_r_2mm.3in")
+  surf_frag_h_stats_rep <- rep(surf_frag_h_stats$value, surf_frag_h_stats$acres) 
+  surf_frag_h_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
 
 }
 
+```
+
+
+**Surface frags 2 mm - 3 in. percentage acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  summary(surf_frag_h_stats_rep)
+
+}
+```
+
+#### **Surface frag percent cover (3 in. +)** 
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+EDIT_updates_filtered$surfhzn_frags_r_gt_3in <- ifelse(is.na(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), 0, EDIT_updates_filtered$surfhzn_frags_r_gt_3in)
+
+if (all(is.na(EDIT_updates_filtered$surfhzn_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+surf_frag.df <-
+  EDIT_updates_filtered %>% select(coiid, surfhzn_frags_r_gt_3in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "surf_frag",
+    values_to = "value",
+    cols = c("surfhzn_frags_r_gt_3in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+surf_frag1 <- ggplot(surf_frag.df %>% filter(surf_frag == "surfhzn_frags_r_gt_3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Surface frag 3 inches +") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Surface frag (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+surf_frag1 <- ggplotly(surf_frag1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+surf_frag.df.acres <- surf_frag.df
+surf_frag.df.acres$value <- ifelse(surf_frag.df.acres$value == 0, surf_frag.df.acres$value + 0.1, surf_frag.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(surf_frag) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+surf_frag_r_acres <- do.call(rbind, my_list_summarised)
+
+
+surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) %>% dplyr::rename(range = surf_frag) %>%
+                        dplyr::left_join(surf_frag_r_acres)
+
+surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
+surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
+
+
+expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres), c("range", "surf_frag", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+surf_frag2 <- ggplot(expand_surf_frag, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Surface frags 3 inches +") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Surface frags (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+
+# Convert to plotly
+
+surf_frag2 <- ggplotly(surf_frag2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(surf_frag1,
+                                 surf_frag2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Surface frags percent cover 3 in. + acreage weighted percentiles**
+
+Surface frags are only represented as one number, there are not high, low, or RV values. Therefore, 5th and 95th percentiles will be used for the actual values. 25th and 75th percentiles will be used for representative values. 
+
+
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$surfhzn_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  surf_frag_h_stats <- surf_frag.df %>% dplyr::filter(surf_frag == "surfhzn_frags_r_gt_3in")
+  surf_frag_h_stats_rep <- rep(surf_frag_h_stats$value, surf_frag_h_stats$acres) 
+  surf_frag_h_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
+
+}
+
+```
+
+#### **Available water capacity high (0-40 inches)**
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-  {hist(EDIT_updates_filtered$awc_h_0_40_in, breaks = seq(0, 26, 2), xaxt = "n",
-      main = "AWC high", xlab = "depth")
-axis(side = 1, at = seq(0, 26, 2), labels = seq(0, 26, 2))}
+  # Define bin width and round by measures
+
+bin_width <- 1
+round_by <- 1
+
+# Prepare dataframe for component histogram
+
+awc_h.df <-
+  EDIT_updates_filtered %>% select(coiid, awc_l_0_40_in, awc_r_0_40_in, awc_h_0_40_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "awc",
+    values_to = "value",
+    cols = c("awc_l_0_40_in", "awc_r_0_40_in", "awc_h_0_40_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+awc_h1 <- ggplot(awc_h.df %>% filter(awc == "awc_h_0_40_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("AWC 0-40inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+awc_h1 <- ggplotly(awc_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+awc_h.df.acres <- awc_h.df
+awc_h.df.acres$value <- ifelse(awc_h.df.acres$value == 0, awc_h.df.acres$value + 0.1, awc_h.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
 
 }
 
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
 
 
-if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated in NASIS for this field.")
-  
-} else{
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(awc) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
 
-  {hist(EDIT_updates_filtered$awc_r_0_40_in, breaks = seq(0,26, 2), xaxt = "n",
-      main = "Representative awc", xlab = "depth")
-axis(side = 1, at = seq(0, 26, 2), labels = seq(0,26, 2))}
+awc_h_acres <- do.call(rbind, my_list_summarised)
+
+
+awc_h_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) %>% dplyr::rename(range = awc) %>%
+                        dplyr::left_join(awc_h_acres)
+
+awc_h_acres_prepped$acres <- ifelse(is.na(awc_h_acres_prepped$acres), 0, awc_h_acres_prepped$acres)
+awc_h_acres_prepped$range <- awc_h_acres_prepped$range + 0.1
+
+
+expand_awc_h <- awc_h_acres_prepped[rep(1:nrow(awc_h_acres_prepped), times = awc_h_acres_prepped$acres), c("range", "awc", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+awc_h2 <- ggplot(expand_awc_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("AWC 0-40 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+awc_h2 <- ggplotly(awc_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(awc_h1,
+                                 awc_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
+**AWC high acreage weighted 95th percentile** -  use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  awc_h_stats <- awc_h.df %>% dplyr::filter(awc == "awc_h_0_40_in")
+  awc_h_stats_rep <- rep(awc_h_stats$value, awc_h_stats$acres) 
+  awc_h_stats_rep %>% quantile(probs = c(0.95))
+
+}
+
+```
+
+**AWC high acreage weighted summary statistics**
 ```{r}
+
+if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  awc_h_stats <-awc_h.df %>% dplyr::filter(awc == "awc_h_0_40_in")
+  awc_h_stats_rep <- rep(awc_h_stats$value, awc_h_stats$acres) 
+  summary(awc_h_stats_rep)
+
+}
+```
+
+
+#### **Available water capacity low (0-40 inches)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-  summary(EDIT_updates_filtered$awc_l_0_40_in)
+  # Define bin width and round by measures
+
+bin_width <- 1
+round_by <- 1
+
+# Prepare dataframe for component histogram
+
+awc_l.df <-
+  EDIT_updates_filtered %>% select(coiid, awc_l_0_40_in, awc_r_0_40_in, awc_h_0_40_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "awc",
+    values_to = "value",
+    cols = c("awc_l_0_40_in", "awc_r_0_40_in", "awc_h_0_40_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+awc_l1 <- ggplot(awc_l.df %>% filter(awc == "awc_l_0_40_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("AWC 0-40inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+awc_l1 <- ggplotly(awc_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+awc_l.df.acres <- awc_l.df
+awc_l.df.acres$value <- ifelse(awc_l.df.acres$value == 0, awc_l.df.acres$value + 0.1, awc_l.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
 
 }
 
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
 
-if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated in NASIS for this field.")
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(awc) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+awc_l_acres <- do.call(rbind, my_list_summarised)
+
+
+awc_l_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) %>% dplyr::rename(range = awc) %>%
+                        dplyr::left_join(awc_l_acres)
+
+awc_l_acres_prepped$acres <- ifelse(is.na(awc_l_acres_prepped$acres), 0, awc_l_acres_prepped$acres)
+awc_l_acres_prepped$range <- awc_l_acres_prepped$range + 0.1
+
+
+expand_awc_l <- awc_l_acres_prepped[rep(1:nrow(awc_l_acres_prepped), times = awc_l_acres_prepped$acres), c("range", "awc", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+awc_l2 <- ggplot(expand_awc_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("AWC 0-40 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+awc_l2 <- ggplotly(awc_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(awc_l1,
+                                 awc_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**AWC low acreage weighted 5th percentile** -  use as 'low (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
+  
 
-summary(EDIT_updates_filtered$awc_h_0_40_in)
+  awc_l_stats <- awc_l.df %>% dplyr::filter(awc == "awc_l_0_40_in")
+  awc_l_stats_rep <- rep(awc_l_stats$value, awc_l_stats$acres) 
+  awc_l_stats_rep %>% quantile(probs = c(0.05))
 
 }
 
+```
 
+**AWC low acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  awc_l_stats <-awc_l.df %>% dplyr::filter(awc == "awc_l_0_40_in")
+  awc_l_stats_rep <- rep(awc_l_stats$value, awc_l_stats$acres) 
+  summary(awc_l_stats_rep)
+
+}
+```
+
+
+#### **Available water capacity RV (0-40 inches)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-summary(EDIT_updates_filtered$awc_r_0_40_in)
+  # Define bin width and round by measures
+
+bin_width <- 1
+round_by <- 1
+
+# Prepare dataframe for component histogram
+
+awc_r.df <-
+  EDIT_updates_filtered %>% select(coiid, awc_l_0_40_in, awc_r_0_40_in, awc_h_0_40_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "awc",
+    values_to = "value",
+    cols = c("awc_l_0_40_in", "awc_r_0_40_in", "awc_h_0_40_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+awc_r1 <- ggplot(awc_r.df %>% filter(awc == "awc_r_0_40_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("AWC 0-40inches (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+awc_r1 <- ggplotly(awc_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+awc_r.df.acres <- awc_r.df
+awc_r.df.acres$value <- ifelse(awc_r.df.acres$value == 0, awc_r.df.acres$value + 0.1, awc_r.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(awc) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+awc_r_acres <- do.call(rbind, my_list_summarised)
+
+
+awc_r_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) %>% dplyr::rename(range = awc) %>%
+                        dplyr::left_join(awc_r_acres)
+
+awc_r_acres_prepped$acres <- ifelse(is.na(awc_r_acres_prepped$acres), 0, awc_r_acres_prepped$acres)
+awc_r_acres_prepped$range <- awc_r_acres_prepped$range + 0.1
+
+
+expand_awc_r <- awc_r_acres_prepped[rep(1:nrow(awc_r_acres_prepped), times = awc_r_acres_prepped$acres), c("range", "awc", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+awc_r2 <- ggplot(expand_awc_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$awc_r_0_40_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("AWC 0-40 inches (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+awc_r2 <- ggplotly(awc_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(awc_r1,
+                                 awc_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
-
-**Soil reaction**
-
-There is no pH representative value. Use your best judgement. 
-
-0-10
+**AWC RV acreage weighted 95th percentile and 5th percentile** -  use as 'high (representative)' and 'low (representative)'.
 ```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  awc_r_stats <- awc_r.df %>% dplyr::filter(awc == "awc_r_0_40_in")
+  awc_r_stats_rep <- rep(awc_r_stats$value, awc_r_stats$acres) 
+  awc_r_stats_rep %>% quantile(probs = c(0.05, 0.95))
+
+}
+
+```
+
+**AWC RV acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  awc_r_stats <-awc_r.df %>% dplyr::filter(awc == "awc_r_0_40_in")
+  awc_r_stats_rep <- rep(awc_r_stats$value, awc_r_stats$acres) 
+  summary(awc_r_stats_rep)
+
+}
+```
+
+#### **pH high (0-10 in.)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-{hist(EDIT_updates_filtered$pH_h_0_10in, breaks = seq(1,13, 0.5), xaxt = "n",
-     main = "pH 0-10 high", xlab = "pH")
-axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
-  
+  # Define bin width and round by measures
+
+bin_width <- 0.5
+round_by <- 1
+
+# Prepare dataframe for component histogram
+
+ph_h.df <-
+  EDIT_updates_filtered %>% select(coiid, pH_h_0_10in, pH_l_0_10in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "ph",
+    values_to = "value",
+    cols = c("pH_l_0_10in", "pH_h_0_10in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+ph_h1 <- ggplot(ph_h.df %>% filter(ph == "pH_h_0_10in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("pH 0-10 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+ph_h1 <- ggplotly(ph_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+ph_h.df.acres <- ph_h.df
+ph_h.df.acres$value <- ifelse(ph_h.df.acres$value == 0, ph_h.df.acres$value + 0.1, ph_h.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
 }
 
 
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(ph) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
 
-if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
-  
-} else{
+ph_h_acres <- do.call(rbind, my_list_summarised)
 
-{hist(EDIT_updates_filtered$pH_l_0_10in, breaks = seq(1, 13, 0.5), xaxt = "n",
-     main = "pH 0-10 low", xlab = "pH")
-axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
-  
+
+ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::rename(range = ph) %>%
+                        dplyr::left_join(ph_h_acres)
+
+ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
+ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
+
+
+expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+ph_h2 <- ggplot(expand_ph_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("pH 0-10 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+ph_h2 <- ggplotly(ph_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(ph_h1,
+                                 ph_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
 }
 
 ```
 
+**pH high acreage weighted 95th percentile** -  use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  ph_h_stats <- ph_h.df %>% dplyr::filter(ph == "pH_h_0_10in")
+  ph_h_stats_rep <- rep(ph_h_stats$value, ph_h_stats$acres) 
+  ph_h_stats_rep %>% quantile(probs = c(0.95))
+
+}
+
+```
+
+**pH high acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in NASIS for this field.")
   
 } else{
+  
 
-summary(EDIT_updates_filtered$pH_h_0_10in)
+  ph_h_stats <-ph_h.df %>% dplyr::filter(ph == "pH_h_0_10in")
+  ph_h_stats_rep <- rep(ph_h_stats$value, ph_h_stats$acres) 
+  summary(ph_h_stats_rep)
 
 }
+```
 
+
+#### **pH low (0-10 inches)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-  summary(EDIT_updates_filtered$pH_l_0_10in)
+  # Define bin width and round by measures
+
+bin_width <- 0.5
+round_by <- 1
+
+# Prepare dataframe for component histogram
+
+ph_l.df <-
+  EDIT_updates_filtered %>% select(coiid, pH_h_0_10in, pH_l_0_10in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "ph",
+    values_to = "value",
+    cols = c("pH_l_0_10in", "pH_h_0_10in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+ph_l1 <- ggplot(ph_h.df %>% filter(ph == "pH_l_0_10in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+ph_l1 <- ggplotly(ph_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+ph_l.df.acres <- ph_l.df
+ph_l.df.acres$value <- ifelse(ph_l.df.acres$value == 0, ph_l.df.acres$value + 0.1, ph_l.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(ph) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+ph_l_acres <- do.call(rbind, my_list_summarised)
+
+
+ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::rename(range = ph) %>%
+                        dplyr::left_join(ph_l_acres)
+
+ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
+ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
+
+
+expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+ph_l2 <- ggplot(expand_ph_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+ph_l2 <- ggplotly(ph_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(ph_l1,
+                                 ph_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
-10-40
+**pH low acreage weighted 5th percentile** -  use as 'low (actual)'
 ```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  ph_l_stats <- ph_l.df %>% dplyr::filter(ph == "pH_l_0_10in")
+  ph_l_stats_rep <- rep(ph_l_stats$value, ph_l_stats$acres) 
+  ph_l_stats_rep %>% quantile(probs = c(0.05))
+
+}
+
+```
+
+**pH low acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  ph_l_stats <-ph_l.df %>% dplyr::filter(ph == "pH_l_0_10in")
+  ph_l_stats_rep <- rep(ph_l_stats$value, ph_l_stats$acres) 
+  summary(ph_l_stats_rep)
+
+}
+```
+
+#### **pH RV (0-10 in.)**
+
+pH 0-10 inches does not have an RV value, but EDIT asks for a representative range. I will define low (RV) as the 25th percentile of the combined high and low values and high (RV) as the 75th percentile of the combined high and low values.
+
+```{r}
+if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  quantile(c(ph_l_stats_rep, ph_h_stats_rep), probs = c(0.25, 0.75))
+  
+}
+```
+
+#### **pH high (10-40 inches)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in NASIS for this field.")
-  
+
 } else{
 
-  {hist(EDIT_updates_filtered$pH_h_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
-     main = "pH 10-40 high", xlab = "pH")
-axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+  # Define bin width and round by measures
+
+bin_width <- 0.5
+round_by <- 1
+
+# Prepare dataframe for component histogram
+
+ph_h.df <-
+  EDIT_updates_filtered %>% select(coiid, pH_h_10_40in, pH_l_10_40in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "ph",
+    values_to = "value",
+    cols = c("pH_l_10_40in", "pH_h_10_40in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+ph_h1 <- ggplot(ph_h.df %>% filter(ph == "pH_h_10_40in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)),
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") +
+  #theme_minimal() +
+  ggtitle("pH 10-40 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+ph_h1 <- ggplotly(ph_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+ph_h.df.acres <- ph_h.df
+ph_h.df.acres$value <- ifelse(ph_h.df.acres$value == 0, ph_h.df.acres$value + 0.1, ph_h.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
 
 }
 
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
 
-if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
-  
-} else{
 
-  {hist(EDIT_updates_filtered$pH_l_10_40in, breaks = seq(1,13, 0.5), xaxt = "n",
-     main = "pH 10-40 low", xlab = "pH")
-axis(side = 1, at = seq(1, 13, 0.5), labels = seq(1, 13, 0.5))}
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(ph) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+ph_h_acres <- do.call(rbind, my_list_summarised)
+
+
+ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::rename(range = ph) %>%
+                        dplyr::left_join(ph_h_acres)
+
+ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
+ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
+
+
+expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+ph_h2 <- ggplot(expand_ph_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") +
+  #theme_minimal() +
+  ggtitle("pH 10-40 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+ph_h2 <- ggplotly(ph_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(ph_h1,
+                                 ph_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
 
 }
 
 ```
 
+**pH high (10-40 inches) acreage weighted 95th percentile** -  use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+
+  ph_h_stats <- ph_h.df %>% dplyr::filter(ph == "pH_h_10_40in" & ! is.na(value))
+  ph_h_stats_rep <- rep(ph_h_stats$value, ph_h_stats$acres)
+  ph_h_stats_rep %>% quantile(probs = c(0.95))
+
+}
+
+```
+
+**pH high acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in NASIS for this field.")
-  
+
 } else{
 
-  summary(EDIT_updates_filtered$pH_h_10_40in)
+  ph_h_stats_rep <- rep(ph_h_stats$value, ph_h_stats$acres)
+  summary(ph_h_stats_rep)
+
+}
+```
+
+**pH low depth (10-40 inches)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  # Define bin width and round by measures
+
+bin_width <- 0.5
+round_by <- 1
+
+# Prepare dataframe for component histogram
+
+ph_l.df <-
+  EDIT_updates_filtered %>% select(coiid, pH_h_10_40in, pH_l_10_40in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "ph",
+    values_to = "value",
+    cols = c("pH_l_10_40in", "pH_h_10_40in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+ph_l1 <- ggplot(ph_h.df %>% filter(ph == "pH_l_10_40in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)),
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") +
+  #theme_minimal() +
+  ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+ph_l1 <- ggplotly(ph_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+ph_l.df.acres <- ph_l.df
+ph_l.df.acres$value <- ifelse(ph_l.df.acres$value == 0, ph_l.df.acres$value + 0.1, ph_l.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
 
 }
 
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
 
-if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
-  
-} else{
 
-summary(EDIT_updates_filtered$pH_l_10_40in)
-  
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(ph) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+ph_l_acres <- do.call(rbind, my_list_summarised)
+
+
+ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::rename(range = ph) %>%
+                        dplyr::left_join(ph_l_acres)
+
+ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
+ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
+
+
+expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+ph_l2 <- ggplot(expand_ph_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") +
+  #theme_minimal() +
+  ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+ph_l2 <- ggplotly(ph_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(ph_l1,
+                                 ph_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
 }
 
 ```
 
-**Subsurface frag**
+**pH low (10-40 in.) acreage weighted 5th percentile** -  use as 'low (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+
+  ph_l_stats <- ph_l.df %>% dplyr::filter(ph == "pH_l_10_40in" & ! is.na(value))
+  ph_l_stats_rep <- rep(ph_l_stats$value, ph_l_stats$acres)
+  ph_l_stats_rep %>% quantile(probs = c(0.05))
+
+}
+
+```
+
+**pH low (10-40 in.) acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  ph_l_stats_rep <- rep(ph_l_stats$value, ph_l_stats$acres)
+  summary(ph_l_stats_rep)
+
+}
+```
+
+
+**pH RV (10-40 in.)**
+
+pH 10-40 inches does not have an RV value, but EDIT asks for a representative range. I will define low (RV) as the 25th percentile of the combined high and low values and high (RV) as the 75th percentile of the combined high and low values.
+
+```{r}
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  quantile(c(ph_l_stats_rep, ph_h_stats_rep), probs = c(0.25, 0.75))
+
+
+}
+```
+
+#### **Subsurface frag percent (2 mm - 3 in.)**
 
 Subsurface frags are depth 0-60in.
 
 2mm-3in
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+subsurf_frags_small.df <-
+  EDIT_updates_filtered %>% select(coiid, subsurf_frags_r_2mm.3in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "frag_small",
+    values_to = "value",
+    cols = c("subsurf_frags_r_2mm.3in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+subsurf_frags_small_r1 <- ggplot(subsurf_frags_small.df %>% filter(frag_small == "subsurf_frags_r_2mm.3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Subsurface frags (2mm - 3 inches)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Subsurface frags (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+subsurf_frags.df.acres <- subsurf_frags_small.df
+subsurf_frags.df.acres$value <- ifelse(subsurf_frags.df.acres$value == 0, subsurf_frags.df.acres$value + 0.1, subsurf_frags.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(frag_small) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+subsurf_frags_r_acres <- do.call(rbind, my_list_summarised)
+
+
+subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) %>% dplyr::rename(range = subsurf_frags) %>%
+                        dplyr::left_join(subsurf_frags_r_acres)
+
+subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
+subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
+
+
+expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres), c("range", "frag_small", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Subsurface frags (2mm - 3 inches)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Subsurface frags (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+
+# Convert to plotly
+
+subsurf_frags_small_r2 <- ggplotly(subsurf_frags_small_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(subsurf_frags_small_r1,
+                                 subsurf_frags_small_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Subsurface frag percentage low acreage weighted 5th and 95th percentile** -  use as 'low (actual)' and 'high (actual)' 
+
+There are only RV values for subsurface frag percentages. Here, 'low (actual)' and 'high (actual)' are calculated as the 5th and 95th percentile. 'Low (representative)' and 'high (representative)' are calculated as the 25th and 75th percentile. 
 ```{r, fig.show="hold", out.width="50%"}
-
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
-  
+
 } else{
 
-  {hist(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, breaks = seq(0, 100, 10),
-     main = "Subsurface frags 2mm - 3in", xlab = "Frag %", xaxt = "n")
-axis(side = 1, at = seq(0, 100, 10), labels = seq(0, 100, 10))}
+
+  subsurf_stats <- subsurf_frags_small.df %>% dplyr::filter(frag_small == "subsurf_frags_r_2mm.3in" & ! is.na(value))
+  subsurf_stats_rep <- rep(subsurf_stats$value, subsurf_stats$acres)
+  subsurf_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
 
 }
 
 ```
 
-% frags 2mm-3in equal to zero
+**Subsurface frag percentage acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
-  
+
 } else{
 
-length(EDIT_updates_filtered$subsurf_frags_r_2mm.3in[EDIT_updates_filtered$subsurf_frags_r_2mm.3in == 0]) * 
-  100/length(EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
-  
-}
-
-```
-
-```{r}
-
-if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  summary(EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
+  summary(subsurf_stats_rep)
 
 }
-
 ```
 
-3in+
-```{r}
+#### **Subsurface frag percent (3 in. +)**
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
-{hist(EDIT_updates_filtered$subsurf_frags_r_gt_3in, breaks = seq(0, 100, 10),
-     main = "Subsurface frags 3in+", xlab = "Frag %", xaxt = "n")
-axis(side = 1, at = seq(0, 100, 10), labels = seq(0, 100, 10))}
-  
+  # Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+subsurf_frags_small.df <-
+  EDIT_updates_filtered %>% select(coiid, subsurf_frags_r_gt_3in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "frag_small",
+    values_to = "value",
+    cols = c("subsurf_frags_r_gt_3in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+subsurf_frags_small_r1 <- ggplot(subsurf_frags_small.df %>% filter(frag_small == "subsurf_frags_r_gt_3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Subsurface frags (3 inches +)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Subsurface frags (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+subsurf_frags.df.acres <- subsurf_frags_small.df
+subsurf_frags.df.acres$value <- ifelse(subsurf_frags.df.acres$value == 0, subsurf_frags.df.acres$value + 0.1, subsurf_frags.df.acres$value)
+
+for(i in names(my_seq)){
+  my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
 }
 
 
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(frag_small) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+subsurf_frags_r_acres <- do.call(rbind, my_list_summarised)
+
+
+subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) %>% dplyr::rename(range = subsurf_frags) %>%
+                        dplyr::left_join(subsurf_frags_r_acres)
+
+subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
+subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
+
+
+expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres), c("range", "frag_small", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Subsurface frags (3 inches +)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of acres") + xlab("Subsurface frags (%)") +
+  scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+
+# Convert to plotly
+
+subsurf_frags_small_r2 <- ggplotly(subsurf_frags_small_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(subsurf_frags_small_r1,
+                                 subsurf_frags_small_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
 ```
 
-% frags 3in+ equal to zero
+**Subsurface frag percentage low acreage weighted 5th and 95th percentile** -  use as 'low (actual)' and 'high (actual)' 
+
+There are only RV values for subsurface frag percentages. Here, 'low (actual)' and 'high (actual)' are calculated as the 5th and 95th percentile. 'Low (representative)' and 'high (representative)' are calculated as the 25th and 75th percentile.
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+
+  subsurf_stats <- subsurf_frags_small.df %>% dplyr::filter(frag_small == "subsurf_frags_r_gt_3in" & ! is.na(value))
+  subsurf_stats_rep <- rep(subsurf_stats$value, subsurf_stats$acres)
+  subsurf_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
+
+}
+
+```
+
+**Subsurface frag percentage acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
-  
+
 } else{
 
-  length(EDIT_updates_filtered$subsurf_frags_r_gt_3in[EDIT_updates_filtered$subsurf_frags_r_gt_3in == 0]) * 
-  100/length(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
+  summary(subsurf_stats_rep)
 
 }
-
-
 ```
 
-```{r}
-
-if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-  summary(EDIT_updates_filtered$subsurf_frags_r_gt_3in)
-
-}
-
-```
-**Component name**
+#### **Component name**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NASIS for this field.")
@@ -902,10 +4125,11 @@ as.data.frame(table(EDIT_updates_filtered$compname)) %>%
 
 ```
 
-
 **Spatial distribution of ecosite**
 
 For this methodology, the ecological site is mapped in all map units containing a component correlated to the ecological site. The alternative would be to map the ecological site only in map units where the dominant component is correlated to the ecological site of interest. I am more interest in the full extent of the ecological site, so I am using the less restrictive of the two. 
+
+I currently have this functionality disabled because it requires the proper GIS files and will abort the script if the file are not updated in the for_loop_file.R. Follow the readme.txt file to enable it.
 
 ```{r}
 # mapunit_boundaries_of_interest <- mapunit_boundaries %>% dplyr::filter(MUKEY %in% EDIT_updates_filtered$mukey) %>% sf::st_transform("+proj=longlat +datum=WGS84")

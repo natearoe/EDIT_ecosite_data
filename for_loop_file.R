@@ -9,7 +9,7 @@
 # You will need to change the file path on line 20. The easiest way to do that is to find the
 # 'NASIS_data_to_EDIT_multiple.Rmd in your directory. It should be in the folder with all your other 
 # 'EDIT ecosite data' files. Shift + right click > copy as path. Then paste the path in, replacing
-# the existing one. That path will have backslashes \ these all need to be changed to forwardslashes /. 
+# the existing one. That path will have backslashes / these all need to be changed to forwardslashes /. 
 #
 # If you want to map your ecosites, you will need to delete the "#" before lines 23 & 24 and replace the 
 # paths with the appropriate .gdb and .shp files. 
@@ -25,7 +25,7 @@ ecosites_of_interest <- c( 'F018XC201CA', 'F018XI201CA', 'F018XI200CA', 'R018XI1
 
 
 for (ecosites_of_interest in ecosites_of_interest) {
-  rmarkdown::render(input = "C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/NASIS_data_to_EDIT_multiple.Rmd",
+  rmarkdown::render(input = "C:/Users/Nathan.Roe/Documents/SEKI/edit_reports/NASIS_data_to_EDIT_multiple.Rmd",
                     output_file = paste0(ecosites_of_interest,".html"), 
                     params = list(ecosites_of_interest = ecosites_of_interest))
 }
