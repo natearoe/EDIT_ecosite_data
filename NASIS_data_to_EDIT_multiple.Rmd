@@ -182,7 +182,7 @@ ff2 <-
   ) %>% layout(
     title = "Flood freq. (# of acres)",
     xaxis = list(title = "Flooding frequency"),
-    yaxis = list(title = "# of acres"),
+    yaxis = list(title = "acres (hundreds of acres)"),
     margin = list(t = 100)
   )
 
@@ -270,7 +270,7 @@ fd2 <-
   ) %>% layout(
     title = "Flood dur. (# of acres)",
     xaxis = list(title = "Flooding duration"),
-    yaxis = list(title = "# of acres"),
+    yaxis = list(title = "acres (hundreds of acres)"),
     margin = list(t = 100)
   )
 
@@ -357,7 +357,7 @@ pf2 <-
   ) %>% layout(
     title = "Pond freq. (# of acres)",
     xaxis = list(title = "Ponding frequency"),
-    yaxis = list(title = "# of acres"),
+    yaxis = list(title = "acres (hundreds of acres)"),
     margin = list(t = 100)
   )
 
@@ -444,7 +444,7 @@ if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NAS
   ) %>% layout(
     title = "Pond dur. (# of acres)",
     xaxis = list(title = "Ponding duration"),
-    yaxis = list(title = "# of acres"),
+    yaxis = list(title = "acres (hundreds of acres)"),
     margin = list(t = 100)
   )
 
@@ -525,9 +525,9 @@ el_h1 <- ggplot(elev.df %>% filter(elev == "elev_h_ft"), aes(x = value)) + geom_
   ggtitle("Elevation (high)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -537,7 +537,7 @@ el_h1 <- ggplotly(el_h1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 elev.df.acres <- elev.df
@@ -567,7 +567,7 @@ elev_h_acres_prepped$acres <- ifelse(is.na(elev_h_acres_prepped$acres), 0, elev_
 elev_h_acres_prepped$range <- elev_h_acres_prepped$range + 0.1
 
 
-expand_elev_h <- elev_h_acres_prepped[rep(1:nrow(elev_h_acres_prepped), times = elev_h_acres_prepped$acres), c("range", "elev", "coiids"), drop = FALSE]
+expand_elev_h <- elev_h_acres_prepped[rep(1:nrow(elev_h_acres_prepped), times = elev_h_acres_prepped$acres/100), c("range", "elev", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -578,11 +578,11 @@ el_h2 <- ggplot(expand_elev_h, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Elevation (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Elevation (ft.)") +
+  ylab("acres (hundreds of acres)") + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -658,9 +658,9 @@ el_l1 <- ggplot(elev.df %>% filter(elev == "elev_l_ft"), aes(x = value)) + geom_
   ggtitle("Elevation (low)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -670,7 +670,7 @@ el_l1 <- ggplotly(el_l1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 elev.df.acres <- elev.df
@@ -700,7 +700,7 @@ elev_l_acres_prepped$acres <- ifelse(is.na(elev_l_acres_prepped$acres), 0, elev_
 elev_l_acres_prepped$range <- elev_l_acres_prepped$range + 0.1
 
 
-expand_elev_l <- elev_l_acres_prepped[rep(1:nrow(elev_l_acres_prepped), times = elev_l_acres_prepped$acres), c("range", "elev", "coiids"), drop = FALSE]
+expand_elev_l <- elev_l_acres_prepped[rep(1:nrow(elev_l_acres_prepped), times = elev_l_acres_prepped$acres/100), c("range", "elev", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -711,11 +711,11 @@ el_l2 <- ggplot(expand_elev_l, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Elevation (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Elevation (ft.)") +
+  ylab("acres (hundreds of acres)") + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -797,9 +797,9 @@ el_r1 <- ggplot(elev.df %>% filter(elev == "elev_r_ft"), aes(x = value)) + geom_
   ggtitle("Elevation (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -809,7 +809,7 @@ el_r1 <- ggplotly(el_r1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 elev.df.acres <- elev.df
@@ -839,7 +839,7 @@ elev_r_acres_prepped$acres <- ifelse(is.na(elev_r_acres_prepped$acres), 0, elev_
 elev_r_acres_prepped$range <- elev_r_acres_prepped$range + 0.1
 
 
-expand_elev_r <- elev_r_acres_prepped[rep(1:nrow(elev_r_acres_prepped), times = elev_r_acres_prepped$acres), c("range", "elev", "coiids"), drop = FALSE]
+expand_elev_r <- elev_r_acres_prepped[rep(1:nrow(elev_r_acres_prepped), times = elev_r_acres_prepped$acres/100), c("range", "elev", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -850,11 +850,11 @@ el_r2 <- ggplot(expand_elev_r, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Elevation (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Elevation (ft.)") +
+  ylab("acres (hundreds of acres)") + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$elev_h_ft), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -937,9 +937,9 @@ slope_h1 <- ggplot(slope.df %>% filter(slope == "slope_h"), aes(x = value)) + ge
   ggtitle("Slope (high)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("Slope (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -949,7 +949,7 @@ slope_h1 <- ggplotly(slope_h1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 slope.df.acres <- slope.df
@@ -979,7 +979,7 @@ slope_h_acres_prepped$acres <- ifelse(is.na(slope_h_acres_prepped$acres), 0, slo
 slope_h_acres_prepped$range <- slope_h_acres_prepped$range + 0.1
 
 
-expand_slope_h <- slope_h_acres_prepped[rep(1:nrow(slope_h_acres_prepped), times = slope_h_acres_prepped$acres), c("range", "slope", "coiids"), drop = FALSE]
+expand_slope_h <- slope_h_acres_prepped[rep(1:nrow(slope_h_acres_prepped), times = slope_h_acres_prepped$acres/100), c("range", "slope", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -990,11 +990,11 @@ slope_h2 <- ggplot(expand_slope_h, aes(x = range)) + geom_histogram(aes(text = p
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Slope (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Slope (%)") +
+  ylab("acres (hundreds of acres)") + xlab("Slope (%)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -1077,9 +1077,9 @@ slope_l1 <- ggplot(slope.df %>% filter(slope == "slope_l"), aes(x = value)) + ge
   ggtitle("Slope (low)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("Slope (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -1089,7 +1089,7 @@ slope_l1 <- ggplotly(slope_l1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 slope.df.acres <- slope.df
@@ -1119,7 +1119,7 @@ slope_l_acres_prepped$acres <- ifelse(is.na(slope_l_acres_prepped$acres), 0, slo
 slope_l_acres_prepped$range <- slope_l_acres_prepped$range + 0.1
 
 
-expand_slope_l <- slope_l_acres_prepped[rep(1:nrow(slope_l_acres_prepped), times = slope_l_acres_prepped$acres), c("range", "slope", "coiids"), drop = FALSE]
+expand_slope_l <- slope_l_acres_prepped[rep(1:nrow(slope_l_acres_prepped), times = slope_l_acres_prepped$acres/100), c("range", "slope", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1130,11 +1130,11 @@ slope_l2 <- ggplot(expand_slope_l, aes(x = range)) + geom_histogram(aes(text = p
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Slope (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Slope (%)") +
+  ylab("acres (hundreds of acres)") + xlab("Slope (%)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -1217,9 +1217,9 @@ slope_r1 <- ggplot(slope.df %>% filter(slope == "slope_r"), aes(x = value)) + ge
   ggtitle("Slope (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("Slope (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -1229,7 +1229,7 @@ slope_r1 <- ggplotly(slope_r1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 slope.df.acres <- slope.df
@@ -1259,7 +1259,7 @@ slope_r_acres_prepped$acres <- ifelse(is.na(slope_r_acres_prepped$acres), 0, slo
 slope_r_acres_prepped$range <- slope_r_acres_prepped$range + 0.1
 
 
-expand_slope_r <- slope_r_acres_prepped[rep(1:nrow(slope_r_acres_prepped), times = slope_r_acres_prepped$acres), c("range", "slope", "coiids"), drop = FALSE]
+expand_slope_r <- slope_r_acres_prepped[rep(1:nrow(slope_r_acres_prepped), times = slope_r_acres_prepped$acres/100), c("range", "slope", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1270,11 +1270,11 @@ slope_r2 <- ggplot(expand_slope_r, aes(x = range)) + geom_histogram(aes(text = p
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Slope (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Slope (%)") +
+  ylab("acres (hundreds of acres)") + xlab("Slope (%)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling)),
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$slope_h), round_by, f = ceiling), round_by)))
+  round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -1412,7 +1412,7 @@ water_table_h_acres_prepped$acres <- ifelse(is.na(water_table_h_acres_prepped$ac
 water_table_h_acres_prepped$range <- water_table_h_acres_prepped$range + 0.1
 
 
-expand_water_table_h <- water_table_h_acres_prepped[rep(1:nrow(water_table_h_acres_prepped), times = water_table_h_acres_prepped$acres), c("range", "water_table", "coiids"), drop = FALSE]
+expand_water_table_h <- water_table_h_acres_prepped[rep(1:nrow(water_table_h_acres_prepped), times = water_table_h_acres_prepped$acres/100), c("range", "water_table", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1423,7 +1423,7 @@ water_table_h2 <- ggplot(expand_water_table_h, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Water table (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Water table (inches)") +
+  ylab("acres (hundreds of acres)") + xlab("Water table (inches)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
@@ -1577,7 +1577,7 @@ water_table_l_acres_prepped$acres <- ifelse(is.na(water_table_l_acres_prepped$ac
 water_table_l_acres_prepped$range <- water_table_l_acres_prepped$range + 0.1
 
 
-expand_water_table <- water_table_l_acres_prepped[rep(1:nrow(water_table_l_acres_prepped), times = water_table_l_acres_prepped$acres), c("range", "water_table", "coiids"), drop = FALSE]
+expand_water_table <- water_table_l_acres_prepped[rep(1:nrow(water_table_l_acres_prepped), times = water_table_l_acres_prepped$acres/100), c("range", "water_table", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1588,7 +1588,7 @@ water_table_l2 <- ggplot(expand_water_table, aes(x = range)) + geom_histogram(ae
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Water table (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Water table (inches)") +
+  ylab("acres (hundreds of acres)") + xlab("Water table (inches)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
@@ -1716,8 +1716,8 @@ aspect_r1 <- ggplotly(aspect_r1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$aspect_rep), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$aspect_rep), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 aspect.df.acres <- aspect.df
@@ -1747,18 +1747,18 @@ aspect_r_acres_prepped$acres <- ifelse(is.na(aspect_r_acres_prepped$acres), 0, a
 aspect_r_acres_prepped$range <- aspect_r_acres_prepped$range + 0.1
 
 
-expand_aspect_r <- aspect_r_acres_prepped[rep(1:nrow(aspect_r_acres_prepped), times = aspect_r_acres_prepped$acres), c("range", "aspect", "coiids"), drop = FALSE]
+expand_aspect_r <- aspect_r_acres_prepped[rep(1:nrow(aspect_r_acres_prepped), times = aspect_r_acres_prepped$acres/100), c("range", "aspect", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 aspect_r2 <- ggplot(expand_aspect_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$aspect_rep), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Aspect") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Aspect (degrees)") +
+  ylab("acres (hundreds of acres)") + xlab("Aspect (degrees)") +
   scale_x_continuous(limits = c(0, 360),
   breaks = seq(0,360, 30))
 
@@ -1884,7 +1884,7 @@ drain2 <-
   ) %>% layout(
     title = "Drainage class (# of acres)",
     xaxis = list(title = "Flooding frequency"),
-    yaxis = list(title = "# of acres"),
+    yaxis = list(title = "acres (hundreds of acres)"),
     margin = list(t = 100)
   )
 
@@ -2017,7 +2017,7 @@ perm2 <-
   ) %>% layout(
     title = "Permeability class (# of acres)",
     xaxis = list(title = "Permeability class"),
-    yaxis = list(title = "# of acres"),
+    yaxis = list(title = "acres (hundreds of acres)"),
     margin = list(t = 100)
   )
 
@@ -2162,7 +2162,7 @@ restriction_h_acres_prepped$acres <- ifelse(is.na(restriction_h_acres_prepped$ac
 restriction_h_acres_prepped$range <- restriction_h_acres_prepped$range + 0.1
 
 
-expand_restriction_h <- restriction_h_acres_prepped[rep(1:nrow(restriction_h_acres_prepped), times = restriction_h_acres_prepped$acres), c("range", "restriction", "coiids"), drop = FALSE]
+expand_restriction_h <- restriction_h_acres_prepped[rep(1:nrow(restriction_h_acres_prepped), times = restriction_h_acres_prepped$acres/100), c("range", "restriction", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2173,7 +2173,7 @@ restriction_h2 <- ggplot(expand_restriction_h, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Restriction depth (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Restriction depth (in.)") +
+  ylab("acres (hundreds of acres)") + xlab("Restriction depth (in.)") +
   scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -2330,7 +2330,7 @@ restriction_l_acres_prepped$acres <- ifelse(is.na(restriction_l_acres_prepped$ac
 restriction_l_acres_prepped$range <- restriction_l_acres_prepped$range + 0.1
 
 
-expand_restriction_l <- restriction_l_acres_prepped[rep(1:nrow(restriction_l_acres_prepped), times = restriction_l_acres_prepped$acres), c("range", "restriction", "coiids"), drop = FALSE]
+expand_restriction_l <- restriction_l_acres_prepped[rep(1:nrow(restriction_l_acres_prepped), times = restriction_l_acres_prepped$acres/100), c("range", "restriction", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2341,7 +2341,7 @@ restriction_l2 <- ggplot(expand_restriction_l, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Restriction (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Restriction depth (in.)") +
+  ylab("acres (hundreds of acres)") + xlab("Restriction depth (in.)") +
   scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -2489,7 +2489,7 @@ restriction_r_acres_prepped$acres <- ifelse(is.na(restriction_r_acres_prepped$ac
 restriction_r_acres_prepped$range <- restriction_r_acres_prepped$range + 0.1
 
 
-expand_restriction_r <- restriction_r_acres_prepped[rep(1:nrow(restriction_r_acres_prepped), times = restriction_r_acres_prepped$acres), c("range", "restriction", "coiids"), drop = FALSE]
+expand_restriction_r <- restriction_r_acres_prepped[rep(1:nrow(restriction_r_acres_prepped), times = restriction_r_acres_prepped$acres/100), c("range", "restriction", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2500,7 +2500,7 @@ restriction_r2 <- ggplot(expand_restriction_r, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Restriction depth (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Restriction depth (in.)") +
+  ylab("acres (hundreds of acres)") + xlab("Restriction depth (in.)") +
   scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -2598,7 +2598,7 @@ surf_frag.df <-
 
 surf_frag1 <- ggplot(surf_frag.df %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
@@ -2614,8 +2614,8 @@ surf_frag1 <- ggplotly(surf_frag1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 surf_frag.df.acres <- surf_frag.df
@@ -2645,18 +2645,18 @@ surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres)
 surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
 
 
-expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres), c("range", "surf_frag", "coiids"), drop = FALSE]
+expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres/100), c("range", "surf_frag", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 surf_frag2 <- ggplot(expand_surf_frag, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Surface frags 2mm - 3inches") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Surface frags (%)") +
+  ylab("acres (hundreds of acres)") + xlab("Surface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
@@ -2737,7 +2737,7 @@ surf_frag.df <-
 
 surf_frag1 <- ggplot(surf_frag.df %>% filter(surf_frag == "surfhzn_frags_r_gt_3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
@@ -2753,8 +2753,8 @@ surf_frag1 <- ggplotly(surf_frag1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 surf_frag.df.acres <- surf_frag.df
@@ -2784,18 +2784,18 @@ surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres)
 surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
 
 
-expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres), c("range", "surf_frag", "coiids"), drop = FALSE]
+expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres/100), c("range", "surf_frag", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 surf_frag2 <- ggplot(expand_surf_frag, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Surface frags 3 inches +") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Surface frags (%)") +
+  ylab("acres (hundreds of acres)") + xlab("Surface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
@@ -2862,16 +2862,16 @@ awc_h.df <-
 
 awc_h1 <- ggplot(awc_h.df %>% filter(awc == "awc_h_0_40_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("AWC") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -2880,8 +2880,8 @@ awc_h1 <- ggplotly(awc_h1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 awc_h.df.acres <- awc_h.df
@@ -2911,22 +2911,22 @@ awc_h_acres_prepped$acres <- ifelse(is.na(awc_h_acres_prepped$acres), 0, awc_h_a
 awc_h_acres_prepped$range <- awc_h_acres_prepped$range + 0.1
 
 
-expand_awc_h <- awc_h_acres_prepped[rep(1:nrow(awc_h_acres_prepped), times = awc_h_acres_prepped$acres), c("range", "awc", "coiids"), drop = FALSE]
+expand_awc_h <- awc_h_acres_prepped[rep(1:nrow(awc_h_acres_prepped), times = awc_h_acres_prepped$acres/100), c("range", "awc", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 awc_h2 <- ggplot(expand_awc_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("AWC") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+  ylab("acres (hundreds of acres)") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -3008,10 +3008,10 @@ awc_l1 <- ggplot(awc_l.df %>% filter(awc == "awc_l_0_40_in"), aes(x = value)) + 
   #theme_minimal() + 
   ggtitle("AWC 0-40inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("AWC") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -3020,8 +3020,8 @@ awc_l1 <- ggplotly(awc_l1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 awc_l.df.acres <- awc_l.df
@@ -3051,22 +3051,22 @@ awc_l_acres_prepped$acres <- ifelse(is.na(awc_l_acres_prepped$acres), 0, awc_l_a
 awc_l_acres_prepped$range <- awc_l_acres_prepped$range + 0.1
 
 
-expand_awc_l <- awc_l_acres_prepped[rep(1:nrow(awc_l_acres_prepped), times = awc_l_acres_prepped$acres), c("range", "awc", "coiids"), drop = FALSE]
+expand_awc_l <- awc_l_acres_prepped[rep(1:nrow(awc_l_acres_prepped), times = awc_l_acres_prepped$acres/100), c("range", "awc", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 awc_l2 <- ggplot(expand_awc_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("AWC") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+  ylab("acres (hundreds of acres)") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -3142,16 +3142,16 @@ awc_r.df <-
 
 awc_r1 <- ggplot(awc_r.df %>% filter(awc == "awc_r_0_40_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40inches (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("AWC") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -3160,8 +3160,8 @@ awc_r1 <- ggplotly(awc_r1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 awc_r.df.acres <- awc_r.df
@@ -3191,22 +3191,22 @@ awc_r_acres_prepped$acres <- ifelse(is.na(awc_r_acres_prepped$acres), 0, awc_r_a
 awc_r_acres_prepped$range <- awc_r_acres_prepped$range + 0.1
 
 
-expand_awc_r <- awc_r_acres_prepped[rep(1:nrow(awc_r_acres_prepped), times = awc_r_acres_prepped$acres), c("range", "awc", "coiids"), drop = FALSE]
+expand_awc_r <- awc_r_acres_prepped[rep(1:nrow(awc_r_acres_prepped), times = awc_r_acres_prepped$acres/100), c("range", "awc", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 awc_r2 <- ggplot(expand_awc_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$awc_r_0_40_in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$awc_r_0_40_in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40 inches (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("AWC") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$awc_h_0_40_in), round_by, f = ceiling), round_by)))
+  ylab("acres (hundreds of acres)") + xlab("AWC") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -3281,16 +3281,16 @@ ph_h.df <-
 
 ph_h1 <- ggplot(ph_h.df %>% filter(ph == "pH_h_0_10in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("pH 0-10 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("pH") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -3299,8 +3299,8 @@ ph_h1 <- ggplotly(ph_h1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 ph_h.df.acres <- ph_h.df
@@ -3330,22 +3330,22 @@ ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acre
 ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
 
 
-expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 ph_h2 <- ggplot(expand_ph_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("pH 0-10 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("pH") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+  ylab("acres (hundreds of acres)") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -3421,16 +3421,16 @@ ph_l.df <-
 
 ph_l1 <- ggplot(ph_h.df %>% filter(ph == "pH_l_0_10in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("pH") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert histogram to plotly
 
@@ -3439,8 +3439,8 @@ ph_l1 <- ggplotly(ph_l1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 ph_l.df.acres <- ph_l.df
@@ -3470,22 +3470,22 @@ ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acre
 ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
 
 
-expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
 ph_l2 <- ggplot(expand_ph_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("pH") +
-  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling)),
-  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$pH_h_0_10in), round_by, f = ceiling), round_by)))
+  ylab("acres (hundreds of acres)") + xlab("pH") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), round_by)))
 
 # Convert to plotly
 
@@ -3623,7 +3623,7 @@ ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acre
 ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
 
 
-expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3634,7 +3634,7 @@ ph_h2 <- ggplot(expand_ph_h, aes(x = range)) + geom_histogram(aes(text = paste("
   fill = "grey") +
   #theme_minimal() +
   ggtitle("pH 10-40 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("pH") +
+  ylab("acres (hundreds of acres)") + xlab("pH") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
@@ -3760,7 +3760,7 @@ ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acre
 ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
 
 
-expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres), c("range", "ph", "coiids"), drop = FALSE]
+expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3771,7 +3771,7 @@ ph_l2 <- ggplot(expand_ph_l, aes(x = range)) + geom_histogram(aes(text = paste("
   fill = "grey") +
   #theme_minimal() +
   ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("pH") +
+  ylab("acres (hundreds of acres)") + xlab("pH") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
@@ -3885,7 +3885,7 @@ subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 subsurf_frags.df.acres <- subsurf_frags_small.df
@@ -3915,7 +3915,7 @@ subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_preppe
 subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
 
 
-expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres), c("range", "frag_small", "coiids"), drop = FALSE]
+expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres/100), c("range", "frag_small", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3926,7 +3926,7 @@ subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Subsurface frags (2mm - 3 inches)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Subsurface frags (%)") +
+  ylab("acres (hundreds of acres)") + xlab("Subsurface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
@@ -4020,7 +4020,7 @@ subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
 
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in), round_by, f = ceiling), bin_width)
+  round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 names(my_seq) <- my_seq
 
 subsurf_frags.df.acres <- subsurf_frags_small.df
@@ -4050,7 +4050,7 @@ subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_preppe
 subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
 
 
-expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres), c("range", "frag_small", "coiids"), drop = FALSE]
+expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres/100), c("range", "frag_small", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -4061,7 +4061,7 @@ subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Subsurface frags (3 inches +)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("# of acres") + xlab("Subsurface frags (%)") +
+  ylab("acres (hundreds of acres)") + xlab("Subsurface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
@@ -4141,4 +4141,5 @@ I currently have this functionality disabled because it requires the proper GIS 
 ```{r}
 # ggplot() + theme_minimal() +  geom_sf(data = ca) + geom_sf(data = mlra_boundaries_reduced) + geom_sf(data = mapunit_boundaries_of_interest, col = "hotpink", alpha = 0, size = 2) + ggtitle(paste0("Distribution of ecological site - ", ecosites_of_interest))
 ```
+
 
