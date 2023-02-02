@@ -54,7 +54,7 @@ EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == "F018XA201CA")
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
 ```
 
 ---
