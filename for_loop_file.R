@@ -25,19 +25,6 @@ ecosites_of_interest <- c( 'F018XC201CA', 'F018XI201CA', 'F018XI200CA', 'R018XI1
 
 
 for (ecosites_of_interest in ecosites_of_interest) {
-  rmarkdown::render(input = "C:/Users/Nathan.Roe/Documents/SEKI/edit_reports/NASIS_data_to_EDIT_multiple.Rmd",
-                    output_file = paste0(ecosites_of_interest,".html"),
-                    params = list(ecosites_of_interest = ecosites_of_interest))
-}
-
-
-# read within the looping which would require the shapefiles to be read as many times as you have sites.
-
-# mapunit_boundaries <- sf::read_sf("C:/Users/Nathan.Roe/Documents/PES/gSSURGO_CA_2022.gdb", "mupolygon")
-# mlra_boundaries <- read_sf("C:/Users/Nathan.Roe/Documents/PES/MLRA_52_2022/MLRA_52_2022/MLRA_52.shp")
-
-
-for (ecosites_of_interest in ecosites_of_interest) {
   rmarkdown::render(input = "C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv",
                     output_file = paste0(ecosites_of_interest,".html"),
                     params = list(ecosites_of_interest = ecosites_of_interest))

@@ -606,7 +606,7 @@ if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NA
   
 } else{
   
-  rep(EDIT_updates_filtered$elev_h_ft, EDIT_updates_filtered$comp_acres) %>% quantile(probs = c(0.95))
+  rep(EDIT_updates_filtered$elev_h_ft, EDIT_updates_filtered$comp_acres) %>% quantile(probs = c(0.95), na.rm = TRUE)
 
 }
 
@@ -743,7 +743,7 @@ if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NA
 
   elev_l_stats <- elev.df %>% dplyr::filter(elev == "elev_l_ft")
   elev_l_stats_rep <- rep(elev_l_stats$value, elev_l_stats$acres) 
-  elev_l_stats_rep %>% quantile(probs = c(0.05))
+  elev_l_stats_rep %>% quantile(probs = c(0.05), na.rm = TRUE)
 
 }
 
@@ -1021,7 +1021,7 @@ if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASI
 
   slope_h_stats <- slope.df %>% dplyr::filter(slope == "slope_h")
   slope_h_stats_rep <- rep(slope_h_stats$value, slope_h_stats$acres) 
-  slope_h_stats_rep %>% quantile(probs = c(0.95))
+  slope_h_stats_rep %>% quantile(probs = c(0.95), na.rm = TRUE)
 
 }
 
@@ -1161,7 +1161,7 @@ if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASI
 
   slope_l_stats <- slope.df %>% dplyr::filter(slope == "slope_l")
   slope_l_stats_rep <- rep(slope_l_stats$value, slope_l_stats$acres) 
-  slope_l_stats_rep %>% quantile(probs = c(0.05))
+  slope_l_stats_rep %>% quantile(probs = c(0.05), na.rm = TRUE)
 
 }
 
@@ -1301,7 +1301,7 @@ if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASI
 
   slope_r_stats <- slope.df %>% dplyr::filter(slope == "slope_r")
   slope_r_stats_rep <- rep(slope_r_stats$value, slope_r_stats$acres) 
-  slope_r_stats_rep %>% quantile(probs = c(0.05, 0.95))
+  slope_r_stats_rep %>% quantile(probs = c(0.05, 0.95), na.rm = TRUE)
 
 }
 
@@ -2689,7 +2689,7 @@ if (all(is.na(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in))) {print("No data p
   
   surf_frag_h_stats <- surf_frag.df %>% dplyr::filter(surf_frag == "surfhzn_frags_r_2mm.3in")
   surf_frag_h_stats_rep <- rep(surf_frag_h_stats$value, surf_frag_h_stats$acres) 
-  surf_frag_h_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
+  surf_frag_h_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95), na.rm = TRUE)
 
 }
 
@@ -2828,7 +2828,7 @@ if (all(is.na(EDIT_updates_filtered$surfhzn_frags_r_gt_3in))) {print("No data po
   
   surf_frag_h_stats <- surf_frag.df %>% dplyr::filter(surf_frag == "surfhzn_frags_r_gt_3in")
   surf_frag_h_stats_rep <- rep(surf_frag_h_stats$value, surf_frag_h_stats$acres) 
-  surf_frag_h_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
+  surf_frag_h_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95), na.rm = TRUE)
 
 }
 
@@ -2953,7 +2953,7 @@ if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated i
 
   awc_h_stats <- awc_h.df %>% dplyr::filter(awc == "awc_h_0_40_in")
   awc_h_stats_rep <- rep(awc_h_stats$value, awc_h_stats$acres) 
-  awc_h_stats_rep %>% quantile(probs = c(0.95))
+  awc_h_stats_rep %>% quantile(probs = c(0.95), na.rm = TRUE)
 
 }
 
@@ -3093,7 +3093,7 @@ if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated i
 
   awc_l_stats <- awc_l.df %>% dplyr::filter(awc == "awc_l_0_40_in")
   awc_l_stats_rep <- rep(awc_l_stats$value, awc_l_stats$acres) 
-  awc_l_stats_rep %>% quantile(probs = c(0.05))
+  awc_l_stats_rep %>% quantile(probs = c(0.05), na.rm = TRUE)
 
 }
 
@@ -3233,7 +3233,7 @@ if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated i
 
   awc_r_stats <- awc_r.df %>% dplyr::filter(awc == "awc_r_0_40_in")
   awc_r_stats_rep <- rep(awc_r_stats$value, awc_r_stats$acres) 
-  awc_r_stats_rep %>% quantile(probs = c(0.05, 0.95))
+  awc_r_stats_rep %>% quantile(probs = c(0.05, 0.95), na.rm = TRUE)
 
 }
 
@@ -3372,7 +3372,7 @@ if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in 
 
   ph_h_stats <- ph_h.df %>% dplyr::filter(ph == "pH_h_0_10in")
   ph_h_stats_rep <- rep(ph_h_stats$value, ph_h_stats$acres) 
-  ph_h_stats_rep %>% quantile(probs = c(0.95))
+  ph_h_stats_rep %>% quantile(probs = c(0.95), na.rm = TRUE)
 
 }
 
@@ -3512,7 +3512,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in 
 
   ph_l_stats <- ph_l.df %>% dplyr::filter(ph == "pH_l_0_10in")
   ph_l_stats_rep <- rep(ph_l_stats$value, ph_l_stats$acres) 
-  ph_l_stats_rep %>% quantile(probs = c(0.05))
+  ph_l_stats_rep %>% quantile(probs = c(0.05), na.rm = TRUE)
 
 }
 
@@ -3542,7 +3542,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in 
   
 } else{
   
-  quantile(c(ph_l_stats_rep, ph_h_stats_rep), probs = c(0.25, 0.75))
+  quantile(c(ph_l_stats_rep, ph_h_stats_rep), probs = c(0.25, 0.75), na.rm = TRUE)
   
 }
 ```
@@ -3665,7 +3665,7 @@ if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in
 
   ph_h_stats <- ph_h.df %>% dplyr::filter(ph == "pH_h_10_40in" & ! is.na(value))
   ph_h_stats_rep <- rep(ph_h_stats$value, ph_h_stats$acres)
-  ph_h_stats_rep %>% quantile(probs = c(0.95))
+  ph_h_stats_rep %>% quantile(probs = c(0.95), na.rm = TRUE)
 
 }
 
@@ -3802,7 +3802,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in
 
   ph_l_stats <- ph_l.df %>% dplyr::filter(ph == "pH_l_10_40in" & ! is.na(value))
   ph_l_stats_rep <- rep(ph_l_stats$value, ph_l_stats$acres)
-  ph_l_stats_rep %>% quantile(probs = c(0.05))
+  ph_l_stats_rep %>% quantile(probs = c(0.05), na.rm = TRUE)
 
 }
 
@@ -3831,7 +3831,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in
 
 } else{
 
-  quantile(c(ph_l_stats_rep, ph_h_stats_rep), probs = c(0.25, 0.75))
+  quantile(c(ph_l_stats_rep, ph_h_stats_rep), probs = c(0.25, 0.75), na.rm = TRUE)
 
 
 }
@@ -3958,7 +3958,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data p
 
   subsurf_stats <- subsurf_frags_small.df %>% dplyr::filter(frag_small == "subsurf_frags_r_2mm.3in" & ! is.na(value))
   subsurf_stats_rep <- rep(subsurf_stats$value, subsurf_stats$acres)
-  subsurf_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
+  subsurf_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95), na.rm = TRUE)
 
 }
 
@@ -4093,7 +4093,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data po
 
   subsurf_stats <- subsurf_frags_small.df %>% dplyr::filter(frag_small == "subsurf_frags_r_gt_3in" & ! is.na(value))
   subsurf_stats_rep <- rep(subsurf_stats$value, subsurf_stats$acres)
-  subsurf_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95))
+  subsurf_stats_rep %>% quantile(probs = c(0.05, 0.25, 0.75, 0.95), na.rm = TRUE)
 
 }
 
