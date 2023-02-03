@@ -54,7 +54,7 @@ EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == "F018XC201CA")
 ```
 
 ---
@@ -1447,7 +1447,11 @@ manipulateWidget::combineWidgets(water_table_h1,
 
 NAs in water table likely mean that no water table was observed. NA's are not represented in the figures above. Please observe the table below to understand the relative acreage classified as NA. 
 ```{r}
-water_table_na_h
+if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  water_table_na_h
+}
 ```
 
 
@@ -1612,7 +1616,12 @@ manipulateWidget::combineWidgets(water_table_l1,
 
 NA's in water table likely mean that no water table was observed. NA's are not represented in the figures above. Please observe the table below to understand the relative acreage classified as NA. 
 ```{r}
-water_table_na_l
+if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  water_table_na_l
+}
+
 ```
 
 **Water table low acreage weighted 5th percentile** -  use as 'low (actual)'. This value may be NA.  
