@@ -25,9 +25,7 @@ ecosites_of_interest <- c( 'F018XC201CA', 'F018XI201CA', 'F018XI200CA', 'R018XI1
 
 
 for (ecosites_of_interest in ecosites_of_interest) {
-  rmarkdown::render(input = "C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv",
+  rmarkdown::render(input = "C:/Users/Nathan.Roe/Documents/SEKI/edit_reports/NASIS_data_to_EDIT_multiple.Rmd",
                     output_file = paste0(ecosites_of_interest,".html"),
                     params = list(ecosites_of_interest = ecosites_of_interest))
 }
-
-
