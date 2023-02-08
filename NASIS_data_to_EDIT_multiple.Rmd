@@ -44,7 +44,7 @@ knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 
 <!-- **Read in NASIS report** -->
 ```{r class.source = "fold-show", echo=FALSE}
-EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv")
+EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/SEKI/EDIT_ecosite_data-main/EDIT_ecosite_data-main/ecosite_report.csv")
 ```
 
 <!-- **Remove miscellaneous areas** -->
@@ -54,7 +54,7 @@ EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == "F018XC201CA")
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
 ```
 
 ---
@@ -182,7 +182,7 @@ ff2 <-
   ) %>% layout(
     title = "Flood freq. (# of acres)",
     xaxis = list(title = "Flooding frequency"),
-    yaxis = list(title = "acres (hundreds of acres)"),
+    yaxis = list(title = "acres"),
     margin = list(t = 100)
   )
 
@@ -270,7 +270,7 @@ fd2 <-
   ) %>% layout(
     title = "Flood dur. (# of acres)",
     xaxis = list(title = "Flooding duration"),
-    yaxis = list(title = "acres (hundreds of acres)"),
+    yaxis = list(title = "acres"),
     margin = list(t = 100)
   )
 
@@ -357,7 +357,7 @@ pf2 <-
   ) %>% layout(
     title = "Pond freq. (# of acres)",
     xaxis = list(title = "Ponding frequency"),
-    yaxis = list(title = "acres (hundreds of acres)"),
+    yaxis = list(title = "acres"),
     margin = list(t = 100)
   )
 
@@ -444,7 +444,7 @@ if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NAS
   ) %>% layout(
     title = "Pond dur. (# of acres)",
     xaxis = list(title = "Ponding duration"),
-    yaxis = list(title = "acres (hundreds of acres)"),
+    yaxis = list(title = "acres"),
     margin = list(t = 100)
   )
 
@@ -577,8 +577,12 @@ elev_h_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) %>% dplyr::r
 elev_h_acres_prepped$acres <- ifelse(is.na(elev_h_acres_prepped$acres), 0, elev_h_acres_prepped$acres)
 elev_h_acres_prepped$range <- elev_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(elev_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+               ifelse(min(elev_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_elev_h <- elev_h_acres_prepped[rep(1:nrow(elev_h_acres_prepped), times = elev_h_acres_prepped$acres/100), c("range", "elev", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_elev_h <- elev_h_acres_prepped[rep(1:nrow(elev_h_acres_prepped), times = elev_h_acres_prepped$acres/acreage_unit), c("range", "elev", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -589,7 +593,7 @@ el_h2 <- ggplot(expand_elev_h, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Elevation (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Elevation (ft.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
@@ -720,7 +724,12 @@ elev_l_acres_prepped$acres <- ifelse(is.na(elev_l_acres_prepped$acres), 0, elev_
 elev_l_acres_prepped$range <- elev_l_acres_prepped$range + 0.1
 
 
-expand_elev_l <- elev_l_acres_prepped[rep(1:nrow(elev_l_acres_prepped), times = elev_l_acres_prepped$acres/100), c("range", "elev", "coiids"), drop = FALSE]
+acreage_unit <- ifelse(min(elev_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(elev_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_elev_l <- elev_l_acres_prepped[rep(1:nrow(elev_l_acres_prepped), times = elev_l_acres_prepped$acres/acreage_unit), c("range", "elev", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -731,7 +740,7 @@ el_l2 <- ggplot(expand_elev_l, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Elevation (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Elevation (ft.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
@@ -867,8 +876,12 @@ elev_r_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) %>% dplyr::r
 elev_r_acres_prepped$acres <- ifelse(is.na(elev_r_acres_prepped$acres), 0, elev_r_acres_prepped$acres)
 elev_r_acres_prepped$range <- elev_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(elev_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(elev_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_elev_r <- elev_r_acres_prepped[rep(1:nrow(elev_r_acres_prepped), times = elev_r_acres_prepped$acres/100), c("range", "elev", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_elev_r <- elev_r_acres_prepped[rep(1:nrow(elev_r_acres_prepped), times = elev_r_acres_prepped$acres/acreage_unit), c("range", "elev", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -879,7 +892,7 @@ el_r2 <- ggplot(expand_elev_r, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Elevation (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Elevation (ft.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Elevation (ft.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
@@ -1016,8 +1029,12 @@ slope_h_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) %>% dplyr:
 slope_h_acres_prepped$acres <- ifelse(is.na(slope_h_acres_prepped$acres), 0, slope_h_acres_prepped$acres)
 slope_h_acres_prepped$range <- slope_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(slope_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(slope_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_slope_h <- slope_h_acres_prepped[rep(1:nrow(slope_h_acres_prepped), times = slope_h_acres_prepped$acres/100), c("range", "slope", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_slope_h <- slope_h_acres_prepped[rep(1:nrow(slope_h_acres_prepped), times = slope_h_acres_prepped$acres/acreage_unit), c("range", "slope", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1028,7 +1045,7 @@ slope_h2 <- ggplot(expand_slope_h, aes(x = range)) + geom_histogram(aes(text = p
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Slope (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Slope (%)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Slope (%)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
@@ -1165,8 +1182,12 @@ slope_l_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) %>% dplyr:
 slope_l_acres_prepped$acres <- ifelse(is.na(slope_l_acres_prepped$acres), 0, slope_l_acres_prepped$acres)
 slope_l_acres_prepped$range <- slope_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(slope_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(slope_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_slope_l <- slope_l_acres_prepped[rep(1:nrow(slope_l_acres_prepped), times = slope_l_acres_prepped$acres/100), c("range", "slope", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_slope_l <- slope_l_acres_prepped[rep(1:nrow(slope_l_acres_prepped), times = slope_l_acres_prepped$acres/acreage_unit), c("range", "slope", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1177,7 +1198,7 @@ slope_l2 <- ggplot(expand_slope_l, aes(x = range)) + geom_histogram(aes(text = p
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Slope (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Slope (%)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Slope (%)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
@@ -1314,8 +1335,12 @@ slope_r_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) %>% dplyr:
 slope_r_acres_prepped$acres <- ifelse(is.na(slope_r_acres_prepped$acres), 0, slope_r_acres_prepped$acres)
 slope_r_acres_prepped$range <- slope_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(slope_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(slope_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_slope_r <- slope_r_acres_prepped[rep(1:nrow(slope_r_acres_prepped), times = slope_r_acres_prepped$acres/100), c("range", "slope", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_slope_r <- slope_r_acres_prepped[rep(1:nrow(slope_r_acres_prepped), times = slope_r_acres_prepped$acres/acreage_unit), c("range", "slope", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1326,7 +1351,7 @@ slope_r2 <- ggplot(expand_slope_r, aes(x = range)) + geom_histogram(aes(text = p
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Slope (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Slope (%)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Slope (%)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
@@ -1476,8 +1501,12 @@ water_table_na_h <- rbind(water_table_h_acres_prepped %>% select(-coiids) %>% dp
 water_table_h_acres_prepped$acres <- ifelse(is.na(water_table_h_acres_prepped$acres), 0, water_table_h_acres_prepped$acres)
 water_table_h_acres_prepped$range <- water_table_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(water_table_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(water_table_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_water_table_h <- water_table_h_acres_prepped[rep(1:nrow(water_table_h_acres_prepped), times = water_table_h_acres_prepped$acres/100), c("range", "water_table", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_water_table_h <- water_table_h_acres_prepped[rep(1:nrow(water_table_h_acres_prepped), times = water_table_h_acres_prepped$acres/acreage_unit), c("range", "water_table", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1488,7 +1517,7 @@ water_table_h2 <- ggplot(expand_water_table_h, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Water table (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Water table (inches)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Water table (inches)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
@@ -1654,8 +1683,12 @@ water_table_na_l <- rbind(water_table_l_acres_prepped %>% select(-coiids) %>% dp
 water_table_l_acres_prepped$acres <- ifelse(is.na(water_table_l_acres_prepped$acres), 0, water_table_l_acres_prepped$acres)
 water_table_l_acres_prepped$range <- water_table_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(water_table_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(water_table_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_water_table <- water_table_l_acres_prepped[rep(1:nrow(water_table_l_acres_prepped), times = water_table_l_acres_prepped$acres/100), c("range", "water_table", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_water_table <- water_table_l_acres_prepped[rep(1:nrow(water_table_l_acres_prepped), times = water_table_l_acres_prepped$acres/acreage_unit), c("range", "water_table", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1666,7 +1699,7 @@ water_table_l2 <- ggplot(expand_water_table, aes(x = range)) + geom_histogram(ae
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Water table (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Water table (inches)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Water table (inches)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
@@ -1838,8 +1871,12 @@ aspect_r_acres_prepped <- data.frame(aspect = my_seq, row.names = NULL) %>% dply
 aspect_r_acres_prepped$acres <- ifelse(is.na(aspect_r_acres_prepped$acres), 0, aspect_r_acres_prepped$acres)
 aspect_r_acres_prepped$range <- aspect_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(aspect_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(aspect_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_aspect_r <- aspect_r_acres_prepped[rep(1:nrow(aspect_r_acres_prepped), times = aspect_r_acres_prepped$acres/100), c("range", "aspect", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_aspect_r <- aspect_r_acres_prepped[rep(1:nrow(aspect_r_acres_prepped), times = aspect_r_acres_prepped$acres/acreage_unit), c("range", "aspect", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1850,7 +1887,7 @@ aspect_r2 <- ggplot(expand_aspect_r, aes(x = range)) + geom_histogram(aes(text =
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Aspect") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Aspect (degrees)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Aspect (degrees)") +
   scale_x_continuous(limits = c(0, 360),
   breaks = seq(0,360, 30))
 
@@ -1962,8 +1999,12 @@ map_h_acres_prepped <- data.frame(map = my_seq, row.names = NULL) %>% dplyr::ren
 map_h_acres_prepped$acres <- ifelse(is.na(map_h_acres_prepped$acres), 0, map_h_acres_prepped$acres)
 map_h_acres_prepped$range <- map_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(map_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(map_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_map_h <- map_h_acres_prepped[rep(1:nrow(map_h_acres_prepped), times = map_h_acres_prepped$acres/100), c("range", "map", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_map_h <- map_h_acres_prepped[rep(1:nrow(map_h_acres_prepped), times = map_h_acres_prepped$acres/acreage_unit), c("range", "map", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -1974,7 +2015,7 @@ map_h2 <- ggplot(expand_map_h, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Mean Annual Precip. (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Mean annual precip. (in.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Mean annual precip. (in.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
@@ -2104,8 +2145,12 @@ map_l_acres_prepped <- data.frame(map = my_seq, row.names = NULL) %>% dplyr::ren
 map_l_acres_prepped$acres <- ifelse(is.na(map_l_acres_prepped$acres), 0, map_l_acres_prepped$acres)
 map_l_acres_prepped$range <- map_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(map_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(map_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_map_l <- map_l_acres_prepped[rep(1:nrow(map_l_acres_prepped), times = map_l_acres_prepped$acres/100), c("range", "map", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_map_l <- map_l_acres_prepped[rep(1:nrow(map_l_acres_prepped), times = map_l_acres_prepped$acres/acreage_unit), c("range", "map", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2116,7 +2161,7 @@ map_l2 <- ggplot(expand_map_l, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Mean Annual Precip. (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Mean Annual Precip. (in.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Mean Annual Precip. (in.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
@@ -2252,8 +2297,12 @@ map_r_acres_prepped <- data.frame(map = my_seq, row.names = NULL) %>% dplyr::ren
 map_r_acres_prepped$acres <- ifelse(is.na(map_r_acres_prepped$acres), 0, map_r_acres_prepped$acres)
 map_r_acres_prepped$range <- map_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(map_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(map_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_map_r <- map_r_acres_prepped[rep(1:nrow(map_r_acres_prepped), times = map_r_acres_prepped$acres/100), c("range", "map", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_map_r <- map_r_acres_prepped[rep(1:nrow(map_r_acres_prepped), times = map_r_acres_prepped$acres/acreage_unit), c("range", "map", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2264,7 +2313,7 @@ map_r2 <- ggplot(expand_map_r, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Mean Annual Precip. (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Mean Annual Precip. (in.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Mean Annual Precip. (in.)") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
@@ -2401,8 +2450,12 @@ ffd_h_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) %>% dplyr::ren
 ffd_h_acres_prepped$acres <- ifelse(is.na(ffd_h_acres_prepped$acres), 0, ffd_h_acres_prepped$acres)
 ffd_h_acres_prepped$range <- ffd_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(ffd_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ffd_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_ffd_h <- ffd_h_acres_prepped[rep(1:nrow(ffd_h_acres_prepped), times = ffd_h_acres_prepped$acres/100), c("range", "ffd", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_ffd_h <- ffd_h_acres_prepped[rep(1:nrow(ffd_h_acres_prepped), times = ffd_h_acres_prepped$acres/acreage_unit), c("range", "ffd", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2413,7 +2466,7 @@ ffd_h2 <- ggplot(expand_ffd_h, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Frost Free Days (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Frost Free Days") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Frost Free Days") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
@@ -2543,8 +2596,12 @@ ffd_l_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) %>% dplyr::ren
 ffd_l_acres_prepped$acres <- ifelse(is.na(ffd_l_acres_prepped$acres), 0, ffd_l_acres_prepped$acres)
 ffd_l_acres_prepped$range <- ffd_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(ffd_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ffd_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_ffd_l <- ffd_l_acres_prepped[rep(1:nrow(ffd_l_acres_prepped), times = ffd_l_acres_prepped$acres/100), c("range", "ffd", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_ffd_l <- ffd_l_acres_prepped[rep(1:nrow(ffd_l_acres_prepped), times = ffd_l_acres_prepped$acres/acreage_unit), c("range", "ffd", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2555,7 +2612,7 @@ ffd_l2 <- ggplot(expand_ffd_l, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Frost Free Days (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Frost Free Days") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Frost Free Days") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
@@ -2691,8 +2748,12 @@ ffd_r_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) %>% dplyr::ren
 ffd_r_acres_prepped$acres <- ifelse(is.na(ffd_r_acres_prepped$acres), 0, ffd_r_acres_prepped$acres)
 ffd_r_acres_prepped$range <- ffd_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(ffd_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ffd_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_ffd_r <- ffd_r_acres_prepped[rep(1:nrow(ffd_r_acres_prepped), times = ffd_r_acres_prepped$acres/100), c("range", "ffd", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_ffd_r <- ffd_r_acres_prepped[rep(1:nrow(ffd_r_acres_prepped), times = ffd_r_acres_prepped$acres/acreage_unit), c("range", "ffd", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -2703,7 +2764,7 @@ ffd_r2 <- ggplot(expand_ffd_r, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Frost Free Days (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Frost Free Days") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Frost Free Days") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
@@ -2855,7 +2916,7 @@ drain2 <-
   ) %>% layout(
     title = "Drainage class (# of acres)",
     xaxis = list(title = "Flooding frequency"),
-    yaxis = list(title = "acres (hundreds of acres)"),
+    yaxis = list(title = "acres"),
     margin = list(t = 100)
   )
 
@@ -2988,7 +3049,7 @@ perm2 <-
   ) %>% layout(
     title = "Permeability class (# of acres)",
     xaxis = list(title = "Permeability class"),
-    yaxis = list(title = "acres (hundreds of acres)"),
+    yaxis = list(title = "acres"),
     margin = list(t = 100)
   )
 
@@ -3144,8 +3205,12 @@ restriction_na_h <- rbind(restriction_h_acres_prepped %>% select(-coiids) %>% dp
 restriction_h_acres_prepped$acres <- ifelse(is.na(restriction_h_acres_prepped$acres), 0, restriction_h_acres_prepped$acres)
 restriction_h_acres_prepped$range <- restriction_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(restriction_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(restriction_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_restriction_h <- restriction_h_acres_prepped[rep(1:nrow(restriction_h_acres_prepped), times = restriction_h_acres_prepped$acres/100), c("range", "restriction", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_restriction_h <- restriction_h_acres_prepped[rep(1:nrow(restriction_h_acres_prepped), times = restriction_h_acres_prepped$acres/acreage_unit), c("range", "restriction", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3156,7 +3221,7 @@ restriction_h2 <- ggplot(expand_restriction_h, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Restriction depth (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Restriction depth (in.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Restriction depth (in.)") +
   scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -3321,8 +3386,12 @@ restriction_na_l <- rbind(restriction_l_acres_prepped %>% select(-coiids) %>% dp
 restriction_l_acres_prepped$acres <- ifelse(is.na(restriction_l_acres_prepped$acres), 0, restriction_l_acres_prepped$acres)
 restriction_l_acres_prepped$range <- restriction_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(restriction_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(restriction_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_restriction_l <- restriction_l_acres_prepped[rep(1:nrow(restriction_l_acres_prepped), times = restriction_l_acres_prepped$acres/100), c("range", "restriction", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_restriction_l <- restriction_l_acres_prepped[rep(1:nrow(restriction_l_acres_prepped), times = restriction_l_acres_prepped$acres/acreage_unit), c("range", "restriction", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3333,7 +3402,7 @@ restriction_l2 <- ggplot(expand_restriction_l, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Restriction (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Restriction depth (in.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Restriction depth (in.)") +
   scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -3489,8 +3558,12 @@ restriction_na_r <- rbind(restriction_r_acres_prepped %>% select(-coiids) %>% dp
 restriction_r_acres_prepped$acres <- ifelse(is.na(restriction_r_acres_prepped$acres), 0, restriction_r_acres_prepped$acres)
 restriction_r_acres_prepped$range <- restriction_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(restriction_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(restriction_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_restriction_r <- restriction_r_acres_prepped[rep(1:nrow(restriction_r_acres_prepped), times = restriction_r_acres_prepped$acres/100), c("range", "restriction", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_restriction_r <- restriction_r_acres_prepped[rep(1:nrow(restriction_r_acres_prepped), times = restriction_r_acres_prepped$acres/acreage_unit), c("range", "restriction", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3501,7 +3574,7 @@ restriction_r2 <- ggplot(expand_restriction_r, aes(x = range)) + geom_histogram(
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Restriction depth (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Restriction depth (in.)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Restriction depth (in.)") +
   scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -3654,8 +3727,12 @@ surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) %>
 surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
 surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres/100), c("range", "surf_frag", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres/acreage_unit), c("range", "surf_frag", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3666,7 +3743,7 @@ surf_frag2 <- ggplot(expand_surf_frag, aes(x = range)) + geom_histogram(aes(text
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Surface frags 2mm - 3inches") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Surface frags (%)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Surface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
@@ -3804,8 +3881,12 @@ surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) %>
 surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
 surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres/100), c("range", "surf_frag", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres/acreage_unit), c("range", "surf_frag", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3816,7 +3897,7 @@ surf_frag2 <- ggplot(expand_surf_frag, aes(x = range)) + geom_histogram(aes(text
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Surface frags 3 inches +") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Surface frags (%)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Surface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
@@ -3940,8 +4021,12 @@ awc_h_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) %>% dplyr::ren
 awc_h_acres_prepped$acres <- ifelse(is.na(awc_h_acres_prepped$acres), 0, awc_h_acres_prepped$acres)
 awc_h_acres_prepped$range <- awc_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(awc_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(awc_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_awc_h <- awc_h_acres_prepped[rep(1:nrow(awc_h_acres_prepped), times = awc_h_acres_prepped$acres/100), c("range", "awc", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_awc_h <- awc_h_acres_prepped[rep(1:nrow(awc_h_acres_prepped), times = awc_h_acres_prepped$acres/acreage_unit), c("range", "awc", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -3952,7 +4037,7 @@ awc_h2 <- ggplot(expand_awc_h, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("AWC") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("AWC") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
@@ -4089,8 +4174,12 @@ awc_l_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) %>% dplyr::ren
 awc_l_acres_prepped$acres <- ifelse(is.na(awc_l_acres_prepped$acres), 0, awc_l_acres_prepped$acres)
 awc_l_acres_prepped$range <- awc_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(awc_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(awc_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_awc_l <- awc_l_acres_prepped[rep(1:nrow(awc_l_acres_prepped), times = awc_l_acres_prepped$acres/100), c("range", "awc", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_awc_l <- awc_l_acres_prepped[rep(1:nrow(awc_l_acres_prepped), times = awc_l_acres_prepped$acres/acreage_unit), c("range", "awc", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -4101,7 +4190,7 @@ awc_l2 <- ggplot(expand_awc_l, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("AWC") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("AWC") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
@@ -4238,8 +4327,12 @@ awc_r_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) %>% dplyr::ren
 awc_r_acres_prepped$acres <- ifelse(is.na(awc_r_acres_prepped$acres), 0, awc_r_acres_prepped$acres)
 awc_r_acres_prepped$range <- awc_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(awc_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(awc_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_awc_r <- awc_r_acres_prepped[rep(1:nrow(awc_r_acres_prepped), times = awc_r_acres_prepped$acres/100), c("range", "awc", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_awc_r <- awc_r_acres_prepped[rep(1:nrow(awc_r_acres_prepped), times = awc_r_acres_prepped$acres/acreage_unit), c("range", "awc", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -4250,7 +4343,7 @@ awc_r2 <- ggplot(expand_awc_r, aes(x = range)) + geom_histogram(aes(text = paste
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("AWC 0-40 inches (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("AWC") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("AWC") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
@@ -4386,8 +4479,12 @@ ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::renam
 ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
 ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres/acreage_unit), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -4398,7 +4495,7 @@ ph_h2 <- ggplot(expand_ph_h, aes(x = range)) + geom_histogram(aes(text = paste("
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("pH 0-10 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("pH") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("pH") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
@@ -4535,8 +4632,12 @@ ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::renam
 ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
 ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres/acreage_unit), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -4547,7 +4648,7 @@ ph_l2 <- ggplot(expand_ph_l, aes(x = range)) + geom_histogram(aes(text = paste("
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("pH") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("pH") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
@@ -4699,8 +4800,12 @@ ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::renam
 ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
 ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), times = ph_h_acres_prepped$acres/acreage_unit), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -4711,7 +4816,7 @@ ph_h2 <- ggplot(expand_ph_h, aes(x = range)) + geom_histogram(aes(text = paste("
   fill = "grey") +
   #theme_minimal() +
   ggtitle("pH 10-40 inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("pH") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("pH") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
@@ -4845,8 +4950,12 @@ ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) %>% dplyr::renam
 ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
 ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres/100), c("range", "ph", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), times = ph_l_acres_prepped$acres/acreage_unit), c("range", "ph", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -4857,7 +4966,7 @@ ph_l2 <- ggplot(expand_ph_l, aes(x = range)) + geom_histogram(aes(text = paste("
   fill = "grey") +
   #theme_minimal() +
   ggtitle("pH 0-10 inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("pH") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("pH") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling)),
   n.breaks = length(seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
@@ -5009,8 +5118,12 @@ subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = 
 subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
 subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres/100), c("range", "frag_small", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres/acreage_unit), c("range", "frag_small", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -5021,7 +5134,7 @@ subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Subsurface frags (2mm - 3 inches)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Subsurface frags (%)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Subsurface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
@@ -5153,8 +5266,12 @@ subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = 
 subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
 subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
 
+acreage_unit <- ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
+                       ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
 
-expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres/100), c("range", "frag_small", "coiids"), drop = FALSE]
+names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
+
+expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres/acreage_unit), c("range", "frag_small", "coiids"), drop = FALSE]
 
 # Create acreage histogram
 
@@ -5165,7 +5282,7 @@ subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_
   fill = "grey") + 
   #theme_minimal() + 
   ggtitle("Subsurface frags (3 inches +)") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("acres (hundreds of acres)") + xlab("Subsurface frags (%)") +
+  ylab(paste0("acres (", names(acreage_unit), " of acres)")) + xlab("Subsurface frags (%)") +
   scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
 
