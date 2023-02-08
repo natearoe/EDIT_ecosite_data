@@ -544,7 +544,18 @@ elev.df.acres <- elev.df
 elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.1, elev.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
+
 
 }
 
@@ -677,7 +688,16 @@ elev.df.acres <- elev.df
 elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.1, elev.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -757,7 +777,7 @@ if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NA
 } else{
   
 
-  elev_h_stats <- elev.df %>% dplyr::filter(elev == "elev_h_ft")
+  elev_h_stats <- elev.df %>% dplyr::filter(elev == "elev_l_ft")
   elev_h_stats_rep <- rep(elev_h_stats$value, elev_h_stats$acres) 
   summary(elev_h_stats_rep)
 
@@ -816,7 +836,16 @@ elev.df.acres <- elev.df
 elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.1, elev.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -956,7 +985,16 @@ slope.df.acres <- slope.df
 slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value + 0.1, slope.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -1096,8 +1134,17 @@ slope.df.acres <- slope.df
 slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value + 0.1, slope.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
-
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
 }
 
 for (nm in names(my_list)) {
@@ -1236,8 +1283,17 @@ slope.df.acres <- slope.df
 slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value + 0.1, slope.df.acres$value)
 
 for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+      
+  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_r") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+    
   my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_r") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
-
+  
+}
+  
 }
 
 for (nm in names(my_list)) {
@@ -1379,7 +1435,16 @@ water_table.df.acres <- water_table.df
 water_table.df.acres$value <- ifelse(water_table.df.acres$value == 0, water_table.df.acres$value + 0.1, water_table.df.acres$value)
 
 for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+      
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_h_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+    
   my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -1547,8 +1612,17 @@ water_table.df.acres <- water_table.df
 water_table.df.acres$value <- ifelse(water_table.df.acres$value == 0, water_table.df.acres$value + 0.1, water_table.df.acres$value)
 
 for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+      
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_l_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+    
   my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
-
+  
+}
+  
 }
 
 for (nm in names(my_list)) {
@@ -1733,7 +1807,16 @@ aspect.df.acres <- aspect.df
 aspect.df.acres$value <- ifelse(aspect.df.acres$value == 0, aspect.df.acres$value + 0.1, aspect.df.acres$value)
 
 for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+      
+  my_list[[i]] <- aspect.df.acres %>% filter(aspect == "aspect_rep") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+    
   my_list[[i]] <- aspect.df.acres %>% filter(aspect == "aspect_rep") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -1791,7 +1874,886 @@ manipulateWidget::combineWidgets(aspect_r1,
 
 <center><h3>**Climate features tab:** </h3></center>
 
-This tab should have climate stations selected and data should be autopopulated. If the climate stations are not selected, notify Nate. 
+Populate climate variables in EDIT by selecting appropriate climate stations. If appropriate climate stations are not available, Mean Annual Precip. and Frost Free Days can be accessed from data mapunits.  
+
+#### **MAP high**
+
+```{r, warning=FALSE, message=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$map_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  # Define bin width and round by measures
+
+bin_width <- 5
+round_by <- 5
+
+# Prepare dataframe for component histogram
+
+map.df <-
+  EDIT_updates_filtered %>% select(coiid, map_h_in, map_l_in, map_r_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "map",
+    values_to = "value",
+    cols = c("map_h_in", "map_l_in", "map_r_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+map_h1 <- ggplot(map.df %>% filter(map == "map_h_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Mean Annual Precip. (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Mean Annual Precip (in.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+map_h1 <- ggplotly(map_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+map.df.acres <- map.df
+map.df.acres$value <- ifelse(map.df.acres$value == 0, map.df.acres$value + 0.1, map.df.acres$value)
+
+for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_h_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    
+  } else {
+    
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    
+  }
+
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(map) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+map_h_acres <- do.call(rbind, my_list_summarised)
+
+
+map_h_acres_prepped <- data.frame(map = my_seq, row.names = NULL) %>% dplyr::rename(range = map) %>%
+                        dplyr::left_join(map_h_acres)
+
+map_h_acres_prepped$acres <- ifelse(is.na(map_h_acres_prepped$acres), 0, map_h_acres_prepped$acres)
+map_h_acres_prepped$range <- map_h_acres_prepped$range + 0.1
+
+
+expand_map_h <- map_h_acres_prepped[rep(1:nrow(map_h_acres_prepped), times = map_h_acres_prepped$acres/100), c("range", "map", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+map_h2 <- ggplot(expand_map_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Mean Annual Precip. (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("acres (hundreds of acres)") + xlab("Mean annual precip. (in.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+map_h2 <- ggplotly(map_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(map_h1,
+                                 map_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**MAP high acreage weighted 95th percentile**  -  use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$map_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  rep(EDIT_updates_filtered$map_h_in, EDIT_updates_filtered$comp_acres) %>% quantile(probs = c(0.95), na.rm = TRUE)
+
+}
+
+```
+
+**MAP high acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$map_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(rep(EDIT_updates_filtered$map_h_in, EDIT_updates_filtered$comp_acres))
+
+}
+```
+
+ 
+#### **MAP low**
+```{r, warning=FALSE, message=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$map_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+# Define bin width and round by measures
+
+bin_width <- 5
+round_by <- 5
+
+# Prepare dataframe for component histogram
+
+map.df <-
+  EDIT_updates_filtered %>% select(coiid,  map_h_in, map_l_in, map_r_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "map",
+    values_to = "value",
+    cols = c("map_h_in", "map_l_in", "map_r_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+map_l1 <- ggplot(map.df %>% filter(map == "map_l_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Mean Annual Precip. (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Mean Annual Precip. (in.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+map_l1 <- ggplotly(map_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+map.df.acres <- map.df
+map.df.acres$value <- ifelse(map.df.acres$value == 0, map.df.acres$value + 0.1, map.df.acres$value)
+
+for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_l_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- map.df.acres %>% filter(map == "map_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(map) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+map_l_acres <- do.call(rbind, my_list_summarised)
+
+
+map_l_acres_prepped <- data.frame(map = my_seq, row.names = NULL) %>% dplyr::rename(range = map) %>%
+                        dplyr::left_join(map_l_acres)
+
+map_l_acres_prepped$acres <- ifelse(is.na(map_l_acres_prepped$acres), 0, map_l_acres_prepped$acres)
+map_l_acres_prepped$range <- map_l_acres_prepped$range + 0.1
+
+
+expand_map_l <- map_l_acres_prepped[rep(1:nrow(map_l_acres_prepped), times = map_l_acres_prepped$acres/100), c("range", "map", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+map_l2 <- ggplot(expand_map_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Mean Annual Precip. (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("acres (hundreds of acres)") + xlab("Mean Annual Precip. (in.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+map_l2 <- ggplotly(map_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(map_l1,
+                                 map_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**MAP low acreage weighted 5th percentile** - use as 'low (actual)'
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$map_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  map_l_stats <- map.df %>% dplyr::filter(map == "map_l_in")
+  map_l_stats_rep <- rep(map_l_stats$value, map_l_stats$acres) 
+  map_l_stats_rep %>% quantile(probs = c(0.05), na.rm = TRUE)
+
+}
+
+```
+
+**MAP low acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$map_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  map_l_stats <- map.df %>% dplyr::filter(map == "map_l_in")
+  map_l_stats_rep <- rep(map_l_stats$value, map_l_stats$acres) 
+  summary(map_l_stats_rep)
+
+}
+
+```
+
+#### **MAP RV**
+```{r, warning=FALSE, message=FALSE}
+if (all(is.na(EDIT_updates_filtered$map_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+# Define bin width and round by measures
+
+bin_width <- 5
+round_by <- 5
+
+# Prepare dataframe for component histogram
+
+map.df <-
+  EDIT_updates_filtered %>% select(coiid,  map_h_in, map_l_in, map_r_in, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "map",
+    values_to = "value",
+    cols = c("map_h_in", "map_l_in", "map_r_in")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+map_r1 <- ggplot(map.df %>% filter(map == "map_r_in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Mean Annual Precip. (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Mean Annual Precip. (in.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+map_r1 <- ggplotly(map_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+map.df.acres <- map.df
+map.df.acres$value <- ifelse(map.df.acres$value == 0, map.df.acres$value + 0.1, map.df.acres$value)
+
+for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_r_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- map.df.acres %>% filter(map == "map_r_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(map) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+map_r_acres <- do.call(rbind, my_list_summarised)
+
+
+map_r_acres_prepped <- data.frame(map = my_seq, row.names = NULL) %>% dplyr::rename(range = map) %>%
+                        dplyr::left_join(map_r_acres)
+
+map_r_acres_prepped$acres <- ifelse(is.na(map_r_acres_prepped$acres), 0, map_r_acres_prepped$acres)
+map_r_acres_prepped$range <- map_r_acres_prepped$range + 0.1
+
+
+expand_map_r <- map_r_acres_prepped[rep(1:nrow(map_r_acres_prepped), times = map_r_acres_prepped$acres/100), c("range", "map", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+map_r2 <- ggplot(expand_map_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Mean Annual Precip. (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("acres (hundreds of acres)") + xlab("Mean Annual Precip. (in.)") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$map_l_in), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+map_r2 <- ggplotly(map_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(map_r1,
+                                 map_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**MAP RV acreage weighted 5th and 95th percentile** - use as 'low (representative)' & 'high (representative)' 
+```{r}
+if (all(is.na(EDIT_updates_filtered$map_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  map_r_stats <- map.df %>% dplyr::filter(map == "map_r_in")
+  map_r_stats_rep <- rep(map_r_stats$value, map_r_stats$acres) 
+  map_r_stats_rep %>% quantile(c(0.05, 0.95))
+
+}
+
+```
+
+**MAP RV acreage weighted summary statistics**
+```{r}
+if (all(is.na(EDIT_updates_filtered$map_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  map_r_stats <- map.df %>% dplyr::filter(map == "map_r_in")
+  map_r_stats_rep <- rep(map_r_stats$value, map_r_stats$acres) 
+  summary(map_r_stats_rep)
+
+}
+
+```
+
+#### **Frost free days high**
+
+```{r, warning=FALSE, message=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$ffd_h))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  # Define bin width and round by measures
+
+bin_width <- 15
+round_by <- 15
+
+# Prepare dataframe for component histogram
+
+ffd.df <-
+  EDIT_updates_filtered %>% select(coiid, ffd_h, ffd_l, ffd_r, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "ffd",
+    values_to = "value",
+    cols = c("ffd_h", "ffd_l", "ffd_r")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+ffd_h1 <- ggplot(ffd.df %>% filter(ffd == "ffd_h"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Frost Free Days (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Frost Free Days") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+ffd_h1 <- ggplotly(ffd_h1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+ffd.df.acres <- ffd.df
+ffd.df.acres$value <- ifelse(ffd.df.acres$value == 0, ffd.df.acres$value + 0.1, ffd.df.acres$value)
+
+for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+      
+  my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_h") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+    
+  my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_h") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(ffd) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+ffd_h_acres <- do.call(rbind, my_list_summarised)
+
+
+ffd_h_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) %>% dplyr::rename(range = ffd) %>%
+                        dplyr::left_join(ffd_h_acres)
+
+ffd_h_acres_prepped$acres <- ifelse(is.na(ffd_h_acres_prepped$acres), 0, ffd_h_acres_prepped$acres)
+ffd_h_acres_prepped$range <- ffd_h_acres_prepped$range + 0.1
+
+
+expand_ffd_h <- ffd_h_acres_prepped[rep(1:nrow(ffd_h_acres_prepped), times = ffd_h_acres_prepped$acres/100), c("range", "ffd", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+ffd_h2 <- ggplot(expand_ffd_h, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Frost Free Days (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("acres (hundreds of acres)") + xlab("Frost Free Days") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+ffd_h2 <- ggplotly(ffd_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(ffd_h1,
+                                 ffd_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Frost Free Days high acreage weighted 95th percentile**  -  use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$ffd_h))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  rep(EDIT_updates_filtered$ffd_h, EDIT_updates_filtered$comp_acres) %>% quantile(probs = c(0.95), na.rm = TRUE)
+
+}
+
+```
+
+**Frost Free Days high acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$ffd_h))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  summary(rep(EDIT_updates_filtered$ffd_h, EDIT_updates_filtered$comp_acres))
+
+}
+```
+
+ 
+#### **Frost Free Days low**
+```{r, warning=FALSE, message=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$ffd_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+# Define bin width and round by measures
+
+bin_width <- 15
+round_by <- 15
+
+# Prepare dataframe for component histogram
+
+ffd.df <-
+  EDIT_updates_filtered %>% select(coiid,  ffd_h, ffd_l, ffd_r, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "ffd",
+    values_to = "value",
+    cols = c("ffd_h", "ffd_l", "ffd_r")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+ffd_l1 <- ggplot(ffd.df %>% filter(ffd == "ffd_l"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Frost Free Days (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Frost Free Days") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+ffd_l1 <- ggplotly(ffd_l1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+ffd.df.acres <- ffd.df
+ffd.df.acres$value <- ifelse(ffd.df.acres$value == 0, ffd.df.acres$value + 0.1, ffd.df.acres$value)
+
+for(i in names(my_seq)){
+  
+ if(i == names(my_seq)[1]){
+   
+    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_l") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    
+ } else{
+   
+    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_l") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    
+ }
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(ffd) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+ffd_l_acres <- do.call(rbind, my_list_summarised)
+
+
+ffd_l_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) %>% dplyr::rename(range = ffd) %>%
+                        dplyr::left_join(ffd_l_acres)
+
+ffd_l_acres_prepped$acres <- ifelse(is.na(ffd_l_acres_prepped$acres), 0, ffd_l_acres_prepped$acres)
+ffd_l_acres_prepped$range <- ffd_l_acres_prepped$range + 0.1
+
+
+expand_ffd_l <- ffd_l_acres_prepped[rep(1:nrow(ffd_l_acres_prepped), times = ffd_l_acres_prepped$acres/100), c("range", "ffd", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+ffd_l2 <- ggplot(expand_ffd_l, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Frost Free Days (low)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("acres (hundreds of acres)") + xlab("Frost Free Days") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+ffd_l2 <- ggplotly(ffd_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(ffd_l1,
+                                 ffd_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Frost Free Days low acreage weighted 5th percentile** - use as 'low (actual)'
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$ffd_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  ffd_l_stats <- ffd.df %>% dplyr::filter(ffd == "ffd_l")
+  ffd_l_stats_rep <- rep(ffd_l_stats$value, ffd_l_stats$acres) 
+  ffd_l_stats_rep %>% quantile(probs = c(0.05), na.rm = TRUE)
+
+}
+
+```
+
+**Frost Free Days low acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$ffd_l))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  ffd_l_stats <- ffd.df %>% dplyr::filter(ffd == "ffd_l")
+  ffd_l_stats_rep <- rep(ffd_l_stats$value, ffd_l_stats$acres) 
+  summary(ffd_l_stats_rep)
+
+}
+
+```
+
+#### **Frost Free Days RV**
+```{r, warning=FALSE, message=FALSE}
+if (all(is.na(EDIT_updates_filtered$ffd_r))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+# Define bin width and round by measures
+
+bin_width <- 15
+round_by <- 15
+
+# Prepare dataframe for component histogram
+
+ffd.df <-
+  EDIT_updates_filtered %>% select(coiid,  ffd_h, ffd_l, ffd_r, comp_acres) %>%
+  tidyr::pivot_longer(
+    names_to = "ffd",
+    values_to = "value",
+    cols = c("ffd_h", "ffd_l", "ffd_r")) %>%
+  dplyr::rename(acres = comp_acres)
+
+# Create component histogram
+
+ffd_r1 <- ggplot(ffd.df %>% filter(ffd == "ffd_r"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Frost Free Days (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("# of components") + xlab("Frost Free Days") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert histogram to plotly
+
+ffd_r1 <- ggplotly(ffd_r1, tooltip = "text")
+
+# Manipulate to create acreage histogram
+
+my_list <- list()
+my_seq <- seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+names(my_seq) <- my_seq
+
+ffd.df.acres <- ffd.df
+ffd.df.acres$value <- ifelse(ffd.df.acres$value == 0, ffd.df.acres$value + 0.1, ffd.df.acres$value)
+
+for(i in names(my_seq)){
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_r") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_r") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+
+}
+
+for (nm in names(my_list)) {
+         my_list[[nm]]$value <- nm
+}
+
+
+my_list_summarised <- lapply(my_list, FUN = function(x){
+  x %>% dplyr::mutate(value = as.numeric(value)) %>% group_by(ffd) %>% summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) %>% ungroup()
+})
+
+ffd_r_acres <- do.call(rbind, my_list_summarised)
+
+
+ffd_r_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) %>% dplyr::rename(range = ffd) %>%
+                        dplyr::left_join(ffd_r_acres)
+
+ffd_r_acres_prepped$acres <- ifelse(is.na(ffd_r_acres_prepped$acres), 0, ffd_r_acres_prepped$acres)
+ffd_r_acres_prepped$range <- ffd_r_acres_prepped$range + 0.1
+
+
+expand_ffd_r <- ffd_r_acres_prepped[rep(1:nrow(ffd_r_acres_prepped), times = ffd_r_acres_prepped$acres/100), c("range", "ffd", "coiids"), drop = FALSE]
+
+# Create acreage histogram
+
+ffd_r2 <- ggplot(expand_ffd_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+  binwidth = bin_width,
+  center = round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  #theme_minimal() + 
+  ggtitle("Frost Free Days (RV)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("acres (hundreds of acres)") + xlab("Frost Free Days") +
+  scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling)),
+  n.breaks = length(seq(round_any(min(EDIT_updates_filtered$ffd_l), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), round_by)))
+
+# Convert to plotly
+
+ffd_r2 <- ggplotly(ffd_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(ffd_r1,
+                                 ffd_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Frost Free Days RV acreage weighted 5th and 95th percentile** - use as 'low (representative)' & 'high (representative)' 
+```{r}
+if (all(is.na(EDIT_updates_filtered$ffd_r))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  ffd_r_stats <- ffd.df %>% dplyr::filter(ffd == "ffd_r")
+  ffd_r_stats_rep <- rep(ffd_r_stats$value, ffd_r_stats$acres) 
+  ffd_r_stats_rep %>% quantile(c(0.05, 0.95))
+
+}
+
+```
+
+**Frost Free Days RV acreage weighted summary statistics**
+```{r}
+if (all(is.na(EDIT_updates_filtered$ffd_r))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+
+  ffd_r_stats <- ffd.df %>% dplyr::filter(ffd == "ffd_r")
+  ffd_r_stats_rep <- rep(ffd_r_stats$value, ffd_r_stats$acres) 
+  summary(ffd_r_stats_rep)
+
+}
+
+```
 
 <center><h3>**Water features tab:** </h3></center>
 
@@ -2130,7 +3092,19 @@ restriction.df.acres <- restriction.df
 restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restriction.df.acres$value + 0.1, restriction.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
+  
+
 
 }
 
@@ -2298,7 +3272,16 @@ restriction.df.acres <- restriction.df
 restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restriction.df.acres$value + 0.1, restriction.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -2457,8 +3440,17 @@ restriction.df.acres <- restriction.df
 restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restriction.df.acres$value + 0.1, restriction.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
-
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
 }
 
 for (nm in names(my_list)) {
@@ -2631,8 +3623,17 @@ surf_frag.df.acres <- surf_frag.df
 surf_frag.df.acres$value <- ifelse(surf_frag.df.acres$value == 0, surf_frag.df.acres$value + 0.1, surf_frag.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
-
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
 }
 
 for (nm in names(my_list)) {
@@ -2770,7 +3771,18 @@ surf_frag.df.acres <- surf_frag.df
 surf_frag.df.acres$value <- ifelse(surf_frag.df.acres$value == 0, surf_frag.df.acres$value + 0.1, surf_frag.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
+
 
 }
 
@@ -2897,7 +3909,16 @@ awc_h.df.acres <- awc_h.df
 awc_h.df.acres$value <- ifelse(awc_h.df.acres$value == 0, awc_h.df.acres$value + 0.1, awc_h.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -3037,7 +4058,16 @@ awc_l.df.acres <- awc_l.df
 awc_l.df.acres$value <- ifelse(awc_l.df.acres$value == 0, awc_l.df.acres$value + 0.1, awc_l.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
 
 }
 
@@ -3177,7 +4207,16 @@ awc_r.df.acres <- awc_r.df
 awc_r.df.acres$value <- ifelse(awc_r.df.acres$value == 0, awc_r.df.acres$value + 0.1, awc_r.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -3316,8 +4355,17 @@ ph_h.df.acres <- ph_h.df
 ph_h.df.acres$value <- ifelse(ph_h.df.acres$value == 0, ph_h.df.acres$value + 0.1, ph_h.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
-
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
 }
 
 for (nm in names(my_list)) {
@@ -3456,7 +4504,16 @@ ph_l.df.acres <- ph_l.df
 ph_l.df.acres$value <- ifelse(ph_l.df.acres$value == 0, ph_l.df.acres$value + 0.1, ph_l.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -3609,7 +4666,18 @@ ph_h.df.acres <- ph_h.df
 ph_h.df.acres$value <- ifelse(ph_h.df.acres$value == 0, ph_h.df.acres$value + 0.1, ph_h.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
+
 
 }
 
@@ -3746,7 +4814,16 @@ ph_l.df.acres <- ph_l.df
 ph_l.df.acres$value <- ifelse(ph_l.df.acres$value == 0, ph_l.df.acres$value + 0.1, ph_l.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+
+}
 
 }
 
@@ -3901,7 +4978,16 @@ subsurf_frags.df.acres <- subsurf_frags_small.df
 subsurf_frags.df.acres$value <- ifelse(subsurf_frags.df.acres$value == 0, subsurf_frags.df.acres$value + 0.1, subsurf_frags.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
 
 }
 
@@ -4036,8 +5122,17 @@ subsurf_frags.df.acres <- subsurf_frags_small.df
 subsurf_frags.df.acres$value <- ifelse(subsurf_frags.df.acres$value == 0, subsurf_frags.df.acres$value + 0.1, subsurf_frags.df.acres$value)
 
 for(i in names(my_seq)){
-  my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
-
+  
+  if(i == names(my_seq)[1]){
+    
+      my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+} else {
+  
+    my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  
+}
+  
 }
 
 for (nm in names(my_list)) {
