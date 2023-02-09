@@ -54,7 +54,7 @@ EDIT_updates <- EDIT_updates %>% filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates %>% filter(ecosite_id == "R022AA010CA")
 ```
 
 ---
@@ -538,6 +538,15 @@ el_h1 <- ggplotly(el_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) &
+             min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 elev.df.acres <- elev.df
@@ -545,13 +554,13 @@ elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_h_ft") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -686,6 +695,15 @@ el_l1 <- ggplotly(el_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) &
+             min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 elev.df.acres <- elev.df
@@ -693,13 +711,13 @@ elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_l_ft") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -839,6 +857,15 @@ el_r1 <- ggplotly(el_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) &
+             min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 elev.df.acres <- elev.df
@@ -846,13 +873,13 @@ elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- elev.df.acres %>% filter(elev == "elev_r_ft") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -992,6 +1019,15 @@ slope_h1 <- ggplotly(slope_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$slope_l, na.rm = TRUE) &
+             min(EDIT_updates_filtered$slope_l, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 slope.df.acres <- slope.df
@@ -999,13 +1035,13 @@ slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value +
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_h") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -1145,6 +1181,15 @@ slope_l1 <- ggplotly(slope_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$slope_l, na.rm = TRUE) &
+             min(EDIT_updates_filtered$slope_l, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 slope.df.acres <- slope.df
@@ -1152,13 +1197,13 @@ slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value +
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_l") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -1298,6 +1343,15 @@ slope_r1 <- ggplotly(slope_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$slope_h, na.rm = TRUE) &
+             min(EDIT_updates_filtered$slope_h, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 slope.df.acres <- slope.df
@@ -1305,13 +1359,13 @@ slope.df.acres$value <- ifelse(slope.df.acres$value == 0, slope.df.acres$value +
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
       
-  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_r") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_r") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
     
-  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_r") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- slope.df.acres %>% filter(slope == "slope_r") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -1454,6 +1508,15 @@ water_table_h1 <- ggplotly(water_table_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 water_table.df.acres <- water_table.df
@@ -1461,13 +1524,13 @@ water_table.df.acres$value <- ifelse(water_table.df.acres$value == 0, water_tabl
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
       
-  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_h_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_h_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
     
-  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_h_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -1635,6 +1698,15 @@ water_table_l1 <- ggplotly(water_table_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 water_table.df.acres <- water_table.df
@@ -1642,13 +1714,13 @@ water_table.df.acres$value <- ifelse(water_table.df.acres$value == 0, water_tabl
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
       
-  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_l_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_l_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
     
-  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- water_table.df.acres %>% filter(water_table == "water_table_l_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -1834,6 +1906,15 @@ aspect_r1 <- ggplotly(aspect_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE) &
+             min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 aspect.df.acres <- aspect.df
@@ -1841,13 +1922,13 @@ aspect.df.acres$value <- ifelse(aspect.df.acres$value == 0, aspect.df.acres$valu
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
       
-  my_list[[i]] <- aspect.df.acres %>% filter(aspect == "aspect_rep") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- aspect.df.acres %>% filter(aspect == "aspect_rep") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
     
-  my_list[[i]] <- aspect.df.acres %>% filter(aspect == "aspect_rep") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- aspect.df.acres %>% filter(aspect == "aspect_rep") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -1961,6 +2042,15 @@ map_h1 <- ggplotly(map_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 map.df.acres <- map.df
@@ -1968,13 +2058,13 @@ map.df.acres$value <- ifelse(map.df.acres$value == 0, map.df.acres$value + 0.1, 
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- map.df.acres %>% filter(map == "map_h_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_h_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
     
   } else {
     
-      my_list[[i]] <- map.df.acres %>% filter(map == "map_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_h_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
     
   }
 
@@ -2108,6 +2198,15 @@ map_l1 <- ggplotly(map_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 map.df.acres <- map.df
@@ -2115,13 +2214,13 @@ map.df.acres$value <- ifelse(map.df.acres$value == 0, map.df.acres$value + 0.1, 
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- map.df.acres %>% filter(map == "map_l_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_l_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- map.df.acres %>% filter(map == "map_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- map.df.acres %>% filter(map == "map_l_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -2260,6 +2359,15 @@ map_r1 <- ggplotly(map_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 map.df.acres <- map.df
@@ -2267,13 +2375,13 @@ map.df.acres$value <- ifelse(map.df.acres$value == 0, map.df.acres$value + 0.1, 
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- map.df.acres %>% filter(map == "map_r_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- map.df.acres %>% filter(map == "map_r_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- map.df.acres %>% filter(map == "map_r_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- map.df.acres %>% filter(map == "map_r_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -2413,6 +2521,15 @@ ffd_h1 <- ggplotly(ffd_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$ffd_l, na.rm = TRUE) &
+             min(EDIT_updates_filtered$ffd_l, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 ffd.df.acres <- ffd.df
@@ -2420,13 +2537,13 @@ ffd.df.acres$value <- ifelse(ffd.df.acres$value == 0, ffd.df.acres$value + 0.1, 
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
       
-  my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_h") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_h") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
     
-  my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_h") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+  my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_h") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -2559,6 +2676,15 @@ ffd_l1 <- ggplotly(ffd_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$ffd_h, na.rm = TRUE) &
+             min(EDIT_updates_filtered$ffd_h, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 ffd.df.acres <- ffd.df
@@ -2566,13 +2692,13 @@ ffd.df.acres$value <- ifelse(ffd.df.acres$value == 0, ffd.df.acres$value + 0.1, 
 
 for(i in names(my_seq)){
   
- if(i == names(my_seq)[1]){
+ if(i == 0){
    
-    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_l") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_l") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
     
  } else{
    
-    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_l") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_l") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
     
  }
 
@@ -2711,6 +2837,15 @@ ffd_r1 <- ggplotly(ffd_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$ffd_l, na.rm = TRUE) &
+             min(EDIT_updates_filtered$ffd_l, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 ffd.df.acres <- ffd.df
@@ -2718,13 +2853,13 @@ ffd.df.acres$value <- ifelse(ffd.df.acres$value == 0, ffd.df.acres$value + 0.1, 
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_r") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_r") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_r") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- ffd.df.acres %>% filter(ffd == "ffd_r") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -3154,13 +3289,13 @@ restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restrictio
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_h_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -3246,7 +3381,10 @@ manipulateWidget::combineWidgets(restriction_h1,
 
 NAs in restriction likely mean that no restriction was observed. NA's are not represented in the figures above. Please observe the table below to understand the acreage and number of component associated with a restriction of NA. 
 ```{r}
-restriction_na_h
+if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  restriction_na_h}
 ```
 
 **Restriction high acreage weighted 95th percentile** -  use as 'high (actual)'. This value may be NA.  
@@ -3338,13 +3476,13 @@ restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restrictio
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_l_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -3426,7 +3564,9 @@ manipulateWidget::combineWidgets(restriction_l1,
 
 NAs in restriction likely mean that no restriction was observed. NA's are not represented in the figures above. Please observe the table below to understand the acreage and number of component associated with a restriction of NA. 
 ```{r}
-restriction_na_l
+if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{restriction_na_l}
 ```
 
 **Restriction low: acreage weighted 5th percentile** -  use as 'low (actual)'. This value may be NA. 
@@ -3510,13 +3650,13 @@ restriction.df.acres$value <- ifelse(restriction.df.acres$value == 0, restrictio
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- restriction.df.acres %>% filter(restriction == "restrict_depth_r_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -3598,7 +3738,9 @@ manipulateWidget::combineWidgets(restriction_r1,
 
 NAs in restriction likely mean that no restriction was observed. NA's are not represented in the figures above. Please observe the table below to understand the acreage and number of component associated with a restriction of NA. 
 ```{r}
-restriction_na_r
+if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else{restriction_na_r}
 ```
 
 
@@ -3690,20 +3832,29 @@ surf_frag1 <- ggplotly(surf_frag1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE) &
+                   min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor) - bin_width,
+  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+         my_seq            
+                  }
+
 names(my_seq) <- my_seq
 
 surf_frag.df.acres <- surf_frag.df
-surf_frag.df.acres$value <- ifelse(surf_frag.df.acres$value == 0, surf_frag.df.acres$value + 0.1, surf_frag.df.acres$value)
+# surf_frag.df.acres$value <- ifelse(surf_frag.df.acres$value == 0, surf_frag.df.acres$value + 0.1, surf_frag.df.acres$value)
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -3842,6 +3993,15 @@ surf_frag1 <- ggplotly(surf_frag1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE) &
+                   min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor) - bin_width,
+  round_any(max(EDIT_updates_filtered$surfhzn_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+         my_seq            
+                  }
+
 names(my_seq) <- my_seq
 
 surf_frag.df.acres <- surf_frag.df
@@ -3849,13 +4009,13 @@ surf_frag.df.acres$value <- ifelse(surf_frag.df.acres$value == 0, surf_frag.df.a
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- surf_frag.df.acres %>% filter(surf_frag == "surfhzn_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -3984,6 +4144,15 @@ awc_h1 <- ggplotly(awc_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 awc_h.df.acres <- awc_h.df
@@ -3991,13 +4160,13 @@ awc_h.df.acres$value <- ifelse(awc_h.df.acres$value == 0, awc_h.df.acres$value +
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- awc_h.df.acres %>% filter(awc == "awc_h_0_40_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -4137,6 +4306,15 @@ awc_l1 <- ggplotly(awc_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 awc_l.df.acres <- awc_l.df
@@ -4144,13 +4322,13 @@ awc_l.df.acres$value <- ifelse(awc_l.df.acres$value == 0, awc_l.df.acres$value +
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- awc_l.df.acres %>% filter(awc == "awc_l_0_40_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
 
 }
 
@@ -4290,6 +4468,15 @@ awc_r1 <- ggplotly(awc_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 awc_r.df.acres <- awc_r.df
@@ -4297,13 +4484,13 @@ awc_r.df.acres$value <- ifelse(awc_r.df.acres$value == 0, awc_r.df.acres$value +
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- awc_r.df.acres %>% filter(awc == "awc_r_0_40_in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -4442,6 +4629,15 @@ ph_h1 <- ggplotly(ph_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 ph_h.df.acres <- ph_h.df
@@ -4449,13 +4645,13 @@ ph_h.df.acres$value <- ifelse(ph_h.df.acres$value == 0, ph_h.df.acres$value + 0.
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_0_10in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -4595,6 +4791,15 @@ ph_l1 <- ggplotly(ph_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 ph_l.df.acres <- ph_l.df
@@ -4602,13 +4807,13 @@ ph_l.df.acres$value <- ifelse(ph_l.df.acres$value == 0, ph_l.df.acres$value + 0.
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_0_10in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -4761,6 +4966,15 @@ ph_h1 <- ggplotly(ph_h1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 ph_h.df.acres <- ph_h.df
@@ -4768,13 +4982,13 @@ ph_h.df.acres$value <- ifelse(ph_h.df.acres$value == 0, ph_h.df.acres$value + 0.
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- ph_h.df.acres %>% filter(ph == "pH_h_10_40in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -4913,6 +5127,15 @@ ph_l1 <- ggplotly(ph_l1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 ph_l.df.acres <- ph_l.df
@@ -4920,13 +5143,13 @@ ph_l.df.acres$value <- ifelse(ph_l.df.acres$value == 0, ph_l.df.acres$value + 0.
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- ph_l.df.acres %>% filter(ph == "pH_l_10_40in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
 
 }
 
@@ -5081,6 +5304,15 @@ subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 subsurf_frags.df.acres <- subsurf_frags_small.df
@@ -5088,13 +5320,13 @@ subsurf_frags.df.acres$value <- ifelse(subsurf_frags.df.acres$value == 0, subsur
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_2mm.3in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -5229,6 +5461,15 @@ subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
 my_list <- list()
 my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  my_seq            
+}
+
 names(my_seq) <- my_seq
 
 subsurf_frags.df.acres <- subsurf_frags_small.df
@@ -5236,13 +5477,13 @@ subsurf_frags.df.acres$value <- ifelse(subsurf_frags.df.acres$value == 0, subsur
 
 for(i in names(my_seq)){
   
-  if(i == names(my_seq)[1]){
+  if(i == 0){
     
-      my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value >= as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+      my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value < as.numeric(i) + bin_width + 0.1)
+    my_list[[i]] <- subsurf_frags.df.acres %>% filter(frag_small == "subsurf_frags_r_gt_3in") %>% filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
