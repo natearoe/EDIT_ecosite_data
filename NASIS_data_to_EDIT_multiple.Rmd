@@ -3242,7 +3242,7 @@ Actual high (95%) and actual low (5%)
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field. Enter NA for high (actual).")
   
 } else{
 
@@ -3429,7 +3429,7 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. Enter NA for low (actual).")
   
 } else{
 
@@ -3603,7 +3603,7 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data populated in NASIS for this field. Enter NA for low & high (representative).")
   
 } else{
 
