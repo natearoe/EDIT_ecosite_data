@@ -4290,7 +4290,7 @@ awc_l1 <- ggplot(awc_l.df %>% filter(awc == "awc_l_0_40_in"), aes(x = value)) + 
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
-  ggtitle("AWC 0-40inches (high)") + theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("AWC 0-40inches (low)") + theme(plot.title = element_text(hjust = 0.5)) +
   ylab("# of components") + xlab("AWC") +
   scale_x_continuous(limits = c(round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor),
   round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling)),
