@@ -91,8 +91,7 @@ NA values mean that there are missing values. Figures do not show NA values but 
 
 #### **Landform** 
 
-Note: Try to keep landform descriptions to 3-4 words.  
-
+Several properties in EDIT have the option to include multiple values, including landform. Other properties that allow for multiple values to be populated include parent material and surface texture. If there are multiple distinctly different properties that are associated with considerable acreage, than list them. For most situations, one to two values is ideal. More than three values is most likely excessive. 
 
 **Full landform string table by acreage and number of components**
 ```{r}
@@ -407,6 +406,7 @@ data.frame("5%" = pond_freq_acreage_weighted[ceiling(0.05 * length(pond_freq_acr
 #### **Ponding duration**
 
 Put "--" for duration if frequency is "none"
+
 ```{r}
 EDIT_updates_filtered$pond_dur <- ifelse(EDIT_updates_filtered$pond_dur == "", "none", EDIT_updates_filtered$pond_dur)
 
@@ -3007,6 +3007,7 @@ If aspect is not strongly associated with a particular aspect, select "not appli
 
 I would suggest that we change aspect to be northness [cos(aspect)] and eastness [sin(aspect)]. These are more ecologically meaningful and would allow the statistics to be summarized. 
 
+I’m not aware of specific guidance on populating aspect data in EDIT. I personally would choose the aspects that you feel are representative. That would mean trimming values that don’t seem like a core part of the distribution/concept. I am fairly liberal in saying that aspect is ‘not applicable’ if I don’t think I have the data to make a meaningful call. If there are only 2-3 components correlated to the ecosite, I would consider it pretty challenging to make a strong call unless they are tightly clustered. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -7238,6 +7239,9 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data p
 ```
 
 #### **Subsurface frag percent (3 in. +)**
+
+Subsurface frags are depth 0-60in.
+
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
