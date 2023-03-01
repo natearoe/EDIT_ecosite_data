@@ -492,6 +492,7 @@ data.frame("5%" = pond_dur_acreage_weighted[ceiling(0.05 * length(pond_dur_acrea
 
 #### **Elevation high**
 
+Round elevation in a manner consistent with your data. For many situations, it will likely be to the hundreds place. 
 ```{r, warning=FALSE, message=FALSE}
 # Is variable NA?
 
@@ -702,6 +703,8 @@ if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NA
 
  
 #### **Elevation low**
+
+Round elevation in a manner consistent with your data. For many situations, it will likely be to the hundreds place. 
 ```{r, warning=FALSE, message=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NASIS for this field.")
@@ -917,6 +920,8 @@ if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NA
 ```
 
 #### **Elevation RV**
+
+Round elevation in a manner consistent with your data. For many situations, it will likely be to the hundreds place. 
 ```{r, warning=FALSE, message=FALSE}
 if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NASIS for this field.")
   
@@ -1129,6 +1134,7 @@ if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NA
 
 #### **Slope high**
 
+Slope should be rounded to multiples of 5. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -1343,6 +1349,8 @@ if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASI
 
 
 #### **Slope low**
+
+Slope should be rounded to multiples of 5. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -1557,6 +1565,8 @@ if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASI
 
 
 #### **Slope RV**
+
+Slope should be rounded to multiples of 5. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -1774,6 +1784,8 @@ if (all(is.na(EDIT_updates_filtered$slope_r))) {print("No data populated in NASI
 One thing to clarify about ponding depth - this is a measure of how deep the ponding is above the soil surface. 
 
 If ecosite does not have a ponding depth, enter "NA"
+
+Ponding depth should be rounded appropriate to the data. For ecosites that experience considerable ponding, rounding to multiples of five may be appropriate. Otherwise, rounding to multiples of two or not rounding may be appropriate. 
 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
@@ -2018,6 +2030,7 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_h))) {print("No data populated in
 
 If ecosite does not have a ponding depth, enter "NA".
 
+Ponding depth should be rounded appropriate to the data. For ecosites that experience considerable ponding, rounding to multiples of five may be appropriate. Otherwise, rounding to multiples of two or not rounding may be appropriate.
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -2258,6 +2271,7 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_l))) {print("No data populated in
 
 #### **Ponding depth RV**
 
+Ponding depth should be rounded appropriate to the data. For ecosites that experience considerable ponding, rounding to multiples of five may be appropriate. Otherwise, rounding to multiples of two or not rounding may be appropriate.
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -2503,6 +2517,7 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_rv))) {print("No data populated i
 
 If ecosite does not seem to be associated with a water table, enter "NA"
 
+Water table depth should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -2745,6 +2760,8 @@ if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populate
 ```
 
 #### **Water table depth low**
+
+Water table depth should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -2985,6 +3002,8 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populate
 #### **Water table RV**
 
 Water table does not have an RV value, but EDIT asks for a representative range. Here, I define low (RV) as the 25th percentile of the combined high and low values and high (RV) as the 75th percentile of the combined high and low values. 
+
+Water table depth should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r}
 if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
   
@@ -3142,6 +3161,7 @@ Populate climate variables in EDIT by selecting appropriate climate stations. If
 
 #### **MAP high**
 
+Mean annual precip. should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r, warning=FALSE, message=FALSE}
 # Is variable NA?
 
@@ -3351,6 +3371,8 @@ if (all(is.na(EDIT_updates_filtered$map_h_in))) {print("No data populated in NAS
 
  
 #### **MAP low**
+
+Mean annual precip. should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r, warning=FALSE, message=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$map_l_in))) {print("No data populated in NASIS for this field.")
@@ -3565,6 +3587,8 @@ if (all(is.na(EDIT_updates_filtered$map_l_in))) {print("No data populated in NAS
 ```
 
 #### **MAP RV**
+
+Mean annual precip. should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r, warning=FALSE, message=FALSE}
 if (all(is.na(EDIT_updates_filtered$map_r_in))) {print("No data populated in NASIS for this field.")
   
@@ -3777,6 +3801,7 @@ if (all(is.na(EDIT_updates_filtered$map_r_in))) {print("No data populated in NAS
 
 #### **Frost Free Days high**
 
+Frost free days should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r, warning=FALSE, message=FALSE}
 # Is variable NA?
 
@@ -3985,6 +4010,8 @@ if (all(is.na(EDIT_updates_filtered$ffd_h))) {print("No data populated in NASIS 
 
  
 #### **Frost Free Days low**
+
+Frost free days should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r, warning=FALSE, message=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$ffd_l))) {print("No data populated in NASIS for this field.")
@@ -4199,6 +4226,8 @@ if (all(is.na(EDIT_updates_filtered$ffd_l))) {print("No data populated in NASIS 
 ```
 
 #### **Frost Free Days RV**
+
+Frost free days should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r, warning=FALSE, message=FALSE}
 if (all(is.na(EDIT_updates_filtered$ffd_r))) {print("No data populated in NASIS for this field.")
   
@@ -4697,6 +4726,8 @@ Actual high (95%) and actual low (5%)
 ```
 
 #### **Depth to restriction high**
+
+Depth to restriction should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -4884,6 +4915,8 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
 ```
 
 #### **Depth to restriction low**
+
+Depth to restriction should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -5058,6 +5091,8 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 ```
 
 #### **Restriction RV**
+
+Depth to restriction should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -5244,6 +5279,8 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_r_in))) {print("No data popul
 Soil depth (inches) is the same as depth to restrictive layer. 
 
 #### **Surface frag percent cover (2 mm - 3 in.)**
+
+Surface frag percent cover should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -5376,8 +5413,6 @@ manipulateWidget::combineWidgets(surf_frag1,
 **Surface frags 2 mm - 3 in. acreage weighted percentiles**
 
 Surface frags are only represented as one number, there are not high, low, or RV values. Therefore, 5th and 95th percentiles will be used for the actual values. 25th and 75th percentiles will be used for representative values. 
-
-
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
@@ -5405,6 +5440,8 @@ if (all(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf))) {print("No data p
 ```
 
 #### **Surface frag percent cover (3 in. +)** 
+
+Surface frag percent cover should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -5556,6 +5593,7 @@ if (all(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf))) {print("No data po
 
 #### **Available water capacity high (0-40 inches)**
 
+AWC should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -5770,6 +5808,8 @@ if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated i
 
 
 #### **Available water capacity low (0-40 inches)**
+
+AWC should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -5984,6 +6024,8 @@ if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated i
 
 
 #### **Available water capacity RV (0-40 inches)**
+
+AWC should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -6197,6 +6239,8 @@ if (all(is.na(EDIT_updates_filtered$awc_r_0_40_in))) {print("No data populated i
 ```
 
 #### **pH high (0-10 in.)**
+
+Given the log scale of pH, it is best not to round values. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -6411,6 +6455,8 @@ if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in 
 
 
 #### **pH low (0-10 inches)**
+
+Given the log scale of pH, it is best not to round values. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -6627,6 +6673,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in 
 
 pH 0-10 inches does not have an RV value, but EDIT asks for a representative range. I will define low (RV) as the 25th percentile of the combined high and low values and high (RV) as the 75th percentile of the combined high and low values.
 
+Given the log scale of pH, it is best not to round values. 
 ```{r}
 if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
   
@@ -6638,6 +6685,8 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in 
 ```
 
 #### **pH high (10-40 inches)**
+
+Given the log scale of pH, it is best not to round values. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -6851,6 +6900,8 @@ if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in
 ```
 
 **pH low depth (10-40 inches)**
+
+Given the log scale of pH, it is best not to round values. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -7066,6 +7117,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in
 
 pH 10-40 inches does not have an RV value, but EDIT asks for a representative range. I will define low (RV) as the 25th percentile of the combined high and low values and high (RV) as the 75th percentile of the combined high and low values.
 
+Given the log scale of pH, it is best not to round values.
 ```{r}
 if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
 
@@ -7081,7 +7133,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in
 
 Subsurface frags are depth 0-60in.
 
-2mm-3in
+Surface frag percent cover should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -7242,6 +7294,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data p
 
 Subsurface frags are depth 0-60in.
 
+Surface frag percent cover should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
