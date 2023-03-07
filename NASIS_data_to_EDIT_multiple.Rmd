@@ -7137,7 +7137,7 @@ Surface frag percent cover should be rounded appropriate to the data. For many s
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv))) {print("No data populated in NASIS for this field.")
   
 } else{
 
@@ -7149,18 +7149,18 @@ round_by <- 10
 # Prepare dataframe for component histogram
 
 subsurf_frags_small.df <-
-  EDIT_updates_filtered |>  select(coiid, subsurf_frags_r_2mm.3in, comp_acres) |> 
+  EDIT_updates_filtered |>  select(coiid, subsurf_frags_r_2mm.3in_rv, comp_acres) |> 
   tidyr::pivot_longer(
     names_to = "frag_small",
     values_to = "value",
-    cols = c("subsurf_frags_r_2mm.3in")) |> 
+    cols = c("subsurf_frags_r_2mm.3in_rv")) |> 
   dplyr::rename(acres = comp_acres)
 
 # Create component histogram
 
-subsurf_frags_small_r1 <- ggplot(subsurf_frags_small.df |>  filter(frag_small == "subsurf_frags_r_2mm.3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+subsurf_frags_small_r1 <- ggplot(subsurf_frags_small.df |>  filter(frag_small == "subsurf_frags_r_2mm.3in_rv"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
@@ -7176,13 +7176,13 @@ subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE), round_by, f = ceiling), bin_width)
 
-my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE) &
-             min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE) - bin_width >= 0){
-  seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor) - bin_width,
-      round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE) &
+             min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
   my_seq            
 }
@@ -7196,11 +7196,11 @@ for(i in names(my_seq)){
   
   if(i == 0){
     
-      my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_2mm.3in") |>  filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
+      my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_2mm.3in_rv") |>  filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_2mm.3in") |>  filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+    my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_2mm.3in_rv") |>  filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
 
@@ -7235,7 +7235,7 @@ expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags
 
 subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
@@ -7265,12 +7265,12 @@ manipulateWidget::combineWidgets(subsurf_frags_small_r1,
 
 There are only RV values for subsurface frag percentages. Here, 'low (actual)' and 'high (actual)' are calculated as the 5th and 95th percentile. 'Low (representative)' and 'high (representative)' are calculated as the 25th and 75th percentile. 
 ```{r, fig.show="hold", out.width="50%"}
-if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv))) {print("No data populated in NASIS for this field.")
 
 } else{
 
 
-  subsurf_stats <- subsurf_frags_small.df |>  dplyr::filter(frag_small == "subsurf_frags_r_2mm.3in" & ! is.na(value))
+  subsurf_stats <- subsurf_frags_small.df |>  dplyr::filter(frag_small == "subsurf_frags_r_2mm.3in_rv" & ! is.na(value))
   subsurf_stats_rep <- rep(subsurf_stats$value, subsurf_stats$acres)
   subsurf_stats_rep |>  quantile(probs = c(0.05, 0.25, 0.75, 0.95), na.rm = TRUE)
 
@@ -7281,7 +7281,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data p
 **Subsurface frag percentage acreage weighted summary statistics**
 ```{r}
 
-if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in_rv))) {print("No data populated in NASIS for this field.")
 
 } else{
 
@@ -7298,7 +7298,7 @@ Surface frag percent cover should be rounded appropriate to the data. For many s
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv))) {print("No data populated in NASIS for this field.")
   
 } else{
 
@@ -7310,18 +7310,18 @@ round_by <- 10
 # Prepare dataframe for component histogram
 
 subsurf_frags_small.df <-
-  EDIT_updates_filtered |>  select(coiid, subsurf_frags_r_gt_3in, comp_acres) |> 
+  EDIT_updates_filtered |>  select(coiid, subsurf_frags_r_gt_3in_rv, comp_acres) |> 
   tidyr::pivot_longer(
     names_to = "frag_small",
     values_to = "value",
-    cols = c("subsurf_frags_r_gt_3in")) |> 
+    cols = c("subsurf_frags_r_gt_3in_rv")) |> 
   dplyr::rename(acres = comp_acres)
 
 # Create component histogram
 
-subsurf_frags_small_r1 <- ggplot(subsurf_frags_small.df |>  filter(frag_small == "subsurf_frags_r_gt_3in"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
+subsurf_frags_small_r1 <- ggplot(subsurf_frags_small.df |>  filter(frag_small == "subsurf_frags_r_gt_3in_rv"), aes(x = value)) + geom_histogram(aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
@@ -7337,13 +7337,13 @@ subsurf_frags_small_r1 <- ggplotly(subsurf_frags_small_r1, tooltip = "text")
 # Manipulate to create acreage histogram
 
 my_list <- list()
-my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor),
-  round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+my_seq <- seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE), round_by, f = floor),
+  round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE), round_by, f = ceiling), bin_width)
 
-my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE) &
-             min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE) - bin_width >= 0){
-  seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor) - bin_width,
-      round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE) &
+             min(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE) - bin_width >= 0){
+  seq(round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE), round_by, f = floor) - bin_width,
+      round_any(max(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
   my_seq            
 }
@@ -7357,11 +7357,11 @@ for(i in names(my_seq)){
   
   if(i == 0){
     
-      my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_gt_3in") |>  filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
+      my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_gt_3in_rv") |>  filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 } else {
   
-    my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_gt_3in") |>  filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+    my_list[[i]] <- subsurf_frags.df.acres |>  filter(frag_small == "subsurf_frags_r_gt_3in_rv") |>  filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
   
 }
   
@@ -7396,7 +7396,7 @@ expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags
 
 subsurf_frags_small_r2 <- ggplot(expand_subsurf_frags_r, aes(x = range)) + geom_histogram(aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
   binwidth = bin_width,
-  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in, na.rm = TRUE), round_by, f = floor) + bin_width/2,
+  center = round_any(min(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv, na.rm = TRUE), round_by, f = floor) + bin_width/2,
   color = "black",
   fill = "grey") + 
   #theme_minimal() + 
@@ -7426,12 +7426,12 @@ manipulateWidget::combineWidgets(subsurf_frags_small_r1,
 
 There are only RV values for subsurface frag percentages. Here, 'low (actual)' and 'high (actual)' are calculated as the 5th and 95th percentile. 'Low (representative)' and 'high (representative)' are calculated as the 25th and 75th percentile.
 ```{r, fig.show="hold", out.width="50%"}
-if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv))) {print("No data populated in NASIS for this field.")
 
 } else{
 
 
-  subsurf_stats <- subsurf_frags_small.df |>  dplyr::filter(frag_small == "subsurf_frags_r_gt_3in" & ! is.na(value))
+  subsurf_stats <- subsurf_frags_small.df |>  dplyr::filter(frag_small == "subsurf_frags_r_gt_3in_rv" & ! is.na(value))
   subsurf_stats_rep <- rep(subsurf_stats$value, subsurf_stats$acres)
   subsurf_stats_rep |>  quantile(probs = c(0.05, 0.25, 0.75, 0.95), na.rm = TRUE)
 
@@ -7442,7 +7442,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data po
 **Subsurface frag percentage acreage weighted summary statistics**
 ```{r}
 
-if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in_rv))) {print("No data populated in NASIS for this field.")
 
 } else{
 
