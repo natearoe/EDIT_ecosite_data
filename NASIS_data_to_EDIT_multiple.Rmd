@@ -44,7 +44,7 @@ knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 
 <!-- **Read in NASIS report** -->
 ```{r class.source = "fold-show", echo=FALSE}
-EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/SEKI/EDIT_ecosite_data-main/EDIT_ecosite_data-main/ecosite_report.csv")
+EDIT_updates <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv")
 ```
 
 <!-- **Remove miscellaneous areas** -->
@@ -613,8 +613,8 @@ elev_h_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) |>  dplyr::r
 elev_h_acres_prepped$acres <- ifelse(is.na(elev_h_acres_prepped$acres), 0, elev_h_acres_prepped$acres)
 elev_h_acres_prepped$range <- elev_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(elev_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-               ifelse(min(elev_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(elev_h_acres_prepped$acres[elev_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+               ifelse(min(elev_h_acres_prepped$acres[elev_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -823,8 +823,8 @@ elev_l_acres_prepped$acres <- ifelse(is.na(elev_l_acres_prepped$acres), 0, elev_
 elev_l_acres_prepped$range <- elev_l_acres_prepped$range + 0.1
 
 
-acreage_unit <- ifelse(min(elev_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(elev_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(elev_l_acres_prepped$acres[elev_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(elev_l_acres_prepped$acres[elev_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -1038,8 +1038,8 @@ elev_r_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) |>  dplyr::r
 elev_r_acres_prepped$acres <- ifelse(is.na(elev_r_acres_prepped$acres), 0, elev_r_acres_prepped$acres)
 elev_r_acres_prepped$range <- elev_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(elev_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(elev_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(elev_r_acres_prepped$acres[elev_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(elev_r_acres_prepped$acres[elev_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -1253,8 +1253,8 @@ slope_h_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) |>  dplyr:
 slope_h_acres_prepped$acres <- ifelse(is.na(slope_h_acres_prepped$acres), 0, slope_h_acres_prepped$acres)
 slope_h_acres_prepped$range <- slope_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(slope_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(slope_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(slope_h_acres_prepped$acres[slope_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(slope_h_acres_prepped$acres[slope_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -1469,8 +1469,8 @@ slope_l_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) |>  dplyr:
 slope_l_acres_prepped$acres <- ifelse(is.na(slope_l_acres_prepped$acres), 0, slope_l_acres_prepped$acres)
 slope_l_acres_prepped$range <- slope_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(slope_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(slope_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(slope_l_acres_prepped$acres[slope_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(slope_l_acres_prepped$acres[slope_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -1685,8 +1685,8 @@ slope_r_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) |>  dplyr:
 slope_r_acres_prepped$acres <- ifelse(is.na(slope_r_acres_prepped$acres), 0, slope_r_acres_prepped$acres)
 slope_r_acres_prepped$range <- slope_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(slope_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(slope_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(slope_r_acres_prepped$acres[slope_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(slope_r_acres_prepped$acres[slope_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -1915,8 +1915,8 @@ pond_depth_na_h <- rbind(pond_depth_h_acres_prepped |>  select(-coiids) |>  dply
 pond_depth_h_acres_prepped$acres <- ifelse(is.na(pond_depth_h_acres_prepped$acres), 0, pond_depth_h_acres_prepped$acres)
 pond_depth_h_acres_prepped$range <- pond_depth_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(pond_depth_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(pond_depth_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(pond_depth_h_acres_prepped$acres[pond_depth_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(pond_depth_h_acres_prepped$acres[pond_depth_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -2160,8 +2160,8 @@ pond_depth_na_l <- rbind(pond_depth_l_acres_prepped |>  select(-coiids) |>  dply
 pond_depth_l_acres_prepped$acres <- ifelse(is.na(pond_depth_l_acres_prepped$acres), 0, pond_depth_l_acres_prepped$acres)
 pond_depth_l_acres_prepped$range <- pond_depth_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(pond_depth_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(pond_depth_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(pond_depth_l_acres_prepped$acres[pond_depth_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(pond_depth_l_acres_prepped$acres[pond_depth_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -2401,8 +2401,8 @@ pond_depth_rv_acres$numb_coiids <- sapply(pond_depth_rv_acres$coiids, FUN = func
   pond_depth_rv_acres_prepped$acres <- ifelse(is.na(pond_depth_rv_acres_prepped$acres), 0, pond_depth_rv_acres_prepped$acres)
   pond_depth_rv_acres_prepped$range <- pond_depth_rv_acres_prepped$range + 0.1
   
-  acreage_unit <- ifelse(min(pond_depth_rv_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                         ifelse(min(pond_depth_rv_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+  acreage_unit <- ifelse(min(pond_depth_rv_acres_prepped$acres[pond_depth_rv_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                         ifelse(min(pond_depth_rv_acres_prepped$acres[pond_depth_rv_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
   
   names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
   
@@ -2646,8 +2646,8 @@ water_table_na_h <- rbind(water_table_h_acres_prepped |>  select(-coiids) |>  dp
 water_table_h_acres_prepped$acres <- ifelse(is.na(water_table_h_acres_prepped$acres), 0, water_table_h_acres_prepped$acres)
 water_table_h_acres_prepped$range <- water_table_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(water_table_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(water_table_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(water_table_h_acres_prepped$acres[water_table_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(water_table_h_acres_prepped$acres[water_table_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -2891,8 +2891,8 @@ water_table_na_l <- rbind(water_table_l_acres_prepped |>  select(-coiids) |>  dp
 water_table_l_acres_prepped$acres <- ifelse(is.na(water_table_l_acres_prepped$acres), 0, water_table_l_acres_prepped$acres)
 water_table_l_acres_prepped$range <- water_table_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(water_table_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(water_table_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(water_table_l_acres_prepped$acres[water_table_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(water_table_l_acres_prepped$acres[water_table_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -3117,8 +3117,8 @@ aspect_r_acres_prepped <- data.frame(aspect = my_seq, row.names = NULL) |>  dply
 aspect_r_acres_prepped$acres <- ifelse(is.na(aspect_r_acres_prepped$acres), 0, aspect_r_acres_prepped$acres)
 aspect_r_acres_prepped$range <- aspect_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(aspect_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(aspect_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(aspect_r_acres_prepped$acres[aspect_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(aspect_r_acres_prepped$acres[aspect_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -3281,8 +3281,8 @@ map_h_acres_prepped <- data.frame(map = my_seq, row.names = NULL) |>  dplyr::ren
 map_h_acres_prepped$acres <- ifelse(is.na(map_h_acres_prepped$acres), 0, map_h_acres_prepped$acres)
 map_h_acres_prepped$range <- map_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(map_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(map_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(map_h_acres_prepped$acres[map_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(map_h_acres_prepped$acres[map_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -3490,8 +3490,8 @@ map_l_acres_prepped <- data.frame(map = my_seq, row.names = NULL) |>  dplyr::ren
 map_l_acres_prepped$acres <- ifelse(is.na(map_l_acres_prepped$acres), 0, map_l_acres_prepped$acres)
 map_l_acres_prepped$range <- map_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(map_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(map_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(map_l_acres_prepped$acres[map_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(map_l_acres_prepped$acres[map_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -3705,8 +3705,8 @@ map_r_acres_prepped <- data.frame(map = my_seq, row.names = NULL) |>  dplyr::ren
 map_r_acres_prepped$acres <- ifelse(is.na(map_r_acres_prepped$acres), 0, map_r_acres_prepped$acres)
 map_r_acres_prepped$range <- map_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(map_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(map_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(map_r_acres_prepped$acres[map_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(map_r_acres_prepped$acres[map_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -3920,8 +3920,8 @@ ffd_h_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) |>  dplyr::ren
 ffd_h_acres_prepped$acres <- ifelse(is.na(ffd_h_acres_prepped$acres), 0, ffd_h_acres_prepped$acres)
 ffd_h_acres_prepped$range <- ffd_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(ffd_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(ffd_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(ffd_h_acres_prepped$acres[ffd_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ffd_h_acres_prepped$acres[ffd_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -4129,8 +4129,8 @@ ffd_l_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) |>  dplyr::ren
 ffd_l_acres_prepped$acres <- ifelse(is.na(ffd_l_acres_prepped$acres), 0, ffd_l_acres_prepped$acres)
 ffd_l_acres_prepped$range <- ffd_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(ffd_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(ffd_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(ffd_l_acres_prepped$acres[ffd_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ffd_l_acres_prepped$acres[ffd_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -4344,8 +4344,8 @@ ffd_r_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) |>  dplyr::ren
 ffd_r_acres_prepped$acres <- ifelse(is.na(ffd_r_acres_prepped$acres), 0, ffd_r_acres_prepped$acres)
 ffd_r_acres_prepped$range <- ffd_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(ffd_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(ffd_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(ffd_r_acres_prepped$acres[ffd_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ffd_r_acres_prepped$acres[ffd_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -4829,8 +4829,8 @@ restriction_na_h <- rbind(restriction_h_acres_prepped |>  select(-coiids) |>  dp
 restriction_h_acres_prepped$acres <- ifelse(is.na(restriction_h_acres_prepped$acres), 0, restriction_h_acres_prepped$acres)
 restriction_h_acres_prepped$range <- restriction_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(restriction_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(restriction_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(restriction_h_acres_prepped$acres[restriction_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(restriction_h_acres_prepped$acres[restriction_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -5015,8 +5015,8 @@ restriction_na_l <- rbind(restriction_l_acres_prepped |>  select(-coiids) |>  dp
 restriction_l_acres_prepped$acres <- ifelse(is.na(restriction_l_acres_prepped$acres), 0, restriction_l_acres_prepped$acres)
 restriction_l_acres_prepped$range <- restriction_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(restriction_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(restriction_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(restriction_l_acres_prepped$acres[restriction_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(restriction_l_acres_prepped$acres[restriction_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -5191,8 +5191,8 @@ restriction_na_r <- rbind(restriction_r_acres_prepped |>  select(-coiids) |>  dp
 restriction_r_acres_prepped$acres <- ifelse(is.na(restriction_r_acres_prepped$acres), 0, restriction_r_acres_prepped$acres)
 restriction_r_acres_prepped$range <- restriction_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(restriction_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(restriction_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(restriction_r_acres_prepped$acres[restriction_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(restriction_r_acres_prepped$acres[restriction_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -5373,8 +5373,8 @@ surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>
 surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
 surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(surf_frag_r_acres_prepped$acres[surf_frag_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(surf_frag_r_acres_prepped$acres[surf_frag_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -5536,8 +5536,8 @@ surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>
 surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
 surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(surf_frag_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(surf_frag_r_acres_prepped$acres[surf_frag_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(surf_frag_r_acres_prepped$acres[surf_frag_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -5712,8 +5712,8 @@ awc_h_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) |>  dplyr::ren
 awc_h_acres_prepped$acres <- ifelse(is.na(awc_h_acres_prepped$acres), 0, awc_h_acres_prepped$acres)
 awc_h_acres_prepped$range <- awc_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(awc_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(awc_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(awc_h_acres_prepped$acres[awc_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(awc_h_acres_prepped$acres[awc_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -5928,8 +5928,8 @@ awc_l_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) |>  dplyr::ren
 awc_l_acres_prepped$acres <- ifelse(is.na(awc_l_acres_prepped$acres), 0, awc_l_acres_prepped$acres)
 awc_l_acres_prepped$range <- awc_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(awc_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(awc_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(awc_l_acres_prepped$acres[awc_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(awc_l_acres_prepped$acres[awc_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -6144,8 +6144,8 @@ awc_r_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) |>  dplyr::ren
 awc_r_acres_prepped$acres <- ifelse(is.na(awc_r_acres_prepped$acres), 0, awc_r_acres_prepped$acres)
 awc_r_acres_prepped$range <- awc_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(awc_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(awc_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(awc_r_acres_prepped$acres[awc_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(awc_r_acres_prepped$acres[awc_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -6359,8 +6359,8 @@ ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::renam
 ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
 ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(ph_h_acres_prepped$acres[ph_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_h_acres_prepped$acres[ph_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -6575,8 +6575,8 @@ ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::renam
 ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
 ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(ph_l_acres_prepped$acres[ph_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_l_acres_prepped$acres[ph_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -6807,8 +6807,8 @@ ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::renam
 ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
 ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(ph_h_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(ph_h_acres_prepped$acres[ph_h_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_h_acres_prepped$acres[ph_h_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -7020,8 +7020,8 @@ ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::renam
 ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
 ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(ph_l_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(ph_l_acres_prepped$acres[ph_l_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(ph_l_acres_prepped$acres[ph_l_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -7224,8 +7224,8 @@ subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = 
 subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
 subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(subsurf_frags_r_acres_prepped$acres[subsurf_frags_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(subsurf_frags_r_acres_prepped$acres[subsurf_frags_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
@@ -7385,8 +7385,8 @@ subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = 
 subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
 subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
 
-acreage_unit <- ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 100, 10, 
-                       ifelse(min(subsurf_frags_r_acres_prepped$acres, na.rm = TRUE) < 1000, 100, 1000))
+acreage_unit <- ifelse(min(subsurf_frags_r_acres_prepped$acres[subsurf_frags_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 10, 
+                       ifelse(min(subsurf_frags_r_acres_prepped$acres[subsurf_frags_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 100, 1000))
 
 names(acreage_unit) <- ifelse(acreage_unit == 10, "tens", ifelse(acreage_unit == 100, "hundreds", "thousands"))
 
