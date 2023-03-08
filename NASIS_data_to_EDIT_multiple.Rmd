@@ -1111,7 +1111,7 @@ if (all(is.na(EDIT_updates_filtered$elev_r_ft))) {print("No data populated in NA
 
   elev_r_stats <- elev.df |>  dplyr::filter(elev == "elev_r_ft")
   elev_r_stats_rep <- rep(elev_r_stats$value, elev_r_stats$acres) 
-  elev_r_stats_rep |>  quantile(c(0.05, 0.95))
+  elev_r_stats_rep |>  quantile(c(0.05, 0.95), na.rm = TRUE)
 
 }
 
