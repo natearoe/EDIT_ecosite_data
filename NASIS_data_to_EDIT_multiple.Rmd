@@ -3778,7 +3778,7 @@ if (all(is.na(EDIT_updates_filtered$map_r_in))) {print("No data populated in NAS
 
   map_r_stats <- map.df |>  dplyr::filter(map == "map_r_in")
   map_r_stats_rep <- rep(map_r_stats$value, map_r_stats$acres) 
-  map_r_stats_rep |>  quantile(c(0.05, 0.95))
+  map_r_stats_rep |>  quantile(c(0.05, 0.95), na.rm = TRUE)
 
 }
 
@@ -4417,7 +4417,7 @@ if (all(is.na(EDIT_updates_filtered$ffd_r))) {print("No data populated in NASIS 
 
   ffd_r_stats <- ffd.df |>  dplyr::filter(ffd == "ffd_r")
   ffd_r_stats_rep <- rep(ffd_r_stats$value, ffd_r_stats$acres) 
-  ffd_r_stats_rep |>  quantile(c(0.05, 0.95))
+  ffd_r_stats_rep |>  quantile(c(0.05, 0.95), na.rm = TRUE)
 
 }
 
