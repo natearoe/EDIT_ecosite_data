@@ -5286,6 +5286,10 @@ Surface frag percent cover should be rounded appropriate to the data. For many s
 
 EDIT_updates_filtered$frags_hi_2mm_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf), 0, EDIT_updates_filtered$frags_hi_2mm_3in_on_surf)
 
+EDIT_updates_filtered$frags_lo_2mm_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf), 0, EDIT_updates_filtered$frags_lo_2mm_3in_on_surf)
+
+EDIT_updates_filtered$frags_r_2mm_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf), 0, EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
+
 if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
 } else{
@@ -5447,8 +5451,6 @@ Surface frag percent cover should be rounded appropriate to the data. For many s
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-EDIT_updates_filtered$frags_lo_2mm_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf), 0, EDIT_updates_filtered$frags_lo_2mm_3in_on_surf)
-
 if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
 } else{
@@ -5608,8 +5610,6 @@ if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf))) {print("No data 
 Surface frag percent cover should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
-
-EDIT_updates_filtered$frags_r_2mm_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf), 0, EDIT_updates_filtered$frags_r_2mm_3in_on_surf)
 
 if (all(is.na(EDIT_updates_filtered$frags_r_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
@@ -5774,6 +5774,10 @@ Surface frag percent cover should be rounded appropriate to the data. For many s
 
 EDIT_updates_filtered$frags_hi_gt_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_hi_gt_3in_on_surf), 0, EDIT_updates_filtered$frags_hi_gt_3in_on_surf)
 
+EDIT_updates_filtered$frags_lo_gt_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_lo_gt_3in_on_surf), 0, EDIT_updates_filtered$frags_lo_gt_3in_on_surf)
+
+EDIT_updates_filtered$frags_r_gt_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf), 0, EDIT_updates_filtered$frags_r_gt_3in_on_surf)
+
 if (all(is.na(EDIT_updates_filtered$frags_hi_gt_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
 } else{
@@ -5936,8 +5940,6 @@ Surface frag percent cover should be rounded appropriate to the data. For many s
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-EDIT_updates_filtered$frags_lo_gt_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_lo_gt_3in_on_surf), 0, EDIT_updates_filtered$frags_lo_gt_3in_on_surf)
-
 if (all(is.na(EDIT_updates_filtered$frags_lo_gt_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
 } else{
@@ -6099,8 +6101,6 @@ if (all(is.na(EDIT_updates_filtered$frags_lo_gt_3in_on_surf))) {print("No data p
 Surface frag percent cover should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
-
-EDIT_updates_filtered$frags_r_gt_3in_on_surf <- ifelse(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf), 0, EDIT_updates_filtered$frags_r_gt_3in_on_surf)
 
 if (all(is.na(EDIT_updates_filtered$frags_r_gt_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
@@ -7804,6 +7804,13 @@ Surface frag percent cover should be rounded appropriate to the data. For many s
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
+EDIT_updates_filtered$subsurf_frags_hi_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in), 0, EDIT_updates_filtered$subsurf_frags_hi_2mm.3in)
+
+EDIT_updates_filtered$subsurf_frags_lo_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in), 0, EDIT_updates_filtered$subsurf_frags_lo_2mm.3in)
+
+EDIT_updates_filtered$subsurf_frags_r_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$subsurf_frags_r_2mm.3in), 0, EDIT_updates_filtered$subsurf_frags_r_2mm.3in)
+
+
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
   
 } else{
@@ -8289,6 +8296,12 @@ Subsurface frags are depth 0-60in.
 Surface frag percent cover should be rounded appropriate to the data. For many situations, rounding to multiples of five works well. 
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
+
+EDIT_updates_filtered$subsurf_frags_hi_gt_3in <- ifelse(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in), 0, EDIT_updates_filtered$subsurf_frags_hi_gt_3in)
+
+EDIT_updates_filtered$subsurf_frags_lo_gt_3in <- ifelse(is.na(EDIT_updates_filtered$subsurf_frags_lo_gt_3in), 0, EDIT_updates_filtered$subsurf_frags_lo_gt_3in)
+
+EDIT_updates_filtered$subsurf_frags_r_gt_3in <- ifelse(is.na(EDIT_updates_filtered$subsurf_frags_r_gt_3in), 0, EDIT_updates_filtered$subsurf_frags_r_gt_3in)
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in))) {print("No data populated in NASIS for this field.")
   
