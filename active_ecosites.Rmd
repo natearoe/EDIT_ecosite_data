@@ -3,19 +3,16 @@ title: "active_ecosites"
 author: "Nathan Roe"
 date: "2/22/2022"
 output: html_document
+params:
+  MLRA: 'placeholder'
+  MLRA2: 'placeholer'
 ---
 
 This script is designed to determine which ecosites are actively correlated to a soil component
 (only major components and non-miscellaneous area components) in your MLRA. It builds off of Step 2
 in the 'EDIT ecosite data' work flow (https://github.com/natearoe/EDIT_ecosite_data). 
 
-Note: You will need to change line 27 to the path where you saved your NASIS report from Step 2. 
-The easiest way to do that is to find the file that you created in Step 2, your NASIS ecosite report. 
-It should be in the folder with all your other 'EDIT ecosite data' files. Shift + right click > 
-copy as path. Then paste the path in, replacing the existing one. That path will have backslashes \ 
-these all need to be changed to forwardslashes /. 
-
-Also, you will need to make changes on lines 50 and 57 (i.e., changing the MLRA of interest). 
+You will need to make changes on lines 24 and 25 to define your MLRA of interest. If you are interested in a single MLRA, then lines 24 (MLRA) and 25 (MLRA2) can be set to identical values. If you are interested in two MLRAs, you can change line 25 (MLRA2) to the second MLRA of interest.
 
 library
 ```{r, message=FALSE, warning=FALSE}
@@ -24,7 +21,11 @@ library(stringr)
 ```
 
 ```{r}
-NASIS_report <- read.csv("C:/Users/Nathan.Roe/Documents/PES4ever/NASIS_ecosite_to_EDIT/EDIT_ecosite_data/ecosite_report.csv")
+MLRA <- "018"
+MLRA2 <- "018"
+
+pardir<- dirname(rstudioapi::getActiveDocumentContext()$path)
+NASIS_report <- read.csv(paste(pardir, "/ecosite_report.csv", sep = ""))
 ```
 
 only major components and non-miscellaneous areas
@@ -47,14 +48,14 @@ ecosite_MLRAs
 
 want to refine down to only a particular MLRA? I am interested in MLRA 018. Change the "018" portion according to your needs.
 ```{r}
-MLRA18_ecosites <- ecosite_df$Ecosite[str_which(ecosite_df$Ecosite, "(?<=R|F{1})018")]
+MLRA18_ecosites <- ecosite_df$Ecosite[str_which(ecosite_df$Ecosite, paste("(?<=R|F{1})", MLRA, sep = ""))]
 MLRA18_ecosites
 ```
 
 interested in multiple MLRAs? Now I have defined MLRAs 018 and 022. I will continue the script using MLRA18_ecosites, not multiple_ecosites. If you 
 are interested in multiple_MLRAs, you will need to find/replace MLRA18_ecosites for multiple_MLRAs below. 
 ```{r}
-multiple_MLRAs <- ecosite_df$Ecosite[c(str_which(ecosite_df$Ecosite, "(?<=R|F{1})018"), str_which(ecosite_df$Ecosite, "(?<=R|F{1})018"))]
+multiple_MLRAs <- ecosite_df$Ecosite[c(str_which(ecosite_df$Ecosite, paste("(?<=R|F{1})", MLRA, sep = "")), str_which(ecosite_df$Ecosite, paste("(?<=R|F{1})", MLRA2, sep = "")))]
 ```
 
 create concatenation of ecosites for use in the next step of the 'EDIT ecosite data' workflow. 
