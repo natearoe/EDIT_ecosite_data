@@ -21,7 +21,7 @@ library(stringr)
 ```
 
 ```{r}
-MLRA <- "018"
+MLRA <- "022"
 MLRA2 <- "018"
 
 pardir<- dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -62,7 +62,7 @@ create concatenation of ecosites for use in the next step of the 'EDIT ecosite d
 ```{r}
 options(useFancyQuotes = FALSE)
 
-ecosite_concat <- paste("c(", paste(sQuote(MLRA18_ecosites), collapse = ", "), ")")
+ecosite_concat <- paste("c(", paste(sQuote(multiple_MLRAs), collapse = ", "), ")")
 ecosite_concat
 ```
 

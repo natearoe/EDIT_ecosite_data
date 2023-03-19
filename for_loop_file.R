@@ -16,16 +16,29 @@
 #
 # Once you have made those change, Ctrl+ a, then click Run in the top right corner.
 
-ecosites_of_interest <- c( 'F018XC201CA', 'F018XI201CA', 'F018XI200CA', 'R018XI163CA', 'F018XI205CA', 'R018XE104CA', 'F018XE201CA', 'F018XA201CA', 'F018XI202CA', 'R018XE103CA', 'R018XA103CA', 'R018XC105CA', 'R018XE101CA', 'R018XI105CA', 'R018XI107CA', 'R018XC107CA', 'F018XI208CA', 'F018XA202CA', 'R018XI106CA', 'R018XI164CA', 'R018XC104CA', 'R018XE102CA', 'R018XX101CA', 'R018XC103CA', 'F018XC203CA', 'F018XI207CA', 'R018XD092CA', 'R018XA101CA', 'R018XC101CA', 'R018XC106CA', 'R018XI101CA', 'R018XI102CA', 'R018XC102CA', 'R018XD089CA', 'R018XI111CA', 'R018XA102CA', 'R018XD076CA', 'R018XA104CA', 'R018XI103CA', 'R018XI125CA', 'F018XI204CA', 'R018XD082CA', 'R018XD091CA', 'F018XI206CA', 'R018XC109CA', 'R018XD001CA', 'R018XI104CA', 'R018XC110CA', 'R018XD064CA', 'R018XD066CA', 'R018XD075CA', 'R018XD084CA', 'R018XD095CA' )
-# I am now including a map of the distribution of the ecosite. To do that, I am going to read in the shapefiles here, that way they aren't
+library(plyr)
+library(dplyr)
+library(wordcloud)
+library(wordcloud2)
+library(ggplot2)
+library(plotly)
+library(manipulateWidget)
+library(knitr)
+library(stringr)
+library(DescTools)
+
+ecosites_of_interest <- c( 'F022AD102CA', 'F022AH102CA', 'R022AD002CA', 'R022AA010CA', 'F022AD104CA', 'R022AK002CA', 'F022AH106CA', 'R022AB010CA', 'F022AB100CA', 'F022AD103CA', 'F022AH104CA', 'F022AB114CA', 'R022AH001CA', 'R022AX000CA', 'F022AD101CA', 'F022AK101CA', 'F022AX017CA', 'R022AA102CA', 'R022AD009CA', 'R022AH000CA', 'R022AK001CA', 'F022AB111CA', 'F022AH101CA', 'F022AH203CA', 'F022AK100CA', 'F022AX014CA', 'R022AA106CA', 'R022AB001CA', 'R022AD001CA', 'R022AD003CA', 'R022AD007CA', 'R022AD010CA', 'R022AX007CA', 'R022AX008CA', 'R022AX009CA', 'R022AX010CA', 'R022AX011CA', 'F022AB108CA', 'F022AB113CA', 'F022AD100CA', 'F022AD105CA', 'F022AH201CA', 'F022AX005CA', 'R022AA101CA', 'R022AA104CA', 'R022AB004CA', 'R022AB006CA', 'R022AB009CA', 'R022AB012CA', 'R022AX001CA', 'R022AX006CA', 'R018XC107CA', 'F018XC201CA', 'F018XC203CA', 'R018XC109CA', 'R018XX101CA', 'R018XC110CA' )# I am now including a map of the distribution of the ecosite. To do that, I am going to read in the shapefiles here, that way they aren't
 # read within the looping which would require the shapefiles to be read as many times as you have sites.
 
 # mapunit_boundaries <- sf::read_sf("C:/Users/Nathan.Roe/Documents/PES/gSSURGO_CA_2022.gdb", "mupolygon")
 # mlra_boundaries <- read_sf("C:/Users/Nathan.Roe/Documents/PES/MLRA_52_2022/MLRA_52_2022/MLRA_52.shp")
 
+pardir<- dirname(rstudioapi::getActiveDocumentContext()$path)
+NASIS_data_multiple <- paste(pardir, "/NASIS_data_to_EDIT_multiple.Rmd", sep = "")
+
 
 for (ecosites_of_interest in ecosites_of_interest) {
-  rmarkdown::render(input = "C:/Users/Nathan.Roe/Documents/SEKI/edit_reports/NASIS_data_to_EDIT_multiple.Rmd",
+  rmarkdown::render(input = NASIS_data_multiple,
                     output_file = paste0(ecosites_of_interest,".html"),
                     params = list(ecosites_of_interest = ecosites_of_interest))
 }
