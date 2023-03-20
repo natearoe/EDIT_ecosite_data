@@ -20,7 +20,7 @@ library(dplyr)
 library(stringr)
 ```
 
-Concatenate your MLRAs of interest. There can be one or more. 
+Concatenate your MLRAs of interest. There can be one or more. It should have three numeric digits. For example, MLRA 18 would be 018. MLRA 22A would be 022A. MLRA 109 would be 109.
 ```{r}
 MLRAs <- c("022", "018")
 
