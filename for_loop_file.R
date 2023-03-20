@@ -33,8 +33,7 @@ ecosites_of_interest <- c( 'F022AD102CA', 'F022AH102CA', 'R022AD002CA', 'R022AA0
 # mapunit_boundaries <- sf::read_sf("C:/Users/Nathan.Roe/Documents/PES/gSSURGO_CA_2022.gdb", "mupolygon")
 # mlra_boundaries <- read_sf("C:/Users/Nathan.Roe/Documents/PES/MLRA_52_2022/MLRA_52_2022/MLRA_52.shp")
 
-pardir<- dirname(rstudioapi::getActiveDocumentContext()$path)
-NASIS_data_multiple <- paste(pardir, "/NASIS_data_to_EDIT_multiple.Rmd", sep = "")
+NASIS_data_multiple <- "./NASIS_data_to_EDIT_multiple.Rmd"
 
 
 for (ecosites_of_interest in ecosites_of_interest) {
