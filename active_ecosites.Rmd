@@ -58,7 +58,9 @@ MLRAs_vector <- NULL
 
 create concatenation of ecosites for use in the next step of the 'EDIT ecosite data' workflow. 
 ```{r}
-paste0("c(", paste(MLRAs_vector |> paste(collapse = ", ")), ")")
+options(useFancyQuotes = FALSE)
+ecosite_concat <- paste("c(", paste(sQuote(MLRAs_vector), collapse = ", "), ")")
+ecosite_concat
 ```
 
 This list of ecosites is going to be important in the 'EDIT ecosite data' process. You should select/copy the concatenated output from
