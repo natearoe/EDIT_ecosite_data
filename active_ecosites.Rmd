@@ -12,7 +12,7 @@ This script is designed to determine which ecosites are actively correlated to a
 (only major components and non-miscellaneous area components) in your MLRA. It builds off of Step 2
 in the 'EDIT ecosite data' work flow (https://github.com/natearoe/EDIT_ecosite_data). 
 
-You will need to make changes on lines 24 and 25 to define your MLRA of interest. If you are interested in a single MLRA, then lines 24 (MLRA) and 25 (MLRA2) can be set to identical values. If you are interested in two MLRAs, you can change line 25 (MLRA2) to the second MLRA of interest.
+You will need to identify the MLRAs of interest on line 25.
 
 library
 ```{r, message=FALSE, warning=FALSE}
@@ -20,12 +20,11 @@ library(dplyr)
 library(stringr)
 ```
 
+Concatenate your MLRAs of interest. There can be one or more. 
 ```{r}
-MLRA <- "022"
-MLRA2 <- "018"
+MLRAs <- c("022", "018")
 
-pardir<- dirname(rstudioapi::getActiveDocumentContext()$path)
-NASIS_report <- read.csv(paste(pardir, "/ecosite_report.csv", sep = ""))
+NASIS_report <- read.csv("./ecosite_report.csv")
 ```
 
 only major components and non-miscellaneous areas
@@ -46,27 +45,23 @@ ecosite_MLRAs <- unique(str_sub(ecosite_df$Ecosite, start = 2L, end = 4L))
 ecosite_MLRAs
 ```
 
-want to refine down to only a particular MLRA? I am interested in MLRA 018. Change the "018" portion according to your needs.
+Reduce to ecosites in MLRAs of interest
 ```{r}
-MLRA18_ecosites <- ecosite_df$Ecosite[str_which(ecosite_df$Ecosite, paste("(?<=R|F{1})", MLRA, sep = ""))]
-MLRA18_ecosites
-```
+MLRAs_vector <- NULL
 
-interested in multiple MLRAs? Now I have defined MLRAs 018 and 022. I will continue the script using MLRA18_ecosites, not multiple_ecosites. If you 
-are interested in multiple_MLRAs, you will need to find/replace MLRA18_ecosites for multiple_MLRAs below. 
-```{r}
-multiple_MLRAs <- ecosite_df$Ecosite[c(str_which(ecosite_df$Ecosite, paste("(?<=R|F{1})", MLRA, sep = "")), str_which(ecosite_df$Ecosite, paste("(?<=R|F{1})", MLRA2, sep = "")))]
+ for(i in seq(MLRAs)){
+  MLRAs_new <- stringr::str_subset(ecosite_df$Ecosite, pattern = paste("(?<=R|F{1})", MLRAs[i], sep = ""))
+  MLRAs_vector <- c(MLRAs_vector, MLRAs_new)
+ }
+
 ```
 
 create concatenation of ecosites for use in the next step of the 'EDIT ecosite data' workflow. 
 ```{r}
-options(useFancyQuotes = FALSE)
-
-ecosite_concat <- paste("c(", paste(sQuote(multiple_MLRAs), collapse = ", "), ")")
-ecosite_concat
+paste0("c(", paste(MLRAs_vector |> paste(collapse = ", ")), ")")
 ```
 
-This list of ecosites is going to be important in the 'EDIT ecosite data' process. You should select/copy the contacenated output from
+This list of ecosites is going to be important in the 'EDIT ecosite data' process. You should select/copy the concatenated output from
 c( to ). For example c('F018XC201CA', 'F018XI205CA', 'R018XI163CA'). You do not want the outer most quotation marks. 
 
 Important: Perform QC on this list of ecosites. Sometimes, you might find that a component was correlated to two ecosites. This could result in something like, 'R018XI163CA & R018XD076CA'. These should be removed. Any other ecosites that are clearly erroneous should be removed as well. 

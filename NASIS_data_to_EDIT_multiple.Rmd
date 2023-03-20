@@ -33,11 +33,9 @@ Visit the [GitHub repository](https://github.com/natearoe/EDIT_ecosite_data) for
 knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 ```
 
-
 <!-- **Read in NASIS report** -->
 ```{r class.source = "fold-show", echo=FALSE}
-pardir<- dirname(rstudioapi::getActiveDocumentContext()$path)
-EDIT_updates <- read.csv(paste(pardir, "/ecosite_report.csv", sep = ""))
+EDIT_updates <- read.csv("./ecosite_report.csv")
 ```
 
 <!-- **Remove miscellaneous areas** -->
@@ -48,7 +46,6 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
 EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
-
 ```
 
 <!-- **Determine component acreage unit** -->
