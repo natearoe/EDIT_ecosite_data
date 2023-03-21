@@ -103,7 +103,8 @@ Several properties in EDIT have the option to include multiple values, including
 
 **Full landform string table by acreage and number of components**
 ```{r}
-if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$landform)) | 
+    all(EDIT_updates_filtered$landform == "")) {print("No data populated in NASIS for this field.")
   
 } else{
   
