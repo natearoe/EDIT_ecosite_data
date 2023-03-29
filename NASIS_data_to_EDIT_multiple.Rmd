@@ -45,7 +45,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == 'F022AD102CA')
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -593,55 +593,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) &
   seq(plyr::round_any(min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$elev_h_ft, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# elev.df.acres <- elev.df
-# elev.df.acres$value <- ifelse(elev.df.acres$value == 0, elev.df.acres$value + 0.1, elev.df.acres$value)
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-    
-      my_list[[i]] <- elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- elev.df |>  dplyr::filter(elev%in% c("elev_h_ft", "elev_l_ft")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq  
   
 }
-
-}
-
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(elev) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-elev_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
 
 }
 
@@ -662,40 +617,29 @@ el_h1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
 el_h1 <- plotly::ggplotly(el_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage histogram
 
-elev_h_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) |>  dplyr::rename(range = elev) |>                           dplyr::left_join(elev_acres |> dplyr::filter(elev == "elev_h_ft"))
-
-elev_h_acres_prepped$acres <- ifelse(is.na(elev_h_acres_prepped$acres), 0, elev_h_acres_prepped$acres)
-elev_h_acres_prepped$range <- elev_h_acres_prepped$range + 0.1
-
-
-expand_elev_h <- elev_h_acres_prepped[rep(1:nrow(elev_h_acres_prepped), times = plyr::round_any(elev_h_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "elev", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-el_h2 <- ggplot2::ggplot(expand_elev_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+el_h2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Elevation (ft.)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]
+  )
 
-# Convert to plotly
+# COnvert acreage histogram to plotly
 
 el_h2 <- plotly::ggplotly(el_h2, tooltip = "text")
 
@@ -706,6 +650,7 @@ manipulateWidget::combineWidgets(el_h1,
                                  nrow = 1,
                                  ncol = 2,
                                  colsize = c(1, 1))
+
 
 }
 
@@ -754,38 +699,26 @@ el_l1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
 el_l1 <- plotly::ggplotly(el_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-elev_l_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) |>  dplyr::rename(range = elev) |>                           dplyr::left_join(elev_acres |> dplyr::filter(elev == "elev_l_ft"))
-
-elev_l_acres_prepped$acres <- ifelse(is.na(elev_l_acres_prepped$acres), 0, elev_l_acres_prepped$acres)
-elev_l_acres_prepped$range <- elev_l_acres_prepped$range + 0.1
-
-
-expand_elev_l <- elev_l_acres_prepped[rep(1:nrow(elev_l_acres_prepped), times = plyr::round_any(elev_l_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "elev", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-el_l2 <- ggplot2::ggplot(expand_elev_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+el_l2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Elevation (ft.)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -844,38 +777,26 @@ el_r1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "ele
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
 el_r1 <- plotly::ggplotly(el_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-elev_r_acres_prepped <- data.frame(elev = my_seq, row.names = NULL) |>  dplyr::rename(range = elev) |>                           dplyr::left_join(elev_acres |> dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")))
-
-elev_r_acres_prepped$acres <- ifelse(is.na(elev_r_acres_prepped$acres), 0, elev_r_acres_prepped$acres)
-elev_r_acres_prepped$range <- elev_r_acres_prepped$range + 0.1
-
-
-expand_elev_r <- elev_r_acres_prepped[rep(1:nrow(elev_r_acres_prepped), times = plyr::round_any(elev_r_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "elev", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-el_r2 <- ggplot2::ggplot(expand_elev_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+el_r2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Elevation (ft.)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -934,8 +855,8 @@ if (all(is.na(EDIT_updates_filtered$slope_h)) &
 
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+bin_width <- 5
+round_by <- 5
 
 # Default dataframe
 
@@ -957,51 +878,11 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$slope_l, na.rm = TRUE) &
   seq(plyr::round_any(min(EDIT_updates_filtered$slope_l, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$slope_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
   
-for(i in names(my_seq)){
-  
-  if(i == 0){
-    
-      my_list[[i]] <- slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq   
   
 }
 
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(slope) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-slope_acres <- do.call(rbind, my_list_summarised) 
-
-# Acreage unit
-  
-acreage_unit <- ifelse(min(slope_acres$acres[slope_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(slope_acres$acres[slope_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(slope_acres$acres[slope_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(slope_acres$acres[slope_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands")))) 
 }
 ```
 
@@ -1020,38 +901,26 @@ slope_h1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Slope high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
 slope_h1 <- plotly::ggplotly(slope_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-slope_h_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) |>  dplyr::rename(range = slope) |> 
-                        dplyr::left_join(slope_acres |> dplyr::filter(slope == "slope_h"))
-
-slope_h_acres_prepped$acres <- ifelse(is.na(slope_h_acres_prepped$acres), 0, slope_h_acres_prepped$acres)
-slope_h_acres_prepped$range <- slope_h_acres_prepped$range + 0.1
-
-expand_slope_h <- slope_h_acres_prepped[rep(1:nrow(slope_h_acres_prepped), times = plyr::round_any(slope_h_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "slope", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-slope_h2 <- ggplot2::ggplot(expand_slope_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+slope_h2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Slope high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Slope (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -1110,38 +979,27 @@ slope_l1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Slope low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Slope (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
 slope_l1 <- plotly::ggplotly(slope_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-slope_l_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) |>  dplyr::rename(range = slope) |> 
-                        dplyr::left_join(slope_acres |> dplyr::filter(slope == "slope_l"))
-
-slope_l_acres_prepped$acres <- ifelse(is.na(slope_l_acres_prepped$acres), 0, slope_l_acres_prepped$acres)
-slope_l_acres_prepped$range <- slope_l_acres_prepped$range + 0.1
-
-expand_slope_l <- slope_l_acres_prepped[rep(1:nrow(slope_l_acres_prepped), times = plyr::round_any(slope_l_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "slope", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-slope_l2 <- ggplot2::ggplot(expand_slope_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+slope_l2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Slope low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Slope (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Slope (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert to plotly
 
@@ -1201,38 +1059,26 @@ slope_r1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Slope representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
 slope_r1 <- plotly::ggplotly(slope_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-slope_r_acres_prepped <- data.frame(slope = my_seq, row.names = NULL) |>  dplyr::rename(range = slope) |> 
-                        dplyr::left_join(slope_acres |> dplyr::filter(slope %in% c("slope_l", "slope_h")))
-
-slope_r_acres_prepped$acres <- ifelse(is.na(slope_r_acres_prepped$acres), 0, slope_r_acres_prepped$acres)
-slope_r_acres_prepped$range <- slope_r_acres_prepped$range + 0.1
-
-expand_slope_r <- slope_r_acres_prepped[rep(1:nrow(slope_r_acres_prepped), times = plyr::round_any(slope_r_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "slope", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-slope_r2 <- ggplot2::ggplot(expand_slope_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+slope_r2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Slope representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Slope (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -1312,57 +1158,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pond_depth_l, na.rm = TRUE
   seq(plyr::round_any(min(EDIT_updates_filtered$pond_depth_l, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$pond_depth_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-      
-  my_list[[i]] <- pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_h", "pond_depth_l")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-    
-  my_list[[i]] <- pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_h", "pond_depth_l")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq   
   
 }
-
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(pond_depth) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-
-pond_depth_acres <- do.call(rbind, my_list_summarised) |> 
-  dplyr::mutate(numb_coiids = sapply(coiids, FUN = function(x){
-    x |> stringr::str_split(",") |> unlist() |> length()
-  }))
-
-pond_depth_acres_na <- pond_depth.df |> cbind(range = NA) |>  dplyr::filter(is.na(value)) |> dplyr::group_by(pond_depth, range) |>  
-                                dplyr::summarise(acres = sum(acres), coiids = dplyr::n()) 
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(pond_depth_acres$acres[pond_depth_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(pond_depth_acres$acres[pond_depth_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(pond_depth_acres$acres[pond_depth_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(pond_depth_acres$acres[pond_depth_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
 
 }
 ```
@@ -1382,7 +1181,6 @@ pond_depth_h1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Ponding depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1392,28 +1190,15 @@ pond_depth_h1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
 
 pond_depth_h1 <- plotly::ggplotly(pond_depth_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-pond_depth_h_acres_prepped <- data.frame(pond_depth = my_seq, row.names = NULL) |>  dplyr::rename(range = pond_depth) |> 
-                        dplyr::left_join(pond_depth_acres |> dplyr::filter(pond_depth == "pond_depth_h"))
-
-pond_depth_na_h <- rbind(pond_depth_h_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), pond_depth_acres_na |> dplyr::filter(pond_depth == "pond_depth_h"))
-
-pond_depth_h_acres_prepped$acres <- ifelse(is.na(pond_depth_h_acres_prepped$acres), 0, pond_depth_h_acres_prepped$acres)
-pond_depth_h_acres_prepped$range <- pond_depth_h_acres_prepped$range + 0.1
-
-expand_pond_depth_h <- pond_depth_h_acres_prepped[rep(1:nrow(pond_depth_h_acres_prepped), times = plyr::round_any(pond_depth_h_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "pond_depth", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-pond_depth_h2 <- ggplot2::ggplot(expand_pond_depth_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+pond_depth_h2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Ponding depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Ponding depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -1439,10 +1224,10 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_h))) {print("No data populated in
   
 } else{
   
-  pond_depth_sum_df <- pond_depth_na_h |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(pond_depth), pond_depth)
- 
-  pond_depth_sum_df |> dplyr::select(full_range, everything(), -range) 
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$pond_depth_h)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$pond_depth_h))/length(EDIT_updates_filtered$pond_depth_h),
+             check.names = FALSE)
+
   
 }
 ```
@@ -1491,7 +1276,6 @@ pond_depth_l1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Ponding depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1501,28 +1285,15 @@ pond_depth_l1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
 
 pond_depth_l1 <- plotly::ggplotly(pond_depth_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-pond_depth_l_acres_prepped <- data.frame(pond_depth = my_seq, row.names = NULL) |>  dplyr::rename(range = pond_depth) |> 
-                        dplyr::left_join(pond_depth_acres |> dplyr::filter(pond_depth == "pond_depth_l"))
-
-pond_depth_na_l <- rbind(pond_depth_l_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), pond_depth_acres_na |> dplyr::filter(pond_depth == "pond_depth_l"))
-
-pond_depth_l_acres_prepped$acres <- ifelse(is.na(pond_depth_l_acres_prepped$acres), 0, pond_depth_l_acres_prepped$acres)
-pond_depth_l_acres_prepped$range <- pond_depth_l_acres_prepped$range + 0.1
-
-expand_pond_depth <- pond_depth_l_acres_prepped[rep(1:nrow(pond_depth_l_acres_prepped), times = plyr::round_any(pond_depth_l_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "pond_depth", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-pond_depth_l2 <- ggplot2::ggplot(expand_pond_depth, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+pond_depth_l2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Ponding depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Ponding depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -1548,10 +1319,9 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_l))) {print("No data populated in
   
 } else{
   
-   pond_depth_sum_df_l <- pond_depth_na_l |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(pond_depth), pond_depth)
- 
-  pond_depth_sum_df_l |> dplyr::select(full_range, everything(), -range) 
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$pond_depth_l)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$pond_depth_l))/length(EDIT_updates_filtered$pond_depth_l),
+             check.names = FALSE)
 }
 
 ```
@@ -1601,7 +1371,6 @@ pond_depth_r1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in%
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Ponding depth representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1611,28 +1380,15 @@ pond_depth_r1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in%
 
 pond_depth_r1 <- plotly::ggplotly(pond_depth_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-pond_depth_r_acres_prepped <- data.frame(pond_depth = my_seq, row.names = NULL) |>  dplyr::rename(range = pond_depth) |> 
-                        dplyr::left_join(pond_depth_acres)
-
-pond_depth_na_r <- rbind(pond_depth_r_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), pond_depth_acres_na)
-
-pond_depth_r_acres_prepped$acres <- ifelse(is.na(pond_depth_r_acres_prepped$acres), 0, pond_depth_r_acres_prepped$acres)
-pond_depth_r_acres_prepped$range <- pond_depth_r_acres_prepped$range + 0.1
-
-expand_pond_depth <- pond_depth_r_acres_prepped[rep(1:nrow(pond_depth_r_acres_prepped), times = plyr::round_any(pond_depth_r_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "pond_depth", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-pond_depth_r2 <- ggplot2::ggplot(expand_pond_depth, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+pond_depth_r2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_l", "pond_depth_h")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Ponding depth representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Ponding depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -1658,10 +1414,9 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_l & EDIT_updates_filtered$pond_de
   
 } else{
   
-  pond_depth_sum_df_r <- pond_depth_na_r |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(pond_depth), pond_depth)
- 
-  pond_depth_sum_df_r |> dplyr::select(full_range, everything(), -range) |> dplyr::group_by(full_range) |> dplyr::summarise(acres = sum(acres), coiids = sum(coiids))
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$pond_depth_h)) + sum(is.na(EDIT_updates_filtered$pond_depth_h)),
+             '% components NA' = 100*(sum(is.na(EDIT_updates_filtered$pond_depth_h)) + sum(is.na(EDIT_updates_filtered$pond_depth_h)))/
+               (length(EDIT_updates_filtered$pond_depth_h) * 2), check.names = FALSE)
   
 }
 
@@ -1732,58 +1487,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$water_table_l_in, na.rm = 
   seq(plyr::round_any(min(EDIT_updates_filtered$water_table_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$water_table_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-      
-  my_list[[i]] <- water_table.df |>  dplyr::filter(water_table %in% c("water_table_h_in", "water_table_l_in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-    
-  my_list[[i]] <- water_table.df |>  dplyr::filter(water_table %in% c("water_table_h_in", "water_table_l_in")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq   
   
 }
-
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(water_table) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-water_table_acres <- do.call(rbind, my_list_summarised) |> 
-  dplyr::mutate(numb_coiids = sapply(coiids, FUN = function(x){
-    x |> stringr::str_split(",") |> unlist() |> length()
-  }))
-
-water_table_acres_na <- water_table.df |> cbind(range = NA) |>  dplyr::filter(is.na(value)) |> dplyr::group_by(water_table, range) |>  
-                                dplyr::summarise(acres = sum(acres), coiids = dplyr::n()) 
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(water_table_acres$acres[water_table_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(water_table_acres$acres[water_table_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(water_table_acres$acres[water_table_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(water_table_acres$acres[water_table_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
-
 
 }
 ```
@@ -1803,7 +1510,6 @@ water_table_h1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Water table high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1813,28 +1519,15 @@ water_table_h1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
 
 water_table_h1 <- plotly::ggplotly(water_table_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-water_table_h_acres_prepped <- data.frame(water_table = my_seq, row.names = NULL) |>  dplyr::rename(range = water_table) |> 
-                        dplyr::left_join(water_table_acres |> dplyr::filter(water_table == "water_table_h_in"))
-
-water_table_na_h <- rbind(water_table_h_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), water_table_acres_na |> dplyr::filter(water_table == "water_table_h_in"))
-
-water_table_h_acres_prepped$acres <- ifelse(is.na(water_table_h_acres_prepped$acres), 0, water_table_h_acres_prepped$acres)
-water_table_h_acres_prepped$range <- water_table_h_acres_prepped$range + 0.1
-
-expand_water_table_h <- water_table_h_acres_prepped[rep(1:nrow(water_table_h_acres_prepped), times = water_table_h_acres_prepped$acres/acreage_unit), c("range", "water_table", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-water_table_h2 <- ggplot2::ggplot(expand_water_table_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+water_table_h2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Water table high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Water table (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -1860,10 +1553,9 @@ if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populate
   
 } else{
   
-  water_table_sum_df <- water_table_na_h |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(water_table), water_table)
- 
-  water_table_sum_df |> dplyr::select(full_range, everything(), -range) 
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$water_table_h_in)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$water_table_h_in))/length(EDIT_updates_filtered$water_table_h_in),
+             check.names = FALSE) 
   
 }
 ```
@@ -1911,7 +1603,6 @@ water_table_l1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Water table low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1921,28 +1612,15 @@ water_table_l1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
 
 water_table_l1 <- plotly::ggplotly(water_table_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-water_table_l_acres_prepped <- data.frame(water_table = my_seq, row.names = NULL) |>  dplyr::rename(range = water_table) |> 
-                        dplyr::left_join(water_table_acres |> dplyr::filter(water_table == "water_table_l_in"))
-
-water_table_na_l <- rbind(water_table_l_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), water_table_acres_na |> dplyr::filter(water_table == "water_table_l_in"))
-
-water_table_l_acres_prepped$acres <- ifelse(is.na(water_table_l_acres_prepped$acres), 0, water_table_l_acres_prepped$acres)
-water_table_l_acres_prepped$range <- water_table_l_acres_prepped$range + 0.1
-
-expand_water_table <- water_table_l_acres_prepped[rep(1:nrow(water_table_l_acres_prepped), times = water_table_l_acres_prepped$acres/acreage_unit), c("range", "water_table", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-water_table_l2 <- ggplot2::ggplot(expand_water_table, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+water_table_l2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Water table low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Water table (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -1968,10 +1646,9 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populate
   
 } else{
   
-      water_table_sum_df <- water_table_na_l |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(water_table), water_table)
- 
-  water_table_sum_df |> dplyr::select(full_range, everything(), -range) 
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$water_table_l_in)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$water_table_l_in))/length(EDIT_updates_filtered$water_table_l_in),
+             check.names = FALSE)
 
 }
 
@@ -1987,7 +1664,7 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populate
   
     water_table_na_l_rem_expanded <- rep(EDIT_updates_filtered$water_table_l_in, EDIT_updates_filtered$comp_acres/comp_acreage_unit) |> sort(na.last = TRUE)
 
-   data.frame("5%" = water_table_na_l_rem_expanded[ceiling(0.05 * length(water_table_na_l_rem_expanded))], 
+    data.frame("5%" = water_table_na_l_rem_expanded[ceiling(0.05 * length(water_table_na_l_rem_expanded))], 
              check.names = FALSE)
   
 }
@@ -2015,45 +1692,39 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in)) & all(is.na(EDIT_updates_
 
 # Create component histogram
 
-water_table_r1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table %in% c("water_table_l_in", "water_table_h_in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-  binwidth = bin_width,
-  center = min(my_seq) + bin_width/2,
-  color = "black",
-  fill = "grey") + 
-
-  ggplot2::ggtitle("Water table representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Water table (inches)") +
-  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  water_table_r1 <-
+    ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table %in% c("water_table_l_in", "water_table_h_in")),
+                    ggplot2::aes(x = value)) + ggplot2::geom_histogram(
+                      ggplot2::aes(text = paste("coiid(s):", coiid)),
+                      binwidth = bin_width,
+                      center = min(my_seq) + bin_width / 2,
+                      color = "black",
+                      fill = "grey"
+                    ) +
+    ggplot2::ggtitle("Water table representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+    ggplot2::ylab("# of components") + ggplot2::xlab("Water table (inches)") +
+    ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                                n.breaks = length(my_seq))
 
 # Convert histogram to plotly
 
 water_table_r1 <- plotly::ggplotly(water_table_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-water_table_r_acres_prepped <- data.frame(water_table = my_seq, row.names = NULL) |>  dplyr::rename(range = water_table) |> 
-                        dplyr::left_join(water_table_acres |> dplyr::filter(water_table %in% c("water_table_l_in", "water_table_h_in")))
-
-water_table_na_r <- rbind(water_table_r_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), water_table_acres_na |> dplyr::filter(water_table %in% c("water_table_l_in", "water_table_h_in")))
-
-water_table_r_acres_prepped$acres <- ifelse(is.na(water_table_r_acres_prepped$acres), 0, water_table_r_acres_prepped$acres)
-water_table_r_acres_prepped$range <- water_table_r_acres_prepped$range + 0.1
-
-expand_water_table <- water_table_r_acres_prepped[rep(1:nrow(water_table_r_acres_prepped), times = water_table_r_acres_prepped$acres/acreage_unit), c("range", "water_table", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-water_table_r2 <- ggplot2::ggplot(expand_water_table, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
-  binwidth = bin_width,
-  center = min(my_seq) + bin_width/2,
-  color = "black",
-  fill = "grey") + 
-
-  ggplot2::ggtitle("Water table representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Water table (inches)") +
-  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  water_table_r2 <-
+    ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table %in% c("water_table_l_in", "water_table_h_in")),
+                    ggplot2::aes(x = value)) + ggplot2::geom_histogram(
+                      ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
+                      binwidth = bin_width,
+                      center = min(my_seq) + bin_width / 2,
+                      color = "black",
+                      fill = "grey"
+                    ) +
+    ggplot2::ggtitle("Water table representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+    ggplot2::ylab("# of acres") + ggplot2::xlab("Water table (inches)") +
+    ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                                n.breaks = length(my_seq))
 
 # Convert to plotly
 
@@ -2077,10 +1748,10 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in)) & all(is.na(EDIT_updates_
   
 } else{
   
-    water_table_sum_df_r <- water_table_na_r |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(water_table), water_table)
- 
-  water_table_sum_df_r |> dplyr::select(full_range, everything(), -range) |> dplyr::group_by(full_range) |> dplyr::summarise(acres = sum(acres), coiids = sum(coiids))
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$water_table_l_in)) + sum(is.na(EDIT_updates_filtered$water_table_h_in)),
+             '% components NA' = 100*(sum(is.na(EDIT_updates_filtered$water_table_h_in)) +
+                                        sum(is.na(EDIT_updates_filtered$water_table_l_in)))/
+               (length(EDIT_updates_filtered$water_table_l_in) * 2), check.names = FALSE)
 
 }
 
@@ -2152,7 +1823,6 @@ aspect_r1 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep")
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Aspect") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Aspect (degrees)") +
   ggplot2::scale_x_continuous(limits = c(0, 360),
@@ -2172,75 +1842,22 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE) 
   seq(plyr::round_any(min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$aspect_rep, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-      
-  my_list[[i]] <- aspect.df |>  dplyr::filter(aspect == "aspect_rep") |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-    
-  my_list[[i]] <- aspect.df |>  dplyr::filter(aspect == "aspect_rep") |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq  
   
 }
 
-}
+# Acreage weighted histogram
 
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(aspect) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-aspect_r_acres <- do.call(rbind, my_list_summarised)
-
-
-aspect_r_acres_prepped <- data.frame(aspect = my_seq, row.names = NULL) |>  dplyr::rename(range = aspect) |> 
-                        dplyr::left_join(aspect_r_acres)
-
-aspect_r_acres_prepped$acres <- ifelse(is.na(aspect_r_acres_prepped$acres), 0, aspect_r_acres_prepped$acres)
-aspect_r_acres_prepped$range <- aspect_r_acres_prepped$range + 0.1
-
-expand_aspect_r <- aspect_r_acres_prepped[rep(1:nrow(aspect_r_acres_prepped), times = aspect_r_acres_prepped$acres/acreage_unit), c("range", "aspect", "coiids"), drop = FALSE]
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(aspect_r_acres_prepped$acres[aspect_r_acres_prepped$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(aspect_r_acres_prepped$acres[aspect_r_acres_prepped$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(aspect_r_acres_prepped$acres[aspect_r_acres_prepped$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(aspect_r_acres_prepped$acres[aspect_r_acres_prepped$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
-
-
-# Create acreage histogram
-
-aspect_r2 <- ggplot2::ggplot(expand_aspect_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+aspect_r2 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Aspect") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Aspect (degrees)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Aspect (degrees)") +
   ggplot2::scale_x_continuous(limits = c(0, 360),
   breaks = seq(0,360, 30))
-
 
 # Convert to plotly
 
@@ -2296,52 +1913,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) &
   seq(plyr::round_any(min(EDIT_updates_filtered$map_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$map_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-    
-      my_list[[i]] <- map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-    
-  } else {
-    
-      my_list[[i]] <- map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
-    
-  }
-
-
+  my_seq  
+  
 }
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(map) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-map_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(map_acres$acres[map_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(map_acres$acres[map_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(map_acres$acres[map_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(map_acres$acres[map_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
 
 }
 ```
@@ -2361,7 +1936,6 @@ map_h1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Mean Annual Precip. high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2371,26 +1945,15 @@ map_h1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
 
 map_h1 <- plotly::ggplotly(map_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-map_h_acres_prepped <- data.frame(map = my_seq, row.names = NULL) |>  dplyr::rename(range = map) |> 
-                        dplyr::left_join(map_acres |> dplyr::filter(map == "map_h_in"))
-
-map_h_acres_prepped$acres <- ifelse(is.na(map_h_acres_prepped$acres), 0, map_h_acres_prepped$acres)
-map_h_acres_prepped$range <- map_h_acres_prepped$range + 0.1
-
-expand_map_h <- map_h_acres_prepped[rep(1:nrow(map_h_acres_prepped), times = plyr::round_any(map_h_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "map", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-map_h2 <- ggplot2::ggplot(expand_map_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+map_h2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Mean Annual Precip. high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Mean annual precip. (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -2450,7 +2013,6 @@ map_l1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Mean Annual Precip. low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2460,52 +2022,15 @@ map_l1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
 
 map_l1 <- plotly::ggplotly(map_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-for(i in names(my_seq)){
-  
-  if(i == 0){
-    
-      my_list[[i]] <- map.df |>  dplyr::filter(map == "map_l_in") |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- map.df |>  dplyr::filter(map == "map_l_in") |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-}
-
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(map) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-map_l_acres <- do.call(rbind, my_list_summarised)
-
-
-map_l_acres_prepped <- data.frame(map = my_seq, row.names = NULL) |>  dplyr::rename(range = map) |> 
-                        dplyr::left_join(map_acres |> dplyr::filter(map == "map_l_in"))
-
-map_l_acres_prepped$acres <- ifelse(is.na(map_l_acres_prepped$acres), 0, map_l_acres_prepped$acres)
-map_l_acres_prepped$range <- map_l_acres_prepped$range + 0.1
-
-expand_map_l <- map_l_acres_prepped[rep(1:nrow(map_l_acres_prepped), times = plyr::round_any(map_l_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), c("range", "map", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-map_l2 <- ggplot2::ggplot(expand_map_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+map_l2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Mean Annual Precip. low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Mean Annual Precip. (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -2570,8 +2095,8 @@ map_r1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Mean Annual Precip. representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Mean Annual Precip. representative") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
@@ -2580,26 +2105,16 @@ map_r1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l
 
 map_r1 <- plotly::ggplotly(map_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-map_r_acres_prepped <- data.frame(map = my_seq, row.names = NULL) |>  dplyr::rename(range = map) |> 
-                        dplyr::left_join(map_acres)
-
-map_r_acres_prepped$acres <- ifelse(is.na(map_r_acres_prepped$acres), 0, map_r_acres_prepped$acres)
-map_r_acres_prepped$range <- map_r_acres_prepped$range + 0.1
-
-expand_map_r <- map_r_acres_prepped[rep(1:nrow(map_r_acres_prepped), times = map_r_acres_prepped$acres/acreage_unit), c("range", "map", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-map_r2 <- ggplot2::ggplot(expand_map_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+map_r2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in") ), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Mean Annual Precip. representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Mean Annual Precip. (inches)") +
+  ggplot2::ggtitle("Mean Annual Precip. representative") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -2683,51 +2198,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$ffd_l, na.rm = TRUE) &
   seq(plyr::round_any(min(EDIT_updates_filtered$ffd_l, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$ffd_h, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-      
-  my_list[[i]] <- ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-    
-  my_list[[i]] <- ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq     
   
 }
-
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(ffd) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-ffd_acres <- do.call(rbind, my_list_summarised)
-  
-# Acreage unit
-
-acreage_unit <- ifelse(min(ffd_acres$acres[ffd_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(ffd_acres$acres[ffd_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(ffd_acres$acres[ffd_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(ffd_acres$acres[ffd_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
 
 }
 ```
@@ -2747,7 +2221,6 @@ ffd_h1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2757,26 +2230,15 @@ ffd_h1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
 
 ffd_h1 <- plotly::ggplotly(ffd_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ffd_h_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) |>  dplyr::rename(range = ffd) |> 
-                        dplyr::left_join(ffd_acres |> dplyr::filter(ffd == "ffd_h"))
-
-ffd_h_acres_prepped$acres <- ifelse(is.na(ffd_h_acres_prepped$acres), 0, ffd_h_acres_prepped$acres)
-ffd_h_acres_prepped$range <- ffd_h_acres_prepped$range + 0.1
-
-expand_ffd_h <- ffd_h_acres_prepped[rep(1:nrow(ffd_h_acres_prepped), times = ffd_h_acres_prepped$acres/acreage_unit), c("range", "ffd", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ffd_h2 <- ggplot2::ggplot(expand_ffd_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+ffd_h2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Frost Free Days") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -2836,7 +2298,6 @@ ffd_l1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2846,26 +2307,15 @@ ffd_l1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
 
 ffd_l1 <- plotly::ggplotly(ffd_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ffd_l_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) |>  dplyr::rename(range = ffd) |> 
-                        dplyr::left_join(ffd_acres |> dplyr::filter(ffd == "ffd_l"))
-
-ffd_l_acres_prepped$acres <- ifelse(is.na(ffd_l_acres_prepped$acres), 0, ffd_l_acres_prepped$acres)
-ffd_l_acres_prepped$range <- ffd_l_acres_prepped$range + 0.1
-
-expand_ffd_l <- ffd_l_acres_prepped[rep(1:nrow(ffd_l_acres_prepped), times = ffd_l_acres_prepped$acres/acreage_unit), c("range", "ffd", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ffd_l2 <- ggplot2::ggplot(expand_ffd_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+ffd_l2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Frost Free Days") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -2927,7 +2377,6 @@ ffd_r1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l"))
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2937,26 +2386,15 @@ ffd_r1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l"))
 
 ffd_r1 <- plotly::ggplotly(ffd_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ffd_r_acres_prepped <- data.frame(ffd = my_seq, row.names = NULL) |>  dplyr::rename(range = ffd) |> 
-                        dplyr::left_join(ffd_acres)
-
-ffd_r_acres_prepped$acres <- ifelse(is.na(ffd_r_acres_prepped$acres), 0, ffd_r_acres_prepped$acres)
-ffd_r_acres_prepped$range <- ffd_r_acres_prepped$range + 0.1
-
-expand_ffd_r <- ffd_r_acres_prepped[rep(1:nrow(ffd_r_acres_prepped), times = ffd_r_acres_prepped$acres/acreage_unit), c("range", "ffd", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ffd_r2 <- ggplot2::ggplot(expand_ffd_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+ffd_r2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Frost Free Days representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Frost Free Days") +
+  ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -3330,61 +2768,6 @@ restriction.df <-
 
 my_list <- list()
 my_seq <- seq(0, 90, 5)
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-for(i in names(my_seq)){
-  
-  if(i == 0){
-    
-      my_list[[i]] <- restriction.df |>  dplyr::filter(restriction %in% c("restrict_depth_h_in", "restrict_depth_l_in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- restriction.df |>  dplyr::filter(restriction %in% c("restrict_depth_h_in", "restrict_depth_l_in")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-}
-  
-}
-
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(restriction) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-restriction_acres <- do.call(rbind, my_list_summarised) |> 
-  dplyr::mutate(numb_coiids = sapply(coiids, FUN = function(x){
-    x |> stringr::str_split(",") |> unlist() |> length()
-  }))
-
-
-restriction_acres_na <- restriction.df |> cbind(range = NA) |>  dplyr::filter(is.na(value)) |> dplyr::group_by(restriction, range) |>  
-                                dplyr::summarise(acres = sum(acres), coiids = dplyr::n())
-
-
-# restriction_acres_na <- restriction.df |>  dplyr::filter(is.na(value) &
-#                           restriction == "restrict_depth_h_in") |>  dplyr::summarise(acres = sum(acres),  coiids = n()) |>  cbind(range = NA,      
-#                           restriction = NA)
-
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(restriction_acres$acres[restriction_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(restriction_acres$acres[restriction_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(restriction_acres$acres[restriction_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(restriction_acres$acres[restriction_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
-
 
 }
 
@@ -3407,7 +2790,6 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   center = 2.5,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
@@ -3417,41 +2799,15 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
 
 restriction_h1 <- plotly::ggplotly(restriction_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-
-restriction_h_acres_prepped <- data.frame(restriction = my_seq, row.names = NULL) |>  dplyr::rename(range = restriction) |> 
-                        dplyr::left_join(restriction_acres |> dplyr::filter(restriction == "restrict_depth_h_in"))
-
-restriction_na_h <- rbind(restriction_h_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), 
-                          restriction_acres_na |> dplyr::filter(restriction == "restrict_depth_h_in"))
-
-
-restriction_h_acres_prepped$acres <- ifelse(is.na(restriction_h_acres_prepped$acres), 0, restriction_h_acres_prepped$acres)
-restriction_h_acres_prepped$range <- restriction_h_acres_prepped$range + 0.1
-
-
-expand_restriction_h <-
-  restriction_h_acres_prepped[rep(
-    1:nrow(restriction_h_acres_prepped),
-    times = plyr::round_any(
-      restriction_h_acres_prepped$acres / acreage_unit,
-      accuracy = 1,
-      f = round
-    )
-  ),
-  c("range", "restriction", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-restriction_h2 <- ggplot2::ggplot(expand_restriction_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = 2.5,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -3480,10 +2836,10 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
   
 } else{
   
-  restriction_sum_df <- restriction_na_h |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(restriction), restriction)
- 
-  restriction_sum_df |> dplyr::select(full_range, everything(), -range) 
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$restrict_depth_h_in)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$restrict_depth_h_in))/
+               length(EDIT_updates_filtered$restrict_depth_h_in),
+             check.names = FALSE)
   
   }
 ```
@@ -3532,7 +2888,6 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   center = 2.5,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
@@ -3542,32 +2897,15 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
 
 restriction_l1 <- plotly::ggplotly(restriction_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-restriction_l_acres_prepped <- data.frame(restriction = my_seq, row.names = NULL) |>  dplyr::rename(range = restriction) |> 
-                        dplyr::left_join(restriction_acres |> dplyr::filter(restriction == "restrict_depth_l_in"))
-
-restriction_na_l <- rbind(restriction_l_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), 
-                          restriction_acres_na |> dplyr::filter(restriction == "restrict_depth_l_in"))
-
-
-restriction_l_acres_prepped$acres <- ifelse(is.na(restriction_l_acres_prepped$acres), 0, restriction_l_acres_prepped$acres)
-restriction_l_acres_prepped$range <- restriction_l_acres_prepped$range + 0.1
-
-expand_restriction_l <- restriction_l_acres_prepped[rep(1:nrow(restriction_l_acres_prepped), times =
-                              plyr::round_any(restriction_l_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), 
-                                                    c("range", "restriction", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-restriction_l2 <- ggplot2::ggplot(expand_restriction_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = 2.5,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Restriction low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -3595,10 +2933,10 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
   
 } else{
   
-  restriction_sum_df <- restriction_na_l |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(restriction), restriction)
- 
-  restriction_sum_df |> dplyr::select(full_range, everything(), -range) 
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$restrict_depth_l_in)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$restrict_depth_l_in))/
+               length(EDIT_updates_filtered$restrict_depth_l_in),
+             check.names = FALSE)
   
 }
 ```
@@ -3642,13 +2980,17 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
 
 # Create component histogram
 
-restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %in% c("restrict_depth_h_in", "restrict_depth_l_in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+restriction_r1 <- ggplot2::ggplot(restriction.df |>  
+                                    dplyr::filter(restriction %in% 
+                                                    c("restrict_depth_h_in", "restrict_depth_l_in")), 
+                                  ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
   center = 2.5,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Restriction depth representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Restriction depth representative") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
@@ -3657,29 +2999,20 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
 
 restriction_r1 <- plotly::ggplotly(restriction_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-restriction_r_acres_prepped <- data.frame(restriction = my_seq, row.names = NULL) |>  dplyr::rename(range = restriction) |> 
-                        dplyr::left_join(restriction_acres)
-
-restriction_na_r <- rbind(restriction_r_acres_prepped |>  dplyr::select(-coiids) |>  dplyr::rename(coiids = numb_coiids), restriction_acres_na)
-
-
-restriction_r_acres_prepped$acres <- ifelse(is.na(restriction_r_acres_prepped$acres), 0, restriction_r_acres_prepped$acres)
-restriction_r_acres_prepped$range <- restriction_r_acres_prepped$range + 0.1
-
-expand_restriction_r <- restriction_r_acres_prepped[rep(1:nrow(restriction_r_acres_prepped), times = restriction_r_acres_prepped$acres/acreage_unit), c("range", "restriction", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-restriction_r2 <- ggplot2::ggplot(expand_restriction_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+restriction_r2 <- ggplot2::ggplot(restriction.df |>  
+                                    dplyr::filter(restriction %in% 
+                                                    c("restrict_depth_h_in", "restrict_depth_l_in")), 
+                                  ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = 2.5,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Restriction depth representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ggtitle("Restriction depth representative") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
   breaks = seq(0, 90, 5))
 
@@ -3708,16 +3041,14 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
   
 } else{
   
-  restriction_sum_df_r <- restriction_na_r |>  dplyr::filter(!is.na(acres)) |> dplyr::mutate(full_range = ifelse(is.na(range), NA,
-                                            paste(range, "-", range + bin_width))) |>  dplyr::arrange(!is.na(restriction), restriction)
- 
-  restriction_sum_df_r |> dplyr::select(full_range, everything(), -range) |> dplyr::group_by(full_range) |> 
-    dplyr::summarise(acres = sum(acres), coiids = sum(coiids))
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$restrict_depth_h_in)) +
+               sum(is.na(EDIT_updates_filtered$restrict_depth_l_in)),
+             '% components NA' = 100*(sum(is.na(EDIT_updates_filtered$restrict_depth_h_in)) +
+                                        sum(is.na(EDIT_updates_filtered$restrict_depth_l_in)))/
+               (length(EDIT_updates_filtered$restrict_depth_h_in) * 2), check.names = FALSE)
   
 }
 ```
-
-
 
 
 **Restriction representative - combined component high/low acreage weighted 20th and 80th percentile** -  use as 'low (representative)' and 'high (representative)'. These values may be NA.  
@@ -3756,9 +3087,9 @@ summary(restriction_r_sum_stats)
 
 Soil depth (inches) is the same as depth to restrictive layer. 
 
-#### **Surface frag (2 mm. - 3 inches)**
+#### **Surface frag (< 3 inches)**
 
-Surface frag (2 mm. - 3 inches) prep code
+Surface frag (< 3 inches) prep code
 ```{r, message=FALSE}
 
 # NAs in surface frag generally means zero surface frags
@@ -3781,8 +3112,8 @@ round_by <- 10
 # Default dataframe
 
 surf_frag.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, frags_hi_2mm_3in_on_surf, frags_lo_2mm_3in_on_surf,
-                                   comp_acres) |> 
+  EDIT_updates_filtered |>  
+  dplyr::select(coiid, frags_hi_2mm_3in_on_surf, frags_lo_2mm_3in_on_surf, comp_acres) |> 
   tidyr::pivot_longer(
     names_to = "surf_frag",
     values_to = "value",
@@ -3801,49 +3132,6 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf, 
 } else{
          my_seq            
                   }
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
-  
-  if(i == 0){
-    
-      my_list[[i]] <- surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-}
-  
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(surf_frag) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-surf_frag_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
 
 }
 
@@ -3864,8 +3152,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Surface frag high (< 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
@@ -3874,31 +3162,18 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>  dplyr::rename(range = surf_frag) |> 
-                        dplyr::left_join(surf_frag_acres |> dplyr::filter(surf_frag == "frags_hi_2mm_3in_on_surf"))
-
-surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
-surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
-
-expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = 
-                                    plyr::round_any(surf_frag_r_acres_prepped$acres/acreage_unit, accuracy = 1, 
-                                                    f = round)), c("range", "surf_frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-surf_frag2 <- ggplot2::ggplot(expand_surf_frag, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Surface frag (%)") +
+  ggplot2::ggtitle("Surface frag high (< 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -3916,7 +3191,7 @@ manipulateWidget::combineWidgets(surf_frag1,
 
 ```
 
-**Surface frag high (2 mm. - 3 inches) acreage weighted 95th percentile** - use as 'high (actual)'
+**Surface frag high (< 3 inches) acreage weighted 95th percentile** - use as 'high (actual)'
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
@@ -3934,7 +3209,7 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data 
 ```
 
 
-**Surface frag high (2 mm. - 3 inches) acreage weighted summary statistics**
+**Surface frag high (< 3 inches) acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
@@ -3960,8 +3235,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Surface frag low (< 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
@@ -3970,31 +3245,18 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-surf_frag_l_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>  dplyr::rename(range = surf_frag) |> 
-                        dplyr::left_join(surf_frag_acres |> dplyr::filter(surf_frag == "frags_lo_2mm_3in_on_surf"))
-
-surf_frag_l_acres_prepped$acres <- ifelse(is.na(surf_frag_l_acres_prepped$acres), 0, surf_frag_l_acres_prepped$acres)
-surf_frag_l_acres_prepped$range <- surf_frag_l_acres_prepped$range + 0.1
-
-expand_surf_frag <- surf_frag_l_acres_prepped[rep(1:nrow(surf_frag_l_acres_prepped), 
-                          times = plyr::round_any(surf_frag_l_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)), 
-                          c("range", "surf_frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-surf_frag2 <- ggplot2::ggplot(expand_surf_frag, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Surface frag (%)") +
+  ggplot2::ggtitle("Surface frag low (< 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -4055,8 +3317,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag rep. (2mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Surface frag rep. (< 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
@@ -4065,29 +3327,19 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
 
 surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>  dplyr::rename(range = surf_frag) |> 
-                        dplyr::left_join(surf_frag_acres)
-
-surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
-surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
-
-expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), times = surf_frag_r_acres_prepped$acres/acreage_unit), c("range", "surf_frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-surf_frag2 <- ggplot2::ggplot(expand_surf_frag, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf") ), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Surface frag (%)") +
+  ggplot2::ggtitle("Surface frag rep. (< 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -4105,7 +3357,7 @@ manipulateWidget::combineWidgets(surf_frag1,
 
 ```
 
-**Surface frag representative (2 mm. - 3 inches) acreage weighted 20th and 80th percentiles** - use as 'low (representative)' and 'high (representative)' 
+**Surface frag representative (< 3 inches) acreage weighted 20th and 80th percentiles** - use as 'low (representative)' and 'high (representative)' 
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf)) &
     all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
@@ -4121,7 +3373,7 @@ if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf)) &
 
 ```
 
-**Surface frag representative (2 mm. - 3 inches) acreage weighted summary statistics**
+**Surface frag representative (< 3 inches) acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf)) &
@@ -4159,12 +3411,16 @@ round_by <- 10
 # Default dataframe
 
 surf_frag.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, frags_lo_gt_3in_on_surf,
-                                   frags_hi_gt_3in_on_surf, comp_acres) |> 
+  EDIT_updates_filtered |>
+  dplyr::select(coiid,
+                frags_lo_gt_3in_on_surf,
+                frags_hi_gt_3in_on_surf,
+                comp_acres) |>
   tidyr::pivot_longer(
     names_to = "surf_frag",
     values_to = "value",
-    cols = c("frags_lo_gt_3in_on_surf", "frags_hi_gt_3in_on_surf")) |> 
+    cols = c("frags_lo_gt_3in_on_surf", "frags_hi_gt_3in_on_surf")
+  ) |>
   dplyr::rename(acres = comp_acres)
 
 # Sequence for axes
@@ -4179,51 +3435,6 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$frags_lo_gt_3in_on_surf, n
 } else{
          my_seq            
                   }
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-  
-my_list <- list()
-
-for(i in names(my_seq)){
-  
-  if(i == 0){
-    
-      my_list[[i]] <- surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-}
-  
-
-
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(surf_frag) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-surf_frag_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(surf_frag_acres$acres[surf_frag_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
   
 }
 ```
@@ -4243,7 +3454,6 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Surface frag high 3 inches +") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -4253,31 +3463,17 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-surf_frag_h_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>  dplyr::rename(range = surf_frag) |> 
-                        dplyr::left_join(surf_frag_acres |> dplyr::filter(surf_frag == "frags_hi_gt_3in_on_surf"))
-
-surf_frag_h_acres_prepped$acres <- ifelse(is.na(surf_frag_h_acres_prepped$acres), 0, surf_frag_h_acres_prepped$acres)
-surf_frag_h_acres_prepped$range <- surf_frag_h_acres_prepped$range + 0.1
-
-expand_surf_frag <- surf_frag_h_acres_prepped[rep(1:nrow(surf_frag_h_acres_prepped), 
-                          times = plyr::round_any(surf_frag_h_acres_prepped$acres/acreage_unit, accuracy = 1,
-                                                  f = round)), c("range", "surf_frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-surf_frag2 <- ggplot2::ggplot(expand_surf_frag, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag high (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Surface frag (%)") +
+  ggplot2::ggtitle("Surface frag high 3 inches +") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -4337,7 +3533,6 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Surface frag low (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -4347,29 +3542,17 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-surf_frag_l_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>  dplyr::rename(range = surf_frag) |> 
-                        dplyr::left_join(surf_frag_acres |> dplyr::filter(surf_frag == "frags_lo_gt_3in_on_surf"))
-
-surf_frag_l_acres_prepped$acres <- ifelse(is.na(surf_frag_l_acres_prepped$acres), 0, surf_frag_l_acres_prepped$acres)
-surf_frag_l_acres_prepped$range <- surf_frag_l_acres_prepped$range + 0.1
-
-expand_surf_frag <- surf_frag_l_acres_prepped[rep(1:nrow(surf_frag_l_acres_prepped), times = surf_frag_l_acres_prepped$acres/acreage_unit), c("range", "surf_frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-surf_frag2 <- ggplot2::ggplot(expand_surf_frag, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Surface frag low (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Surface frag (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -4430,8 +3613,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag representative (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Surface frag representative (3 inches +)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
@@ -4440,31 +3623,19 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
 
 surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-surf_frag_r_acres_prepped <- data.frame(surf_frag = my_seq, row.names = NULL) |>  dplyr::rename(range = surf_frag) |> 
-                        dplyr::left_join(surf_frag_acres)
-
-surf_frag_r_acres_prepped$acres <- ifelse(is.na(surf_frag_r_acres_prepped$acres), 0, surf_frag_r_acres_prepped$acres)
-surf_frag_r_acres_prepped$range <- surf_frag_r_acres_prepped$range + 0.1
-
-expand_surf_frag <- surf_frag_r_acres_prepped[rep(1:nrow(surf_frag_r_acres_prepped), 
-                            times = plyr::round_any(surf_frag_r_acres_prepped$acres/acreage_unit, 
-                                                    accuracy = 1, f = round)), c("range", "surf_frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-surf_frag2 <- ggplot2::ggplot(expand_surf_frag, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf") ), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Surface frag representative (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Surface frag (%)") +
+  ggplot2::ggtitle("Surface frag representative (3 inches +)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -4545,52 +3716,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRU
   seq(plyr::round_any(min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$awc_h_0_40_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-    
-      my_list[[i]] <- awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq  
   
 }
-
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(awc) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-awc_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(awc_acres$acres[awc_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(awc_acres$acres[awc_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(awc_acres$acres[awc_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(awc_acres$acres[awc_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
-
   
 }
 ```
@@ -4610,7 +3739,6 @@ awc_h1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4620,29 +3748,15 @@ awc_h1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
 
 awc_h1 <- plotly::ggplotly(awc_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-awc_h_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) |>  dplyr::rename(range = awc) |> 
-                        dplyr::left_join(awc_acres |> dplyr::filter(awc == "awc_h_0_40_in"))
-
-awc_h_acres_prepped$acres <- ifelse(is.na(awc_h_acres_prepped$acres), 0, awc_h_acres_prepped$acres)
-awc_h_acres_prepped$range <- awc_h_acres_prepped$range + 0.1
-
-expand_awc_h <- awc_h_acres_prepped[rep(1:nrow(awc_h_acres_prepped), 
-                                        times = plyr::round_any(awc_h_acres_prepped$acres/acreage_unit,
-                                                                accuracy = 1, f = round)),
-                                    c("range", "awc", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-awc_h2 <- ggplot2::ggplot(expand_awc_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+awc_h2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weighted = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("AWC") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -4704,7 +3818,6 @@ awc_l1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4714,29 +3827,15 @@ awc_l1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
 
 awc_l1 <- plotly::ggplotly(awc_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-awc_l_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) |>  dplyr::rename(range = awc) |> 
-                        dplyr::left_join(awc_acres |> dplyr::filter(awc == "awc_l_0_40_in"))
-
-awc_l_acres_prepped$acres <- ifelse(is.na(awc_l_acres_prepped$acres), 0, awc_l_acres_prepped$acres)
-awc_l_acres_prepped$range <- awc_l_acres_prepped$range + 0.1
-
-expand_awc_l <- awc_l_acres_prepped[rep(1:nrow(awc_l_acres_prepped), 
-                                        times = plyr::round_any(awc_l_acres_prepped$acres/acreage_unit,
-                                                                accuracy = 1, f = round)), 
-                                    c("range", "awc", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-awc_l2 <- ggplot2::ggplot(expand_awc_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+awc_l2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("AWC") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -4799,8 +3898,8 @@ awc_r1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("AWC representative (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("AWC representative (0 - 40 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
@@ -4809,29 +3908,16 @@ awc_r1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "
 
 awc_r1 <- plotly::ggplotly(awc_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-awc_r_acres_prepped <- data.frame(awc = my_seq, row.names = NULL) |>  dplyr::rename(range = awc) |> 
-                        dplyr::left_join(awc_acres)
-
-awc_r_acres_prepped$acres <- ifelse(is.na(awc_r_acres_prepped$acres), 0, awc_r_acres_prepped$acres)
-awc_r_acres_prepped$range <- awc_r_acres_prepped$range + 0.1
-
-expand_awc_r <- awc_r_acres_prepped[rep(1:nrow(awc_r_acres_prepped), 
-                                        times = plyr::round_any(awc_r_acres_prepped$acres/acreage_unit,
-                                                                accuracy = 1, f = round)),
-                                    c("range", "awc", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-awc_r2 <- ggplot2::ggplot(expand_awc_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+awc_r2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("AWC representative (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("AWC") +
+  ggplot2::ggtitle("AWC representative (0 - 40 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -4884,6 +3970,12 @@ summary(awc_stats)
 
 pH (0-10 inches) prep code
 ```{r, message=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$pH_h_0_10in)) &
+    all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
 # Define bin width and round by measures
 
 bin_width <- 0.5
@@ -4909,51 +4001,13 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE)
   seq(plyr::round_any(min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$pH_h_0_10in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-    
-      my_list[[i]] <- ph.df |>  dplyr::filter(ph %in% c("pH_h_0_10in", "pH_l_0_10in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- ph.df |>  dplyr::filter(ph %in% c("pH_h_0_10in", "pH_l_0_10in")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-}
+  my_seq 
   
 }
 
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
 }
 
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(ph) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-ph_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(ph_acres$acres[ph_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(ph_acres$acres[ph_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(ph_acres$acres[ph_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(ph_acres$acres[ph_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
 ```
 
 
@@ -4971,7 +4025,6 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("pH high (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4981,29 +4034,16 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
 
 ph_h1 <- plotly::ggplotly(ph_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::rename(range = ph) |> 
-                        dplyr::left_join(ph_acres |> dplyr::filter(ph == "pH_h_0_10in"))
-
-ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
-ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
-
-expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), 
-                                      times = plyr::round_any(ph_h_acres_prepped$acres/acreage_unit,
-                                                              accuracy = 1, f = round)),
-                                  c("range", "ph", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ph_h2 <- ggplot2::ggplot(expand_ph_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("pH high (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("pH") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -5065,7 +4105,6 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("pH low (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5075,28 +4114,16 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
 
 ph_l1 <- plotly::ggplotly(ph_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::rename(range = ph) |> 
-                        dplyr::left_join(ph_acres |> dplyr::filter(ph == "pH_l_0_10in"))
-
-ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
-ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
-
-expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped), 
-                                      times = plyr::round_any(ph_l_acres_prepped$acres/acreage_unit, 
-                                                              accuracy = 1, f = round)), c("range", "ph", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ph_l2 <- ggplot2::ggplot(expand_ph_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::aes(x = value)) +
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("pH low (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("pH") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -5158,7 +4185,6 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("pH representative (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5168,28 +4194,16 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_
 
 ph_r1 <- plotly::ggplotly(ph_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ph_r_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::rename(range = ph) |> 
-                        dplyr::left_join(ph_acres)
-
-ph_r_acres_prepped$acres <- ifelse(is.na(ph_r_acres_prepped$acres), 0, ph_r_acres_prepped$acres)
-ph_r_acres_prepped$range <- ph_r_acres_prepped$range + 0.1
-
-expand_ph_r <- ph_r_acres_prepped[rep(1:nrow(ph_r_acres_prepped), 
-                                      times = plyr::round_any(ph_r_acres_prepped$acres/acreage_unit, 
-                                                              accuracy = 1, f = round)), c("range", "ph", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ph_r2 <- ggplot2::ggplot(expand_ph_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_0_10in")), ggplot2::aes(x = value)) +
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("pH representative (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("pH") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -5224,7 +4238,7 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in 
 }
 ```
 
-**Elevation representative acreage weighted summary statistics**
+**pH representative acreage weighted summary statistics**
 ```{r}
 if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
   
@@ -5272,54 +4286,13 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE
   seq(plyr::round_any(min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$pH_h_10_40in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-    
-      my_list[[i]] <- ph.df |>  dplyr::filter(ph %in% c("pH_h_10_40in", "pH_l_10_40in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- ph.df |>  dplyr::filter(ph %in% c("pH_h_10_40in", "pH_l_10_40in")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq  
   
 }
-  
 
 }
 
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(ph) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-ph_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(elev_acres$acres[elev_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
-
-}
 ```
 
 
@@ -5332,12 +4305,12 @@ if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in
 
 # Create component histogram
 
-ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)),
+ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2::aes(x = value)) +
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") +
-  #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH high (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5347,29 +4320,17 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2:
 
 ph_h1 <- plotly::ggplotly(ph_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ph_h_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::rename(range = ph) |> 
-                        dplyr::left_join(ph_acres |> dplyr::filter(ph == "pH_h_10_40in"))
-
-ph_h_acres_prepped$acres <- ifelse(is.na(ph_h_acres_prepped$acres), 0, ph_h_acres_prepped$acres)
-ph_h_acres_prepped$range <- ph_h_acres_prepped$range + 0.1
-
-expand_ph_h <- ph_h_acres_prepped[rep(1:nrow(ph_h_acres_prepped), 
-                                      times = plyr::round_any(ph_h_acres_prepped$acres/acreage_unit,
-                                                              accuracy = 1, f = round)),
-                                  c("range", "ph", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ph_h2 <- ggplot2::ggplot(expand_ph_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),
+ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") +
   #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH high (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("pH") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -5441,29 +4402,16 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2:
 
 ph_l1 <- plotly::ggplotly(ph_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ph_l_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::rename(range = ph) |> 
-                        dplyr::left_join(ph_acres |> dplyr::filter(ph == "pH_l_10_40in"))
-
-ph_l_acres_prepped$acres <- ifelse(is.na(ph_l_acres_prepped$acres), 0, ph_l_acres_prepped$acres)
-ph_l_acres_prepped$range <- ph_l_acres_prepped$range + 0.1
-
-expand_ph_l <- ph_l_acres_prepped[rep(1:nrow(ph_l_acres_prepped),
-                                      times = plyr::round_any(ph_l_acres_prepped$acres/acreage_unit, 
-                                                              accuracy = 1, f = round)), 
-                                  c("range", "ph", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ph_l2 <- ggplot2::ggplot(expand_ph_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),
+ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") +
   #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH low (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("pH") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -5509,6 +4457,7 @@ summary(ph_stats)
 
 }
 ```
+
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -5524,7 +4473,6 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") +
-  #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH representative (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5534,29 +4482,16 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h
 
 ph_r1 <- plotly::ggplotly(ph_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-ph_r_acres_prepped <- data.frame(ph = my_seq, row.names = NULL) |>  dplyr::rename(range = ph) |> 
-                        dplyr::left_join(ph_acres)
-
-ph_r_acres_prepped$acres <- ifelse(is.na(ph_r_acres_prepped$acres), 0, ph_r_acres_prepped$acres)
-ph_r_acres_prepped$range <- ph_r_acres_prepped$range + 0.1
-
-expand_ph_r <- ph_r_acres_prepped[rep(1:nrow(ph_r_acres_prepped),
-                                      times = plyr::round_any(ph_r_acres_prepped$acres/acreage_unit, 
-                                                              accuracy = 1, f = round)), 
-                                  c("range", "ph", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-ph_r2 <- ggplot2::ggplot(expand_ph_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),
+ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h_10_40in") ), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") +
-  #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH representative (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("pH") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   n.breaks = length(my_seq))
 
@@ -5646,51 +4581,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in, 
   seq(plyr::round_any(min(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-    
-      my_list[[i]] <- subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")) |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq   
   
 }
-
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(frag) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-subsurf_frags_acres <- do.call(rbind, my_list_summarised)
-
-# Acreage unit
-
-acreage_unit <- ifelse(min(subsurf_frags_acres$acres[subsurf_frags_acres$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(subsurf_frags_acres$acres[subsurf_frags_acres$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(subsurf_frags_acres$acres[subsurf_frags_acres$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(subsurf_frags_acres$acres[subsurf_frags_acres$acres != 0], na.rm = TRUE) < 
-                                      100000, 1000, 10000))))
-
-names(acreage_unit) <- ifelse(acreage_unit == 1, "number", ifelse(acreage_unit == 10, "tens", 
-                        ifelse(acreage_unit == 100, "hundreds", 
-                               ifelse(acreage_unit == 1000, "thousands", "tens of thousands"))))
   
 }
 ```
@@ -5709,7 +4603,6 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -5719,29 +4612,18 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 subsurf_frag_h1 <- plotly::ggplotly(subsurf_frag_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-subsurf_frags_h_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) |>  dplyr::rename(range = subsurf_frags) |> 
-                        dplyr::left_join(subsurf_frags_acres |> dplyr::filter(frag == "subsurf_frags_hi_2mm.3in"))
-
-subsurf_frags_h_acres_prepped$acres <- ifelse(is.na(subsurf_frags_h_acres_prepped$acres), 0, subsurf_frags_h_acres_prepped$acres)
-subsurf_frags_h_acres_prepped$range <- subsurf_frags_h_acres_prepped$range + 0.1
-
-expand_subsurf_frags_h <- subsurf_frags_h_acres_prepped[rep(1:nrow(subsurf_frags_h_acres_prepped), times = subsurf_frags_h_acres_prepped$acres/acreage_unit), c("range", "frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-subsurf_frag_h2 <- ggplot2::ggplot(expand_subsurf_frags_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Subsurface frag (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -5800,7 +4682,6 @@ subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -5810,31 +4691,18 @@ subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
 
 subsurf_frags_l1 <- plotly::ggplotly(subsurf_frags_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-subsurf_frags_l_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) |>  dplyr::rename(range = subsurf_frags) |> 
-                        dplyr::left_join(subsurf_frags_acres |> dplyr::filter(frag == "subsurf_frags_lo_2mm.3in"))
-
-subsurf_frags_l_acres_prepped$acres <- ifelse(is.na(subsurf_frags_l_acres_prepped$acres), 0, subsurf_frags_l_acres_prepped$acres)
-subsurf_frags_l_acres_prepped$range <- subsurf_frags_l_acres_prepped$range + 0.1
-
-expand_subsurf_frags_l <- subsurf_frags_l_acres_prepped[rep(1:nrow(subsurf_frags_l_acres_prepped), 
-                                times = plyr::round_any(subsurf_frags_l_acres_prepped$acres/acreage_unit,
-                                        accuracy = 1, f = round)), c("range", "frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-subsurf_frags_l2 <- ggplot2::ggplot(expand_subsurf_frags_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+subsurf_frags_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Subsurface frag (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -5896,7 +4764,6 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -5906,32 +4773,17 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
 
 subsurf_frag_r1 <- plotly::ggplotly(subsurf_frag_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) |>  dplyr::rename(range = subsurf_frags) |> 
-                        dplyr::left_join(subsurf_frags_acres)
-
-subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
-subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
-
-expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), 
-                            times = plyr::round_any(subsurf_frags_r_acres_prepped$acres/acreage_unit, 
-                                                    accuracy = 1, f = round)),
-                            c("range", "frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-subsurf_frag_r2 <- ggplot2::ggplot(expand_subsurf_frags_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Subsurface frag (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -5979,6 +4831,298 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in)) &
 }
 ```
 
+#### **sieve_subsurface frag (2 mm. - 3 inches), 0 - 60 inches.**
+
+sieve_subsurface frag (2 mm. - 3 inches) prep code
+```{r, message=FALSE}
+# NAs in sieve_subsurface frags generally mean zero sieve_subsurface frags
+
+EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)
+
+EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in)
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+  
+# Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Prepare dataframe for component histogram
+
+sieve_subsurf_frags.df <-
+  EDIT_updates_filtered |>  dplyr::select(coiid, 
+                                   sieve_subsurf_frags_hi_2mm.3in, sieve_subsurf_frags_lo_2mm.3in, comp_acres) |> 
+  tidyr::pivot_longer(
+    names_to = "frag",
+    values_to = "value",
+    cols = c("sieve_subsurf_frags_hi_2mm.3in", "sieve_subsurf_frags_lo_2mm.3in")) |> 
+  dplyr::rename(acres = comp_acres)
+
+# Sequence for axes
+  
+my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE), round_by, f = floor),
+  plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE) - bin_width >= 0){
+  seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  
+  my_seq   
+  
+}
+  
+}
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+  # Create component histogram
+
+sieve_subsurf_frag_h1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+sieve_subsurf_frag_h1 <- plotly::ggplotly(sieve_subsurf_frag_h1, tooltip = "text")
+
+# Acreage weighted histogram
+
+sieve_subsurf_frag_h2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert to plotly
+
+sieve_subsurf_frag_h2 <- plotly::ggplotly(sieve_subsurf_frag_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(sieve_subsurf_frag_h1,
+                                 sieve_subsurf_frag_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**sieve_subsurface frag high (2 mm. - 3 inches), 0 - 60 inches, acreage weighted 95th percentile** - use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
+                                accuracy = 1, f = round)) |> sort(na.last = NA)
+  
+  sieve_subsurf_frag_stats |> quantile(probs = c(0.95), na.rm = TRUE, type = 1)
+
+}
+
+```
+
+**sieve_subsurface frag high (2 mm. - 3 inches), 0 - 60 inches, acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  summary(sieve_subsurf_frag_stats)
+
+}
+```
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+sieve_subsurf_frags_l1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+sieve_subsurf_frags_l1 <- plotly::ggplotly(sieve_subsurf_frags_l1, tooltip = "text")
+
+# Acreage weighted histogram
+
+sieve_subsurf_frags_l2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert to plotly
+
+sieve_subsurf_frags_l2 <- plotly::ggplotly(sieve_subsurf_frags_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(sieve_subsurf_frags_l1,
+                                 sieve_subsurf_frags_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**sieve_subsurface frag low (2 mm. - 3 inches), 0 - 60 inches, acreage weighted 5th percentile** - use as 'low (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+    sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
+                                          accuracy = 1, f = round)) |> sort(na.last = NA)
+    
+    sieve_subsurf_frag_stats |>  quantile(probs = c(0.05), na.rm = TRUE, type = 1)
+
+}
+
+```
+
+
+**sieve_subsurface frag low (2 mm. - 3 inches), 0 - 60 inches, acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  summary(sieve_subsurf_frag_stats)
+
+}
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+sieve_subsurf_frag_r1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_2mm.3in", "sieve_subsurf_frags_lo_2mm.3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+sieve_subsurf_frag_r1 <- plotly::ggplotly(sieve_subsurf_frag_r1, tooltip = "text")
+
+# Acreage weighted histogram
+
+sieve_subsurf_frag_r2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_2mm.3in", "sieve_subsurf_frags_lo_2mm.3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert to plotly
+
+sieve_subsurf_frag_r2 <- plotly::ggplotly(sieve_subsurf_frag_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(sieve_subsurf_frag_r1,
+                                 sieve_subsurf_frag_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**sieve_subsurface frag representative (2 mm. - 3 inches) - combined component high/low 20th and 80th percentile** - use as 'low (representative)' & 'high (representative)' 
+ 
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  sieve_subsurf_frag_stats <- rep(sieve_subsurf_frags.df$value, plyr::round_any(sieve_subsurf_frags.df$acres/comp_acreage_unit, 
+                            accuracy = 1, f = round)) |> sort(na.last = NA)
+  
+  sieve_subsurf_frag_stats |>  quantile(c(0.2, 0.8), na.rm = TRUE, type = 1)
+
+}
+
+```
+
+**sieve_subsurface frag representative acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  summary(sieve_subsurf_frag_stats)
+
+}
+```
+
+
 #### **Subsurface frag (3+ inches)**
 
 Subsurface frag (3+ inches) prep code
@@ -6021,39 +5165,10 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_lo_gt_3in, n
   seq(plyr::round_any(min(EDIT_updates_filtered$subsurf_frags_lo_gt_3in, na.rm = TRUE), round_by, f = floor) - bin_width,
       plyr::round_any(max(EDIT_updates_filtered$subsurf_frags_hi_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
-  my_seq            
-}
-
-names(my_seq) <- my_seq
-
-# Data manipulation into sequence ranges
-
-my_list <- list()
-
-for(i in names(my_seq)){
   
-  if(i == 0){
-    
-      my_list[[i]] <- subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")) |>  dplyr::filter(value >= as.numeric(i) & value <= as.numeric(i) + bin_width)
-  
-} else {
-  
-    my_list[[i]] <- subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_gt_3in") |>  dplyr::filter(value > as.numeric(i) & value <= as.numeric(i) + bin_width)
+  my_seq    
   
 }
-  
-}
-
-for (nm in names(my_list)) {
-         my_list[[nm]]$value <- nm
-}
-
-
-my_list_summarised <- lapply(my_list, FUN = function(x){
-  x |>  dplyr::mutate(value = as.numeric(value)) |>  dplyr::group_by(frag) |>  dplyr::summarise(range = mean(value), acres = sum(acres), coiids = toString(coiid)) |>  dplyr::ungroup()
-})
-
-subsurf_frags_acres <- do.call(rbind, my_list_summarised)
   
 }
 
@@ -6074,7 +5189,6 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -6084,32 +5198,18 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 subsurf_frag_h1 <- plotly::ggplotly(subsurf_frag_h1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-subsurf_frags_h_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) |>  dplyr::rename(range = subsurf_frags) |> 
-                        dplyr::left_join(subsurf_frags_acres |> dplyr::filter(frag == "subsurf_frags_hi_gt_3in"))
-
-subsurf_frags_h_acres_prepped$acres <- ifelse(is.na(subsurf_frags_h_acres_prepped$acres), 0, subsurf_frags_h_acres_prepped$acres)
-subsurf_frags_h_acres_prepped$range <- subsurf_frags_h_acres_prepped$range + 0.1
-
-expand_subsurf_frags_h <- subsurf_frags_h_acres_prepped[rep(1:nrow(subsurf_frags_h_acres_prepped), 
-        times = plyr::round_any(subsurf_frags_h_acres_prepped$acres/acreage_unit, 
-                                accuracy = 1, f = round)),
-        c("range", "frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-subsurf_frag_h2 <- ggplot2::ggplot(expand_subsurf_frags_h, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Subsurface frag (%)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -6170,7 +5270,6 @@ subsurf_frag_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -6180,31 +5279,18 @@ subsurf_frag_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 subsurf_frag_l1 <- plotly::ggplotly(subsurf_frag_l1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-subsurf_frags_l_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) |>  dplyr::rename(range = subsurf_frags) |> 
-                        dplyr::left_join(subsurf_frags_acres |> dplyr::filter(frag == "subsurf_frags_lo_gt_3in"))
-
-subsurf_frags_l_acres_prepped$acres <- ifelse(is.na(subsurf_frags_l_acres_prepped$acres), 0, subsurf_frags_l_acres_prepped$acres)
-subsurf_frags_l_acres_prepped$range <- subsurf_frags_l_acres_prepped$range + 0.1
-
-expand_subsurf_frags_l <- subsurf_frags_l_acres_prepped[rep(1:nrow(subsurf_frags_l_acres_prepped), 
-    times = plyr::round_any(subsurf_frags_l_acres_prepped$acres/acreage_unit, accuracy = 1, f = round)),
-    c("range", "frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-subsurf_frag_l2 <- ggplot2::ggplot(expand_subsurf_frags_l, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+subsurf_frag_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Subsurface frag low (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Subsurface frag (%)") +
+  ggplot2::ggtitle("Subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -6265,7 +5351,6 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
   ggplot2::ggtitle("Subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
@@ -6275,29 +5360,17 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
 
 subsurf_frag_r1 <- plotly::ggplotly(subsurf_frag_r1, tooltip = "text")
 
-# Manipulate to create acreage histogram
+# Acreage weighted histogram
 
-subsurf_frags_r_acres_prepped <- data.frame(subsurf_frags = my_seq, row.names = NULL) |>  dplyr::rename(range = subsurf_frags) |> 
-                        dplyr::left_join(subsurf_frags_acres)
-
-subsurf_frags_r_acres_prepped$acres <- ifelse(is.na(subsurf_frags_r_acres_prepped$acres), 0, subsurf_frags_r_acres_prepped$acres)
-subsurf_frags_r_acres_prepped$range <- subsurf_frags_r_acres_prepped$range + 0.1
-
-expand_subsurf_frags_r <- subsurf_frags_r_acres_prepped[rep(1:nrow(subsurf_frags_r_acres_prepped), times = subsurf_frags_r_acres_prepped$acres/acreage_unit), c("range", "frag", "coiids"), drop = FALSE]
-
-# Create acreage histogram
-
-subsurf_frag_r2 <- ggplot2::ggplot(expand_subsurf_frags_r, ggplot2::aes(x = range)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", stringr::str_wrap(coiids, 40))),  
+subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-
-  ggplot2::ggtitle("Subsurface frag rep. (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab(paste0("acres (", names(acreage_unit), " of acres)")) + ggplot2::xlab("Subsurface frag (%)") +
+  ggplot2::ggtitle("Subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(0, 100),
   breaks = seq(0,100, 10))
-
 
 # Convert to plotly
 
@@ -6340,6 +5413,300 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in)) &
 } else{
 
   summary(subsurf_frag_stats)
+
+}
+```
+
+#### **sieve_subsurface frag (3+ inches)**
+
+sieve_subsurface frag (3+ inches) prep code
+```{r, message=FALSE}
+
+EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)
+
+EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in)
+
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+# Define bin width and round by measures
+
+bin_width <- 10
+round_by <- 10
+
+# Default dataframe
+
+sieve_subsurf_frags.df <-
+  EDIT_updates_filtered |>  dplyr::select(coiid, sieve_subsurf_frags_lo_gt_3in,
+                                   sieve_subsurf_frags_hi_gt_3in, comp_acres) |> 
+  tidyr::pivot_longer(
+    names_to = "frag",
+    values_to = "value",
+    cols = c("sieve_subsurf_frags_lo_gt_3in", "sieve_subsurf_frags_hi_gt_3in")) |> 
+  dplyr::rename(acres = comp_acres)
+
+# Sequence for axes
+  
+my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE), round_by, f = floor),
+  plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE) - bin_width >= 0){
+  seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  
+  my_seq    
+  
+}
+  
+}
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+sieve_subsurf_frag_h1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+sieve_subsurf_frag_h1 <- plotly::ggplotly(sieve_subsurf_frag_h1, tooltip = "text")
+
+# Acreage weighted histogram
+
+sieve_subsurf_frag_h2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert to plotly
+
+sieve_subsurf_frag_h2 <- plotly::ggplotly(sieve_subsurf_frag_h2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(sieve_subsurf_frag_h1,
+                                 sieve_subsurf_frag_h2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**sieve_subsurface frag high (3+ inches), 0 - 60 inches, acreage weighted 95th percentile** - use as 'high (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
+                                accuracy = 1, f = round)) |> sort(na.last = NA)
+  
+  sieve_subsurf_frag_stats |> quantile(probs = c(0.95), na.rm = TRUE, type = 1)
+
+}
+
+```
+
+**sieve_subsurface frag high (3+ inches), 0 - 60 inches, acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  summary(sieve_subsurf_frag_stats)
+
+}
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+sieve_subsurf_frag_l1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+sieve_subsurf_frag_l1 <- plotly::ggplotly(sieve_subsurf_frag_l1, tooltip = "text")
+
+# Acreage weighted histogram
+
+sieve_subsurf_frag_l2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert to plotly
+
+sieve_subsurf_frag_l2 <- plotly::ggplotly(sieve_subsurf_frag_l2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(sieve_subsurf_frag_l1,
+                                 sieve_subsurf_frag_l2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**sieve_subsurface frag low (3+ inches), 0 - 60 inches, acreage weighted 5th percentile** - use as 'low (actual)'
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+    sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
+                                          accuracy = 1, f = round)) |> sort(na.last = NA)
+    
+    sieve_subsurf_frag_stats |>  quantile(probs = c(0.05), na.rm = TRUE, type = 1)
+
+}
+
+```
+
+
+**sieve_subsurface frag low (3+ inches), 0 - 60 inches, acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  summary(sieve_subsurf_frag_stats)
+
+}
+```
+
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+sieve_subsurf_frag_r1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_gt_3in", "sieve_subsurf_frags_lo_gt_3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert histogram to plotly
+
+sieve_subsurf_frag_r1 <- plotly::ggplotly(sieve_subsurf_frag_r1, tooltip = "text")
+
+# Acreage weighted histogram
+
+sieve_subsurf_frag_r2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_gt_3in", "sieve_subsurf_frags_lo_gt_3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("sieve_subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
+  ggplot2::scale_x_continuous(limits = c(0, 100),
+  breaks = seq(0,100, 10))
+
+# Convert to plotly
+
+sieve_subsurf_frag_r2 <- plotly::ggplotly(sieve_subsurf_frag_r2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(sieve_subsurf_frag_r1,
+                                 sieve_subsurf_frag_r2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**sieve_subsurface frag representative (3+ inches), 0 - 60 inches, acreage weighted 20th and 80th percentile** -  use as 'low (representative)' and 'high (representative)' 
+```{r, fig.show="hold", out.width="50%"}
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  sieve_subsurf_frag_stats <- rep(sieve_subsurf_frags.df$value, plyr::round_any(sieve_subsurf_frags.df$acres/comp_acreage_unit, 
+                            accuracy = 1, f = round)) |> sort(na.last = NA)
+  
+  sieve_subsurf_frag_stats |>  quantile(c(0.2, 0.8), na.rm = TRUE, type = 1)
+
+}
+
+```
+
+**sieve_subsurface frag representative (3+ inches), 0 - 60 inches, acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
+    all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
+
+} else{
+
+  summary(sieve_subsurf_frag_stats)
 
 }
 ```
