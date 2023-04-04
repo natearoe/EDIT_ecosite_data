@@ -45,7 +45,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == 'F022AD102CA')
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -57,6 +57,11 @@ comp_acreage_unit <- ifelse(min(EDIT_updates_filtered$comp_acres[EDIT_updates_fi
                              ifelse(min(EDIT_updates_filtered$comp_acres[EDIT_updates_filtered$comp_acres != 0], na.rm = TRUE) < 
                                       100000, 1000, 10000))))
 
+```
+
+<!-- **if acreage NA, make it zero** -->
+```{r}
+EDIT_updates_filtered$comp_acres <- ifelse(is.na(EDIT_updates_filtered$comp_acres), 0, EDIT_updates_filtered$comp_acres)
 ```
 
 ---
@@ -1448,6 +1453,8 @@ Water table depth prep code
 ```{r, message=FALSE}
 # Is variable NA?
 
+
+
 if (all(is.na(EDIT_updates_filtered$water_table_h_in)) & all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populated in NASIS for this field.")
   
 } else{
@@ -1488,6 +1495,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$water_table_l_in, na.rm = 
   
   my_seq   
   
+}
+
+if(length(my_seq) == 1 & my_seq[1] == 0) {
+  my_seq <- c(0,1)
+} else {
+  my_seq
 }
 
 }
