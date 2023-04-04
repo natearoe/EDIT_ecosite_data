@@ -45,7 +45,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == 'F022AD102CA')
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -108,10 +108,11 @@ if (all(is.na(EDIT_updates_filtered$landform)) |
   
 } else{
   
-  landform_df <- EDIT_updates_filtered |>  dplyr::select(coiid, landform, comp_acres) |>  dplyr::group_by(landform) |>  
-    dplyr::summarise(acres = sum(comp_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame()
+    landform.df <- EDIT_updates_filtered |> dplyr::select(landform, comp_acres, coiid) |> dplyr::group_by(landform) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    dplyr::arrange(dplyr::desc(acres)) 
   
-  landform_df
+    landform.df |> knitr::kable()
 
 }
 ```
@@ -122,14 +123,14 @@ if (all(is.na(EDIT_updates_filtered$landform))) {print("No data populated in NAS
   
 } else{
   
-  acreage_unit <- ifelse(min(landform_df$acres[landform_df$acres != 0], na.rm = TRUE) < 100, 1, 
-               ifelse(min(landform_df$acres[landform_df$acres != 0], na.rm = TRUE) < 1000, 10, 
-                      ifelse(min(landform_df$acres[landform_df$acres != 0], na.rm = TRUE) < 10000, 100, 
-                             ifelse(min(landform_df$acres[landform_df$acres != 0], na.rm = TRUE) < 
+  acreage_unit <- ifelse(min(landform.df$acres[landform.df$acres != 0], na.rm = TRUE) < 100, 1, 
+               ifelse(min(landform.df$acres[landform.df$acres != 0], na.rm = TRUE) < 1000, 10, 
+                      ifelse(min(landform.df$acres[landform.df$acres != 0], na.rm = TRUE) < 10000, 100, 
+                             ifelse(min(landform.df$acres[landform.df$acres != 0], na.rm = TRUE) < 
                                       100000, 1000, 10000))))
   
   
- landform_words <-  rep(landform_df$landform, plyr::round_any(landform_df$acres/acreage_unit, accuracy = 1, f = round)) |> strsplit(" ") |> unlist() |>   
+ landform_words <-  rep(landform.df$landform, plyr::round_any(landform.df$acres/acreage_unit, accuracy = 1, f = round)) |> strsplit(" ") |> unlist() |>   
               stringr::str_replace(",", "")
  
  wordcloud::wordcloud(landform_words)
@@ -157,14 +158,15 @@ This field is obsolete and will be removed from EDIT. Enter medium for all value
 
 #### **Flooding freq.**
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
+
 EDIT_updates_filtered$flood_freq <- ifelse(EDIT_updates_filtered$flood_freq == "", "none", EDIT_updates_filtered$flood_freq)
 
 if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in NASIS for this field.")
   
 } else{
   
-  my_levels <- c(
+    my_levels <- c(
     "none",
     "very rare",
     "rare",
@@ -173,49 +175,39 @@ if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in N
     "very frequent"
   )
   
-Flood.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_freq, comp_acres)  |>  dplyr::group_by(flood_freq) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres), coiids = toString(coiid)) |>  dplyr::ungroup() 
-
-Flood.freq.df$flood_freq <- factor(Flood.freq.df$flood_freq, levels = my_levels)
-
+  flood.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_freq, comp_acres)  
   
-ff1 <-
-  plotly::plot_ly(
-    x = Flood.freq.df$flood_freq,
-    y = Flood.freq.df$count,
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(Flood.freq.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Flood freq. (# components)",
-    xaxis = list(title = "Flooding frequency"),
-    yaxis = list(title = "# of components"),
-    margin = list(t = 100)
-  )
+  flood.freq.df$flood_freq <- factor(flood.freq.df$flood_freq, levels = my_levels)
+    
+# Component histogram 
+flood.freq1 <- ggplot2::ggplot(flood.freq.df, ggplot2::aes(flood_freq)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Flood frequency") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Flood frequency")
 
+# Convert to plotly
+flood.freq1 <- plotly::ggplotly(flood.freq1, tooltip = "text")
 
-ff2 <-
-  plotly::plot_ly(
-    x = Flood.freq.df$flood_freq,
-    y = Flood.freq.df$acres,
-    name = "Flood freq. (acres)",
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(Flood.freq.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Flood freq. (# of acres)",
-    xaxis = list(title = "Flooding frequency"),
-    yaxis = list(title = "acres"),
-    margin = list(t = 100)
-  )
+# Acreage histogram
+flood.freq2 <- ggplot2::ggplot(flood.freq.df, ggplot2::aes(flood_freq, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Flood frequency") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Flood frequency")
 
-manipulateWidget::combineWidgets(ff1,
-                                 ff2,
+#Convert to plotly
+flood.freq2 <- plotly::ggplotly(flood.freq2, tooltip = "text")
+
+# Join both figures
+manipulateWidget::combineWidgets(flood.freq1,
+                                 flood.freq2,
                                  nrow = 1,
                                  ncol = 2,
                                  colsize = c(1, 1))
-
-
+  
 }
+
 ```
 
 **Flooding frequency acreage weighted summary statistics**
@@ -258,8 +250,10 @@ if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in N
 
 Put "--" for duration if frequency is "none"
 
-```{r, results='asis'}
+```{r, warning=FALSE, message=FALSE}
+
 EDIT_updates_filtered$flood_dur <- ifelse(EDIT_updates_filtered$flood_dur == "", "none", EDIT_updates_filtered$flood_dur)
+
 
 if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NASIS for this field.")
   
@@ -274,52 +268,39 @@ if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NA
     "very long"
   )
   
-  Flood.duration.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_dur, comp_acres)  |>  
-    dplyr::group_by(flood_dur) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres),
-                coiids = toString(coiid)) |>  dplyr::ungroup() 
+  flood.dur.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_dur, comp_acres)  
   
-  Flood.duration.df$flood_dur <- factor(Flood.duration.df$flood_dur, levels = my_levels)
+  flood.dur.df$flood_dur <- factor(flood.dur.df$flood_dur, levels = my_levels)
+    
+# Component histogram 
+flood.dur1 <- ggplot2::ggplot(flood.dur.df, ggplot2::aes(flood_dur)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Flood duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Flood duration")
 
+# Convert to plotly
+flood.dur1 <- plotly::ggplotly(flood.dur1, tooltip = "text")
 
-  fd1 <-
-  plotly::plot_ly(
-    x = Flood.duration.df$flood_dur,
-    y = Flood.duration.df$count,
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(Flood.duration.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Flood dur. (# components)",
-    xaxis = list(title = "Flooding duration"),
-    yaxis = list(title = "# of components"),
-    margin = list(t = 100)
-  )
+# Acreage histogram
+flood.dur2 <- ggplot2::ggplot(flood.dur.df, ggplot2::aes(flood_dur, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Flood duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Flood duration")
 
+#Convert to plotly
+flood.dur2 <- plotly::ggplotly(flood.dur2, tooltip = "text")
 
-fd2 <-
-  plotly::plot_ly(
-    x = Flood.duration.df$flood_dur,
-    y = Flood.duration.df$acres,
-    name = "Flood dur. (acres)",
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(Flood.duration.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Flood dur. (# of acres)",
-    xaxis = list(title = "Flooding duration"),
-    yaxis = list(title = "acres"),
-    margin = list(t = 100)
-  )
-
-manipulateWidget::combineWidgets(fd1,
-                                 fd2,
+# Join both figures
+manipulateWidget::combineWidgets(flood.dur1,
+                                 flood.dur2,
                                  nrow = 1,
                                  ncol = 2,
                                  colsize = c(1, 1))
-
   
-
 }
+
 ```
 
 **Flooding duration acreage weighted summary statistics**
@@ -360,7 +341,8 @@ if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NA
 
 #### **Ponding freq.**
 
-```{r, results='asis'}
+```{r, warning=FALSE, message=FALSE}
+
 EDIT_updates_filtered$pond_freq <- ifelse(EDIT_updates_filtered$pond_freq == "", "none", EDIT_updates_filtered$pond_freq)
 
 
@@ -375,48 +357,38 @@ if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NA
     "frequent",
     "common"
   )
-    
-pond.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_freq, comp_acres)  |>  dplyr::group_by(pond_freq) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres), coiids = toString(coiid)) |>  dplyr::ungroup() 
-
-pond.freq.df$pond_freq <- factor(pond.freq.df$pond_freq, levels = my_levels)
-
   
-pf1 <-
-  plotly::plot_ly(
-    x = pond.freq.df$pond_freq,
-    y = pond.freq.df$count,
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(pond.freq.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Pond freq. (# components)",
-    xaxis = list(title = "Ponding frequency"),
-    yaxis = list(title = "# of components"),
-    margin = list(t = 100)
-  )
+  pond.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_freq, comp_acres)  
+  
+  pond.freq.df$pond_freq <- factor(pond.freq.df$pond_freq, levels = my_levels)
+    
+# Component histogram 
+pond.freq1 <- ggplot2::ggplot(pond.freq.df, ggplot2::aes(pond_freq)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Ponding freq.") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Ponding freq.")
 
+# Convert to plotly
+pond.freq1 <- plotly::ggplotly(pond.freq1, tooltip = "text")
 
-pf2 <-
-  plotly::plot_ly(
-    x = pond.freq.df$pond_freq,
-    y = pond.freq.df$acres,
-    name = "Pond freq. (acres)",
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(pond.freq.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Pond freq. (# of acres)",
-    xaxis = list(title = "Ponding frequency"),
-    yaxis = list(title = "acres"),
-    margin = list(t = 100)
-  )
+# Acreage histogram
+pond.freq2 <- ggplot2::ggplot(pond.freq.df, ggplot2::aes(pond_freq, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Ponding freq.") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding freq.")
 
-manipulateWidget::combineWidgets(pf1,
-                                 pf2,
+#Convert to plotly
+pond.freq2 <- plotly::ggplotly(pond.freq2, tooltip = "text")
+
+# Join both figures
+manipulateWidget::combineWidgets(pond.freq1,
+                                 pond.freq2,
                                  nrow = 1,
                                  ncol = 2,
                                  colsize = c(1, 1))
-
+  
 }
 
 ```
@@ -461,8 +433,10 @@ if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NA
 
 Put "--" for duration if frequency is "none"
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
+
 EDIT_updates_filtered$pond_dur <- ifelse(EDIT_updates_filtered$pond_dur == "", "none", EDIT_updates_filtered$pond_dur)
+
 
 if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NASIS for this field.")
   
@@ -476,51 +450,39 @@ if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NAS
     "very long"
   )
   
-  pond.duration.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_dur, comp_acres) |>  
-    dplyr::group_by(pond_dur) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres),
-                       coiids = toString(coiid)) |>  dplyr::ungroup() 
+  pond.dur.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_dur, comp_acres)  
   
-  pond.duration.df$pond_dur <- factor(pond.duration.df$pond_dur, levels = my_levels)
-  
-  pd1 <-
-  plotly::plot_ly(
-    x = pond.duration.df$pond_dur,
-    y = pond.duration.df$count,
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(pond.duration.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Pond dur. (# components)",
-    xaxis = list(title = "Ponding duration"),
-    yaxis = list(title = "# of components"),
-    margin = list(t = 100)
-  )
+  pond.dur.df$pond_dur <- factor(pond.dur.df$pond_dur, levels = my_levels)
+    
+# Component histogram 
+pond.dur1 <- ggplot2::ggplot(pond.dur.df, ggplot2::aes(pond_dur)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Ponding duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Ponding duration")
 
+# Convert to plotly
+pond.dur1 <- plotly::ggplotly(pond.dur1, tooltip = "text")
 
-  pd2 <-
-  plotly::plot_ly(
-    x = pond.duration.df$pond_dur,
-    y = pond.duration.df$acres,
-    name = "Pond dur. (acres)",
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(pond.duration.df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Pond dur. (# of acres)",
-    xaxis = list(title = "Ponding duration"),
-    yaxis = list(title = "acres"),
-    margin = list(t = 100)
-  )
+# Acreage histogram
+pond.dur2 <- ggplot2::ggplot(pond.dur.df, ggplot2::aes(pond_dur, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Ponding duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding duration")
 
-manipulateWidget::combineWidgets(pd1,
-                                 pd2,
+#Convert to plotly
+pond.dur2 <- plotly::ggplotly(pond.dur2, tooltip = "text")
+
+# Join both figures
+manipulateWidget::combineWidgets(pond.dur1,
+                                 pond.dur2,
                                  nrow = 1,
                                  ncol = 2,
                                  colsize = c(1, 1))
-
-
-
+  
 }
+
 ```
 
 **Ponding duration acreage weighted summary statistics**
@@ -570,8 +532,16 @@ if (all(is.na(EDIT_updates_filtered$elev_h_ft)) &
 
 # Define bin width and round by measures
   
-bin_width <- 250
-round_by <- 500  
+my_vector <- c(50, 100, 250, 500, 1000, 2000, 5000)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$elev_h_ft, 
+             EDIT_updates_filtered$elev_l_ft)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
   
@@ -614,10 +584,9 @@ if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NA
 
 el_h1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = min(my_seq) + bin_width/2,
-  color = "black",
-  fill = "grey") + 
-  ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  center = min(my_seq) + bin_width/2, color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
                               breaks = my_seq[seq(1, length(my_seq), by = 2)])
@@ -633,13 +602,14 @@ el_h2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)]
   )
 
-# COnvert acreage histogram to plotly
+# Convert acreage histogram to plotly
 
 el_h2 <- plotly::ggplotly(el_h2, tooltip = "text")
 
@@ -699,7 +669,8 @@ el_l1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)])
@@ -715,7 +686,8 @@ el_l2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)])
@@ -777,7 +749,8 @@ el_r1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "ele
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)])
@@ -793,7 +766,8 @@ el_r2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "ele
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)])
@@ -854,9 +828,17 @@ if (all(is.na(EDIT_updates_filtered$slope_h)) &
 } else{
 
 # Define bin width and round by measures
+  
+my_vector <- c(1, 2, 5, 10, 15, 20)
 
-bin_width <- 5
-round_by <- 5
+my_factor <- diff(range(c(EDIT_updates_filtered$slope_h, 
+             EDIT_updates_filtered$slope_l)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -1135,8 +1117,16 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_h))  & all(is.na(EDIT_updates_fil
   
 # Define bin width and round by measures
 
-bin_width <- 2
-round_by <- 2
+my_vector <- c(1, 2, 5, 10, 15, 20)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$pond_depth_h, 
+             EDIT_updates_filtered$pond_depth_l)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -1464,8 +1454,16 @@ if (all(is.na(EDIT_updates_filtered$water_table_h_in)) & all(is.na(EDIT_updates_
   
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+my_vector <- c(1, 2, 5, 10, 15, 20)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$water_table_h_in, 
+             EDIT_updates_filtered$water_table_l_in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -1890,8 +1888,16 @@ if (all(is.na(EDIT_updates_filtered$map_h_in)) & all(is.na(EDIT_updates_filtered
   
 # Define bin width and round by measures
 
-bin_width <- 5
-round_by <- 5
+my_vector <- c(1, 2, 5, 10, 15, 20)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$map_h_in, 
+             EDIT_updates_filtered$map_l_in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -1939,7 +1945,7 @@ map_h1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
   ggplot2::ggtitle("Mean Annual Precip. high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -1955,7 +1961,7 @@ map_h2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
   ggplot2::ggtitle("Mean Annual Precip. high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -2016,7 +2022,7 @@ map_l1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
   ggplot2::ggtitle("Mean Annual Precip. low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -2032,7 +2038,7 @@ map_l2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
   ggplot2::ggtitle("Mean Annual Precip. low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -2099,7 +2105,7 @@ map_r1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -2116,7 +2122,7 @@ map_r2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -2174,8 +2180,16 @@ if (all(is.na(EDIT_updates_filtered$ffd_h)) & all(is.na(EDIT_updates_filtered$ff
   
 # Define bin width and round by measures
 
-bin_width <- 15
-round_by <- 15
+my_vector <- c(5, 10, 15, 25, 30, 50, 75)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$ffd_h, 
+             EDIT_updates_filtered$ffd_l)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -2221,10 +2235,11 @@ ffd_h1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -2237,10 +2252,11 @@ ffd_h2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -2298,10 +2314,11 @@ ffd_l1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -2314,10 +2331,11 @@ ffd_l2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -2377,10 +2395,11 @@ ffd_r1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l"))
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -2393,10 +2412,11 @@ ffd_r2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l"))
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -2458,10 +2478,9 @@ if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated
   
 } else{
 
- pm_table <- EDIT_updates_filtered |>  dplyr::select(coiid, parent_material, comp_acres) |>  dplyr::group_by(parent_material) |>  
-    dplyr::summarise(acres = sum(comp_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame() 
- 
- knitr::kable(pm_table)
+    EDIT_updates_filtered |> dplyr::select(parent_material, comp_acres, coiid) |> dplyr::group_by(parent_material) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    dplyr::arrange(dplyr::desc(acres)) |> dplyr::rename(`parent material` = parent_material)|> knitr::kable()
  
 }
 ```
@@ -2498,6 +2517,57 @@ Make sure to review the full parent material descriptions below to ensure accura
 
 #### **Surface texture**
 
+```{r, warning=FALSE, message=FALSE}
+if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  if (length(unique(EDIT_updates_filtered$surf_texture <= 15))) {
+    
+    comp.df <- EDIT_updates_filtered |>  dplyr::select(coiid, surf_texture, comp_acres)  
+    
+# Component histogram 
+comp1 <- ggplot2::ggplot(comp.df, ggplot2::aes(surf_texture)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Surface texture") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Surface texture")
+
+# Convert to plotly
+comp1 <- plotly::ggplotly(comp1, tooltip = "text")
+
+# Acreage histogram
+comp2 <- ggplot2::ggplot(comp.df, ggplot2::aes(surf_texture, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Surface texture") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Surface texture")
+
+#Convert to plotly
+comp2 <- plotly::ggplotly(comp2, tooltip = "text")
+
+# Join both figures
+manipulateWidget::combineWidgets(comp1,
+                                 comp2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+
+  } else {
+    
+    EDIT_updates_filtered |> dplyr::select(surf_texture, comp_acres, coiid) |> dplyr::group_by(surf_texture) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
+    
+  }
+
+}
+```
+
+
 **Full texture string by frequency**
 ```{r}
 if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in NASIS for this field.")
@@ -2513,12 +2583,16 @@ if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in
 
 #### **Drainage class**
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
+
+EDIT_updates_filtered$drainage_class <- ifelse(EDIT_updates_filtered$drainage_class == "", "none", EDIT_updates_filtered$drainage_class)
+
+
 if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated in NASIS for this field.")
   
 } else{
   
-    my_levels <-  c(
+my_levels <-  c(
     "subaqueous",
     "very poorly",
     "poorly",
@@ -2529,49 +2603,39 @@ if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated 
     "excessively"
   )
   
-drainage_class_df <- EDIT_updates_filtered |>  dplyr::select(coiid, drainage_class, comp_acres)  |>  dplyr::group_by(drainage_class) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres), coiids = toString(coiid)) |>  dplyr::ungroup() 
-
-
-drainage_class_df$drainage_class <- factor(drainage_class_df$drainage_class, levels = my_levels)
+  drainage.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, drainage_class, comp_acres)  
   
-drain1 <-
-  plotly::plot_ly(
-    x = drainage_class_df$drainage_class,
-    y = drainage_class_df$count,
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(drainage_class_df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Drainage class (# components)",
-    xaxis = list(title = "Drainage class"),
-    yaxis = list(title = "# of components"),
-    margin = list(t = 100)
-  )
+  drainage.class.df$drainage_class <- factor(drainage.class.df$drainage_class, levels = my_levels)
+    
+# Component histogram 
+drainage.class1 <- ggplot2::ggplot(drainage.class.df, ggplot2::aes(drainage_class)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Drainage class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Drainage class")
 
+# Convert to plotly
+drainage.class1 <- plotly::ggplotly(drainage.class1, tooltip = "text")
 
-drain2 <-
-  plotly::plot_ly(
-    x = drainage_class_df$drainage_class,
-    y = drainage_class_df$acres,
-    name = "Drainage class (acres)",
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(drainage_class_df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Drainage class (# of acres)",
-    xaxis = list(title = "Drainage Class"),
-    yaxis = list(title = "acres"),
-    margin = list(t = 100)
-  )
+# Acreage histogram
+drainage.class2 <- ggplot2::ggplot(drainage.class.df, ggplot2::aes(drainage_class, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Drainage class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Drainage class")
 
-manipulateWidget::combineWidgets(drain1,
-                                 drain2,
+#Convert to plotly
+drainage.class2 <- plotly::ggplotly(drainage.class2, tooltip = "text")
+
+# Join both figures
+manipulateWidget::combineWidgets(drainage.class1,
+                                 drainage.class2,
                                  nrow = 1,
                                  ncol = 2,
                                  colsize = c(1, 1))
-
-
+  
 }
+
 ```
 
 **Drainage class table**
@@ -2610,11 +2674,13 @@ if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated 
 ```
 
 #### **Permeability class**
-```{r}
+
+```{r, warning=FALSE, message=FALSE}
+
 if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
-
+  
   my_levels <-  c(
     "impermeable",
     "very slow",
@@ -2644,64 +2710,39 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated 
         "rapid",
         "very rapid"
       )
-    )  
+    )   
   
-drain1 <-
-  plotly::plot_ly(
-    x = drainage_class_df$drainage_class,
-    y = drainage_class_df$count,
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(drainage_class_df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Drainage class (# components)",
-    xaxis = list(title = "Drainage class"),
-    yaxis = list(title = "# of components"),
-    margin = list(t = 100)
-  )
+  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in, comp_acres)  
   
-perm_class_df <- EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in_mod, comp_acres)  |>  dplyr::group_by(ksat_l_0_40_in_mod) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres), coiids = toString(coiid)) |>  dplyr::ungroup() 
+# Component histogram 
+perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Permeability class")
 
-perm_class_df$ksat_l_0_40_in_mod <- factor(perm_class_df$ksat_l_0_40_in_mod, levels = my_levels)
-  
-perm1 <-
-  plotly::plot_ly(
-    x = perm_class_df$ksat_l_0_40_in_mod,
-    y = perm_class_df$count,
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(perm_class_df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Permeability class (# components)",
-    xaxis = list(title = "Permeability class"),
-    yaxis = list(title = "# of components"),
-    margin = list(t = 100)
-  )
+# Convert to plotly
+perm.class1 <- plotly::ggplotly(perm.class1, tooltip = "text")
 
+# Acreage histogram
+perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Permeability class")
 
-perm2 <-
-  plotly::plot_ly(
-    x = perm_class_df$ksat_l_0_40_in_mod,
-    y = perm_class_df$acres,
-    name = "Permeability class (acres)",
-    type = "bar",
-    hoverinfo = "text",
-    hovertext = paste("coiids: ", stringr::str_wrap(perm_class_df$coiids, 40))
-  ) |>  plotly::layout(
-    title = "Permeability class (# of acres)",
-    xaxis = list(title = "Permeability class"),
-    yaxis = list(title = "acres"),
-    margin = list(t = 100)
-  )
+#Convert to plotly
+perm.class2 <- plotly::ggplotly(perm.class2, tooltip = "text")
 
-manipulateWidget::combineWidgets(perm1,
-                                 perm2,
+# Join both figures
+manipulateWidget::combineWidgets(perm.class1,
+                                 perm.class2,
                                  nrow = 1,
                                  ncol = 2,
                                  colsize = c(1, 1))
-
-
+  
 }
+
 ```
 
 **Permeability table**
@@ -2751,8 +2792,16 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
 
 # Define bin width and round by measures
 
-bin_width <- 5
-round_by <- 5
+my_vector <- c(5, 10, 15, 25, 30, 50, 75)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$restrict_depth_h_in, 
+             EDIT_updates_filtered$restrict_depth_l_in), na.rm = TRUE))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -2774,8 +2823,6 @@ my_seq <- seq(0, 90, 5)
 ```
 
 
-
-
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -2793,7 +2840,7 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5))
+  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -2809,7 +2856,9 @@ restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5))
+  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
+
+
 
 # Convert to plotly
 
@@ -2891,7 +2940,7 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5))
+  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -2907,7 +2956,7 @@ restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5))
+  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -2993,7 +3042,7 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5))
+  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -3014,7 +3063,7 @@ restriction_r2 <- ggplot2::ggplot(restriction.df |>
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5))
+  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3106,8 +3155,16 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data 
 
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+my_vector <- c(1, 5, 10, 20, 25)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf, 
+             EDIT_updates_filtered$frags_lo_2mm_3in_on_surf), na.rm = TRUE))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -3155,8 +3212,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   ggplot2::ggtitle("Surface frag high (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -3172,8 +3229,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   ggplot2::ggtitle("Surface frag high (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3238,8 +3295,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   ggplot2::ggtitle("Surface frag low (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -3255,8 +3312,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   ggplot2::ggtitle("Surface frag low (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3320,8 +3377,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   ggplot2::ggtitle("Surface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -3338,8 +3395,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   ggplot2::ggtitle("Surface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3405,8 +3462,16 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_gt_3in_on_surf)) &
   
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+my_vector <- c(1, 5, 10, 15, 25)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$frags_hi_gt_3in_on_surf, 
+             EDIT_updates_filtered$frags_lo_gt_3in_on_surf)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -3456,8 +3521,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   fill = "grey") + 
   ggplot2::ggtitle("Surface frag high 3 inches +") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -3472,8 +3537,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   fill = "grey") + 
   ggplot2::ggtitle("Surface frag high 3 inches +") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3535,8 +3600,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   fill = "grey") + 
   ggplot2::ggtitle("Surface frag low (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -3551,8 +3616,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   fill = "grey") + 
   ggplot2::ggtitle("Surface frag low (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3616,8 +3681,8 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   ggplot2::ggtitle("Surface frag representative (3 inches +)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -3634,8 +3699,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   ggplot2::ggtitle("Surface frag representative (3 inches +)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3693,8 +3758,16 @@ if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated i
   
 # Define bin width and round by measures
 
-bin_width <- 1
-round_by <- 1
+my_vector <- c(0.25, 0.5, 1, 2, 5, 10)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$awc_h_0_40_in, 
+             EDIT_updates_filtered$awc_l_0_40_in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -3739,10 +3812,12 @@ awc_h1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -3755,10 +3830,12 @@ awc_h2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert to plotly
 
@@ -3818,10 +3895,12 @@ awc_l1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -3834,10 +3913,12 @@ awc_l2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert to plotly
 
@@ -3899,10 +3980,12 @@ awc_r1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "
   color = "black",
   fill = "grey") + 
   ggplot2::ggtitle("AWC representative (0 - 40 inches)") + 
-  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -3916,10 +3999,12 @@ awc_r2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "
   color = "black",
   fill = "grey") + 
   ggplot2::ggtitle("AWC representative (0 - 40 inches)") + 
-  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert to plotly
 
@@ -3972,14 +4057,22 @@ pH (0-10 inches) prep code
 ```{r, message=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$pH_h_0_10in)) &
-    all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in NASIS for this field.")
+    all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
 # Define bin width and round by measures
 
-bin_width <- 0.5
-round_by <- 1
+my_vector <- c(.5, 1, 2, 3)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$pH_h_0_10in, 
+             EDIT_updates_filtered$pH_l_0_10in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -4028,7 +4121,8 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
   ggplot2::ggtitle("pH high (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -4045,7 +4139,7 @@ ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
   ggplot2::ggtitle("pH high (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4108,7 +4202,8 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
   ggplot2::ggtitle("pH low (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -4125,7 +4220,8 @@ ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
   ggplot2::ggtitle("pH low (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert to plotly
 
@@ -4188,7 +4284,7 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_
   ggplot2::ggtitle("pH representative (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4205,7 +4301,8 @@ ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_
   ggplot2::ggtitle("pH representative (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert to plotly
 
@@ -4263,8 +4360,16 @@ if (all(is.na(EDIT_updates_filtered$pH_h_10_40in)) &
   
 # Define bin width and round by measures
 
-bin_width <- 0.5
-round_by <- 1
+my_vector <- c(.5, 1, 2, 3)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$pH_h_10_40in, 
+             EDIT_updates_filtered$pH_l_10_40in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -4314,7 +4419,7 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2:
   ggplot2::ggtitle("pH high (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4332,7 +4437,7 @@ ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2:
   ggplot2::ggtitle("pH high (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4396,7 +4501,7 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2:
   ggplot2::ggtitle("pH low (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4413,7 +4518,7 @@ ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2:
   ggplot2::ggtitle("pH low (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4473,10 +4578,11 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") +
-  ggplot2::ggtitle("pH representative (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("pH representative (10 - 40 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4490,10 +4596,11 @@ ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") +
-  ggplot2::ggtitle("pH representative (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("pH representative (10 - 40 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  n.breaks = length(my_seq))
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4557,8 +4664,16 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in)) &
   
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+my_vector <- c(1, 2, 5, 10, 20)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in, 
+             EDIT_updates_filtered$subsurf_frags_lo_2mm.3in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Prepare dataframe for component histogram
 
@@ -4603,10 +4718,11 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Subsurface frag high (2 mm. - 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4622,8 +4738,8 @@ subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4684,8 +4800,8 @@ subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4699,10 +4815,11 @@ subsurf_frags_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Subsurface frag low (2 mm. - 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+    ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4764,10 +4881,11 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4780,10 +4898,11 @@ subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4848,8 +4967,16 @@ if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
   
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+my_vector <- c(1, 2, 5, 10, 20)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, 
+             EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Prepare dataframe for component histogram
 
@@ -4896,8 +5023,8 @@ sieve_subsurf_frag_h1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4913,8 +5040,8 @@ sieve_subsurf_frag_h2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -4975,8 +5102,8 @@ sieve_subsurf_frags_l1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filt
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -4992,8 +5119,8 @@ sieve_subsurf_frags_l2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filt
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5057,8 +5184,8 @@ sieve_subsurf_frag_r1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -5073,8 +5200,8 @@ sieve_subsurf_frag_r2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5141,8 +5268,16 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in)) &
   
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+my_vector <- c(1, 2, 5, 10, 20)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$subsurf_frags_hi_gt_3in, 
+             EDIT_updates_filtered$subsurf_frags_lo_gt_3in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -5191,8 +5326,8 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -5208,8 +5343,8 @@ subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5272,8 +5407,8 @@ subsurf_frag_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -5289,8 +5424,8 @@ subsurf_frag_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5353,8 +5488,8 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -5369,8 +5504,8 @@ subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   fill = "grey") + 
   ggplot2::ggtitle("Subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5435,8 +5570,16 @@ if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
   
 # Define bin width and round by measures
 
-bin_width <- 10
-round_by <- 10
+my_vector <- c(1, 2, 5, 10, 20)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, 
+             EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in)))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
 
 # Default dataframe
 
@@ -5485,8 +5628,8 @@ sieve_subsurf_frag_h1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -5502,8 +5645,8 @@ sieve_subsurf_frag_h2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5566,8 +5709,8 @@ sieve_subsurf_frag_l1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -5583,8 +5726,8 @@ sieve_subsurf_frag_l2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5647,8 +5790,8 @@ sieve_subsurf_frag_r1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert histogram to plotly
 
@@ -5663,8 +5806,8 @@ sieve_subsurf_frag_r2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filte
   fill = "grey") + 
   ggplot2::ggtitle("sieve_subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-  ggplot2::scale_x_continuous(limits = c(0, 100),
-  breaks = seq(0,100, 10))
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -5712,14 +5855,58 @@ if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
 ```
 
 #### **Component name**
-```{r}
+
+If there are 15 or fewer components, a histogram and table will be shown. Else, only a table will be shown. 
+```{r, message=FALSE, warning=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NASIS for this field.")
   
 } else{
+  
+  if (length(unique(EDIT_updates_filtered$compname <= 15))) {
+    
+    comp.df <- EDIT_updates_filtered |>  dplyr::select(coiid, compname, comp_acres)  
+    
+    #|>  dplyr::group_by(compname) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres), coiid = toString(coiid)) |>  dplyr::ungroup() 
 
-as.data.frame(table(EDIT_updates_filtered$compname)) |>  
-  dplyr::rename(`Component name` = Var1) |>  dplyr::arrange(desc(Freq))
+    
+# Component histogram 
+comp1 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Component name")
+
+# Convert to plotly
+comp1 <- plotly::ggplotly(comp1, tooltip = "text")
+
+# Acreage histogram
+comp2 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey") + 
+  ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Component name")
+
+#Convert to plotly
+comp2 <- plotly::ggplotly(comp2, tooltip = "text")
+
+# Join both figures
+manipulateWidget::combineWidgets(comp1,
+                                 comp2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+
+  } else {
+    
+    EDIT_updates_filtered |> dplyr::select(compname, comp_acres, coiid) |> dplyr::group_by(compname) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
+    
+  }
 
 }
 
