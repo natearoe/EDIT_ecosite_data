@@ -575,6 +575,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) &
   
 }
 
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
+
 }
 
 ```
@@ -872,6 +878,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$slope_l, na.rm = TRUE) &
   
 }
 
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
+
 }
 ```
 
@@ -1158,6 +1170,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pond_depth_l, na.rm = TRUE
   
   my_seq   
   
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
 }
 
 }
@@ -1499,8 +1517,8 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$water_table_l_in, na.rm = 
   
 }
 
-if(length(my_seq) == 1 & my_seq[1] == 0) {
-  my_seq <- c(0,1)
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
 }
@@ -1939,6 +1957,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) &
   
 }
 
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
+
 }
 ```
 
@@ -2230,6 +2254,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$ffd_l, na.rm = TRUE) &
   
   my_seq     
   
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
 }
 
 }
@@ -2733,8 +2763,7 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated 
 perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
                     color = "black", fill = "grey") + 
-  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
-                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
+  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Permeability class")
 
 # Convert to plotly
@@ -2744,8 +2773,7 @@ perm.class1 <- plotly::ggplotly(perm.class1, tooltip = "text")
 perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
                     color = "black", fill = "grey") + 
-  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
-                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
+  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Permeability class")
 
 #Convert to plotly
@@ -2832,8 +2860,24 @@ restriction.df <-
 
 # Sequence for axes
 
-my_list <- list()
-my_seq <- seq(0, 90, 5)
+my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$restrict_depth_l_in, na.rm = TRUE), round_by, f = floor),
+  plyr::round_any(max(EDIT_updates_filtered$restrict_depth_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$restrict_depth_l_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$restrict_depth_l_in, na.rm = TRUE) - bin_width >= 0){
+  seq(plyr::round_any(min(EDIT_updates_filtered$restrict_depth_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      plyr::round_any(max(EDIT_updates_filtered$restrict_depth_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  
+  my_seq  
+  
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
 
 }
 
@@ -3149,9 +3193,366 @@ summary(restriction_r_sum_stats)
 }
 ```
 
+#### **Restriction kind**
+
+EDIT does not ask for restriction kind, but it is useful to know for ecological reasons. Additionally, in some situations the depth to restriction is different than the soil depth - see discussion in the next section, "Soil Depth." 
+
+```{r, warning=FALSE, message=FALSE}
+if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  
+    
+  restrict.kind.df <- EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, comp_acres)  
+  
+  EDIT_updates_filtered |> dplyr::select(restrict_kind, comp_acres, coiid) |> dplyr::group_by(restrict_kind) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
+
+
+}
+```
+
+**Full texture string by frequency**
+```{r}
+if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, restrict.kind_acres) |>  dplyr::group_by(restrict_kind) |>  
+    dplyr::summarise(acres = sum(restrict.kind_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame()
+
+}
+```
+
 #### **Soil depth**
 
-Soil depth (inches) is the same as depth to restrictive layer. 
+In some situations, the depth to restriction is different than the soil depth. For example, permafrost, abrupt textural changes, and salts constitute restrictions beyond which soil would continue. In these cases, restriction depth and soil depth would differ. In contrast, soil would end at a bedrock restriction and therefore restriction depth and soil depth would be the same. 
+
+The vast majority of NASIS component horizons have RV values but do not have high and low values. Given that this report relies on component high/low values (see Important Discussion section at the beginning of the document for details), soil depth cannot be summarized in the same way as other sections in this document. 
+
+If you have reason to believe that soil depth is different than restriction depth, you will have to use your own judgement in deciding how to utilize the information summarized for this section. Most component/high values will likely be missing. Representative values will not be reported as the combined component high/low as is the case in all other sections of this report. Instead, actual component RV values will be reported in the soil depth section. No standardized values will be calculated for populating EDIT. 
+
+Soil depth prep code
+```{r, message=FALSE}
+if(all(is.na(EDIT_updates_filtered$soil_depth_l_in)) &
+   all(is.na(EDIT_updates_filtered$soil_depth_h_in)) &
+   all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else {
+  if(all(is.na(EDIT_updates_filtered$soil_depth_l_in)) &
+   all(is.na(EDIT_updates_filtered$soil_depth_h_in))) {
+    
+    
+# Define bin width and round by measures
+  
+my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
+
+my_factor <- diff(range(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE))/my_vector
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
+
+# Default dataframe
+  
+soil.depth.df <-
+  EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_r_in, comp_acres) |> 
+  tidyr::pivot_longer(
+    names_to = "soil.depth",
+    values_to = "value",
+    cols = c("soil_depth_r_in")) |> 
+  dplyr::rename(acres = comp_acres)
+
+# Sequence for axes
+
+my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE), round_by, f = floor),
+  plyr::round_any(max(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE) - bin_width >= 0){
+  seq(plyr::round_any(min(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      plyr::round_any(max(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  
+  my_seq  
+  
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
+    } else {
+    
+    # Define bin width and round by measures
+  
+my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
+
+my_factor <- diff(range(c(EDIT_updates_filtered$soil_depth_h_in, 
+             EDIT_updates_filtered$soil_depth_l_in), na.rm = TRUE))/my_vector
+
+
+
+reducer <- my_factor < 25
+
+bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+
+round_by <- bin_width
+
+# Default dataframe
+  
+soil.depth.df <-
+  EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_h_in, soil_depth_l_in, comp_acres) |> 
+  tidyr::pivot_longer(
+    names_to = "soil.depth",
+    values_to = "value",
+    cols = c("soil_depth_h_in", "soil_depth_l_in")) |> 
+  dplyr::rename(acres = comp_acres)
+
+# Sequence for axes
+
+my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE), round_by, f = floor),
+  plyr::round_any(max(EDIT_updates_filtered$soil_depth_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+
+my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE) &
+             min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE) - bin_width >= 0){
+  seq(plyr::round_any(min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+      plyr::round_any(max(EDIT_updates_filtered$soil_depth_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+} else{
+  
+  my_seq  
+  
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
+    
+    
+  }
+}
+
+```
+
+Soil depth high
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$soil_depth_h_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("Soil depth high") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
+# Convert histogram to plotly
+
+soil_depth1 <- plotly::ggplotly(soil_depth1, tooltip = "text")
+
+# Acreage weighted histogram
+
+soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("Soil depth high") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
+# Convert to plotly
+
+soil_depth2 <- plotly::ggplotly(soil_depth2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(soil_depth1,
+                                 soil_depth2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Soil depth high acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$soil_depth_h_in))) {print("No data populated in NASIS for this field.")
+
+} else{
+  
+  soil_depth_stats <- rep(EDIT_updates_filtered$soil_depth_h_in,
+                             plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
+                        f = round)) |> sort(na.last = NA)
+    
+
+  summary(soil_depth_stats)
+
+}
+```
+
+Soil depth low
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$soil_depth_l_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("Soil depth low") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
+# Convert histogram to plotly
+
+soil_depth1 <- plotly::ggplotly(soil_depth1, tooltip = "text")
+
+# Acreage weighted histogram
+
+soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("Soil depth low") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
+# Convert to plotly
+
+soil_depth2 <- plotly::ggplotly(soil_depth2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(soil_depth1,
+                                 soil_depth2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Soil depth low acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$soil_depth_l_in))) {print("No data populated in NASIS for this field.")
+
+} else{
+  
+  soil_depth_stats <- rep(EDIT_updates_filtered$soil_depth_l_in,
+                             plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
+                        f = round)) |> sort(na.last = NA)
+    
+
+  summary(soil_depth_stats)
+
+}
+```
+
+Soil depth RV
+```{r message=FALSE, warning=FALSE}
+# Is variable NA?
+
+if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+
+# Create component histogram
+
+soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_r_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("Soil depth RV") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
+# Convert histogram to plotly
+
+soil_depth1 <- plotly::ggplotly(soil_depth1, tooltip = "text")
+
+# Acreage weighted histogram
+
+soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_r_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  binwidth = bin_width,
+  center = min(my_seq) + bin_width/2,
+  color = "black",
+  fill = "grey") + 
+  ggplot2::ggtitle("Soil depth RV") + 
+  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
+# Convert to plotly
+
+soil_depth2 <- plotly::ggplotly(soil_depth2, tooltip = "text")
+
+# Join both figures
+
+manipulateWidget::combineWidgets(soil_depth1,
+                                 soil_depth2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+}
+
+```
+
+**Soil depth RV acreage weighted summary statistics**
+```{r}
+
+if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated in NASIS for this field.")
+
+} else{
+  
+  soil_depth_stats <- rep(EDIT_updates_filtered$soil_depth_r_in,
+                             plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
+                        f = round)) |> sort(na.last = NA)
+    
+
+  summary(soil_depth_stats)
+
+}
+```
 
 #### **Surface frag (< 3 inches)**
 
@@ -3205,13 +3606,19 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf, 
   plyr::round_any(max(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
          my_seq            
-                  }
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
 
 }
 
 ```
 
-
+Surface frag high
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -3281,7 +3688,6 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data 
 }
 
 ```
-
 
 **Surface frag high (< 3 inches) acreage weighted summary statistics**
 ```{r}
@@ -3516,7 +3922,13 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$frags_lo_gt_3in_on_surf, n
   plyr::round_any(max(EDIT_updates_filtered$frags_hi_gt_3in_on_surf, na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
          my_seq            
-                  }
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
   
 }
 ```
@@ -3809,6 +4221,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRU
   
   my_seq  
   
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
 }
   
 }
@@ -4116,6 +4534,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE)
   
 }
 
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
+
 }
 
 ```
@@ -4411,6 +4835,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE
   
   my_seq  
   
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
 }
 
 }
@@ -4717,6 +5147,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in, 
   my_seq   
   
 }
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
   
 }
 ```
@@ -5020,6 +5456,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm
   my_seq   
   
 }
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
+}
   
 }
 ```
@@ -5320,6 +5762,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_lo_gt_3in, n
   
   my_seq    
   
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
 }
   
 }
@@ -5622,6 +6070,12 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_
   
   my_seq    
   
+}
+
+if(length(my_seq) == 1) {
+  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+} else {
+  my_seq
 }
   
 }
