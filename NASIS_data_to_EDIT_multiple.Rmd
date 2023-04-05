@@ -2733,7 +2733,8 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated 
 perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
                     color = "black", fill = "grey") + 
-  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Permeability class")
 
 # Convert to plotly
@@ -2743,7 +2744,8 @@ perm.class1 <- plotly::ggplotly(perm.class1, tooltip = "text")
 perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
                     color = "black", fill = "grey") + 
-  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Permeability class")
 
 #Convert to plotly
