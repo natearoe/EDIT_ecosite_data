@@ -540,7 +540,9 @@ if (all(is.na(EDIT_updates_filtered$elev_h_ft)) &
 my_vector <- c(50, 100, 250, 500, 1000, 2000, 5000)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$elev_h_ft, 
-             EDIT_updates_filtered$elev_l_ft)))/my_vector
+             EDIT_updates_filtered$elev_l_ft), na.rm = TRUE))/my_vector
+
+
 
 reducer <- my_factor < 25
 
@@ -837,7 +839,7 @@ if (all(is.na(EDIT_updates_filtered$slope_h)) &
 my_vector <- c(1, 2, 5, 10, 15, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$slope_h, 
-             EDIT_updates_filtered$slope_l)))/my_vector
+             EDIT_updates_filtered$slope_l), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -1125,7 +1127,7 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_h))  & all(is.na(EDIT_updates_fil
 my_vector <- c(1, 2, 5, 10, 15, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$pond_depth_h, 
-             EDIT_updates_filtered$pond_depth_l)))/my_vector
+             EDIT_updates_filtered$pond_depth_l), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -1464,7 +1466,7 @@ if (all(is.na(EDIT_updates_filtered$water_table_h_in)) & all(is.na(EDIT_updates_
 my_vector <- c(1, 2, 5, 10, 15, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$water_table_h_in, 
-             EDIT_updates_filtered$water_table_l_in)))/my_vector
+             EDIT_updates_filtered$water_table_l_in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -1904,7 +1906,7 @@ if (all(is.na(EDIT_updates_filtered$map_h_in)) & all(is.na(EDIT_updates_filtered
 my_vector <- c(1, 2, 5, 10, 15, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$map_h_in, 
-             EDIT_updates_filtered$map_l_in)))/my_vector
+             EDIT_updates_filtered$map_l_in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -2196,7 +2198,7 @@ if (all(is.na(EDIT_updates_filtered$ffd_h)) & all(is.na(EDIT_updates_filtered$ff
 my_vector <- c(5, 10, 15, 25, 30, 50, 75)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$ffd_h, 
-             EDIT_updates_filtered$ffd_l)))/my_vector
+             EDIT_updates_filtered$ffd_l), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -3478,7 +3480,7 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_gt_3in_on_surf)) &
 my_vector <- c(1, 5, 10, 15, 25)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$frags_hi_gt_3in_on_surf, 
-             EDIT_updates_filtered$frags_lo_gt_3in_on_surf)))/my_vector
+             EDIT_updates_filtered$frags_lo_gt_3in_on_surf), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -3774,7 +3776,7 @@ if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated i
 my_vector <- c(0.25, 0.5, 1, 2, 5, 10)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$awc_h_0_40_in, 
-             EDIT_updates_filtered$awc_l_0_40_in)))/my_vector
+             EDIT_updates_filtered$awc_l_0_40_in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -4079,7 +4081,7 @@ if (all(is.na(EDIT_updates_filtered$pH_h_0_10in)) &
 my_vector <- c(.5, 1, 2, 3)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$pH_h_0_10in, 
-             EDIT_updates_filtered$pH_l_0_10in)))/my_vector
+             EDIT_updates_filtered$pH_l_0_10in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -4376,7 +4378,7 @@ if (all(is.na(EDIT_updates_filtered$pH_h_10_40in)) &
 my_vector <- c(.5, 1, 2, 3)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$pH_h_10_40in, 
-             EDIT_updates_filtered$pH_l_10_40in)))/my_vector
+             EDIT_updates_filtered$pH_l_10_40in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -4680,7 +4682,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in)) &
 my_vector <- c(1, 2, 5, 10, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in, 
-             EDIT_updates_filtered$subsurf_frags_lo_2mm.3in)))/my_vector
+             EDIT_updates_filtered$subsurf_frags_lo_2mm.3in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -4983,7 +4985,7 @@ if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
 my_vector <- c(1, 2, 5, 10, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, 
-             EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in)))/my_vector
+             EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -5284,7 +5286,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in)) &
 my_vector <- c(1, 2, 5, 10, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$subsurf_frags_hi_gt_3in, 
-             EDIT_updates_filtered$subsurf_frags_lo_gt_3in)))/my_vector
+             EDIT_updates_filtered$subsurf_frags_lo_gt_3in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
@@ -5586,7 +5588,7 @@ if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
 my_vector <- c(1, 2, 5, 10, 20)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, 
-             EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in)))/my_vector
+             EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in), na.rm = TRUE))/my_vector
 
 reducer <- my_factor < 25
 
