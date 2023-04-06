@@ -45,7 +45,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == 'F022AD102CA')
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -575,7 +575,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$elev_l_ft, na.rm = TRUE) &
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -878,7 +878,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$slope_l, na.rm = TRUE) &
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -1172,7 +1172,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pond_depth_l, na.rm = TRUE
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -1517,7 +1517,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$water_table_l_in, na.rm = 
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -1957,7 +1957,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$map_l_in, na.rm = TRUE) &
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -2256,7 +2256,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$ffd_l, na.rm = TRUE) &
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -2873,7 +2873,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$restrict_depth_l_in, na.rm
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -2900,8 +2900,9 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -2916,8 +2917,9 @@ restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 
 
@@ -3000,8 +3002,9 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -3016,8 +3019,8 @@ restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
 # Convert to plotly
 
@@ -3102,8 +3105,9 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert histogram to plotly
 
@@ -3123,8 +3127,9 @@ restriction_r2 <- ggplot2::ggplot(restriction.df |>
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(0, 90),
-  breaks = seq(0, 90, 5)[seq(1, length(my_seq), by = 2)])
+  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+
 
 # Convert to plotly
 
@@ -3282,7 +3287,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$soil_depth_r_in, na.rm = T
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -3338,7 +3343,7 @@ my_seq <- if(min(my_seq) == min(c(EDIT_updates_filtered$soil_depth_l_in,
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -3492,7 +3497,7 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_l_in))) {print("No data populated
 }
 ```
 
-Soil depth RV
+**Soil depth RV** - <span style = "color:red"> Make sure to read the Soil Depth section description above. Soil Depth calculations differ from other sections. </span>
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
@@ -3617,7 +3622,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf, 
          my_seq            
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -3933,7 +3938,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$frags_lo_gt_3in_on_surf, n
          my_seq            
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -4232,7 +4237,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$awc_l_0_40_in, na.rm = TRU
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -4543,7 +4548,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_0_10in, na.rm = TRUE)
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -4846,7 +4851,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$pH_l_10_40in, na.rm = TRUE
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -5157,7 +5162,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in, 
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -5466,7 +5471,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -5773,7 +5778,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$subsurf_frags_lo_gt_3in, n
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
@@ -6081,7 +6086,7 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_
   
 }
 
-if(length(my_seq) == 1) {
+my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
