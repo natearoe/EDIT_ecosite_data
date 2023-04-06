@@ -3220,8 +3220,8 @@ if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated i
   
 } else{
   
-  EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, restrict.kind_acres) |>  dplyr::group_by(restrict_kind) |>  
-    dplyr::summarise(acres = sum(restrict.kind_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame()
+  EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, comp_acres) |>  dplyr::group_by(restrict_kind) |>  
+    dplyr::summarise(acres = sum(comp_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame()
 
 }
 ```
@@ -3288,13 +3288,15 @@ if(length(my_seq) == 1) {
   my_seq
 }
     } else {
+      
     
     # Define bin width and round by measures
   
 my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$soil_depth_h_in, 
-             EDIT_updates_filtered$soil_depth_l_in), na.rm = TRUE))/my_vector
+             EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$soil_depth_r_in), 
+             na.rm = TRUE))/my_vector
 
 
 
@@ -3307,22 +3309,29 @@ round_by <- bin_width
 # Default dataframe
   
 soil.depth.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_h_in, soil_depth_l_in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_h_in, soil_depth_l_in,  soil_depth_r_in,
+                                          comp_acres) |> 
   tidyr::pivot_longer(
     names_to = "soil.depth",
     values_to = "value",
-    cols = c("soil_depth_h_in", "soil_depth_l_in")) |> 
+    cols = c("soil_depth_h_in", "soil_depth_l_in", "soil_depth_r_in")) |> 
   dplyr::rename(acres = comp_acres)
 
 # Sequence for axes
 
-my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE), round_by, f = floor),
-  plyr::round_any(max(EDIT_updates_filtered$soil_depth_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+my_seq <- seq(plyr::round_any(min(c(EDIT_updates_filtered$soil_depth_l_in, 
+                                    EDIT_updates_filtered$soil_depth_r_in), na.rm = TRUE), round_by, f = floor),
+  plyr::round_any(max(c(EDIT_updates_filtered$soil_depth_h_in, EDIT_updates_filtered$soil_depth_r_in), 
+                      na.rm = TRUE), round_by, f = ceiling), bin_width)
 
-my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE) &
-             min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE) - bin_width >= 0){
-  seq(plyr::round_any(min(EDIT_updates_filtered$soil_depth_l_in, na.rm = TRUE), round_by, f = floor) - bin_width,
-      plyr::round_any(max(EDIT_updates_filtered$soil_depth_h_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+my_seq <- if(min(my_seq) == min(c(EDIT_updates_filtered$soil_depth_l_in, 
+                                    EDIT_updates_filtered$soil_depth_r_in), na.rm = TRUE) &
+             min(c(EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$soil_depth_r_in), 
+                 na.rm = TRUE) - bin_width >= 0){
+  seq(plyr::round_any(min(c(EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$soil_depth_r_in), 
+                          na.rm = TRUE), round_by, f = floor) - bin_width,
+      plyr::round_any(max(c(EDIT_updates_filtered$soil_depth_h_in, 
+                                    EDIT_updates_filtered$soil_depth_r_in), na.rm = TRUE), round_by, f = ceiling), bin_width)
 } else{
   
   my_seq  
