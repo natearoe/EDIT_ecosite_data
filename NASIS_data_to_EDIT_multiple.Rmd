@@ -3233,11 +3233,11 @@ if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated i
 
 #### **Soil depth**
 
-In some situations, the depth to restriction is different than the soil depth. For example, permafrost, abrupt textural changes, and salts constitute restrictions beyond which soil would continue. In these cases, restriction depth and soil depth would differ. In contrast, soil would end at a bedrock restriction and therefore restriction depth and soil depth would be the same. 
+For most situations, soil depth is the same as restriction depth. In some situations, the depth to restriction is different than the soil depth. For example, permafrost, abrupt textural changes, and salts constitute restrictions beyond which soil would continue. In these cases, restriction depth and soil depth would differ. In contrast, soil would end at a bedrock restriction and therefore restriction depth and soil depth would be the same. 
 
-The vast majority of NASIS component horizons have RV values but do not have high and low values. Given that this report relies on component high/low values (see Important Discussion section at the beginning of the document for details), soil depth cannot be summarized in the same way as other sections in this document. 
+The vast majority of NASIS component horizons have RV depth values but do not have high and low depth values. Given that this report relies on component high/low values (see Important Discussion section at the beginning of the document for details), soil depth cannot be summarized in the same way as other sections in this document. 
 
-If you have reason to believe that soil depth is different than restriction depth, you will have to use your own judgement in deciding how to utilize the information summarized for this section. Most component/high values will likely be missing. Representative values will not be reported as the combined component high/low as is the case in all other sections of this report. Instead, actual component RV values will be reported in the soil depth section. No standardized values will be calculated for populating EDIT. 
+If you have reason to believe that soil depth is different than restriction depth, you will have to use your own judgement in deciding how to utilize the information summarized for this section. The component high/low section below will report high/low values, but the vast majority of values (if not all) will be missing. Representative values will not be reported as the combined component high/low as is the case in all other sections of this report. Instead, component RV values will be reported in the Soil depth RV section. No standardized values will be calculated for populating EDIT. 
 
 Soil depth prep code
 ```{r, message=FALSE}
@@ -6348,7 +6348,7 @@ if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NAS
   
 } else{
   
-  if (length(unique(EDIT_updates_filtered$compname <= 15))) {
+  if (length(unique(EDIT_updates_filtered$compname)) <= 15) {
     
     comp.df <- EDIT_updates_filtered |>  dplyr::select(coiid, compname, comp_acres)  
     
