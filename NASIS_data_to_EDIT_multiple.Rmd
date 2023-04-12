@@ -45,7 +45,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == 'F022AD102CA')
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
 ```
 
 <!-- **Determine component acreage unit** -->
