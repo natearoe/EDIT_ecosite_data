@@ -2579,8 +2579,8 @@ if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated
   
 } else{
   
-  table(landform_words) |>  as.data.frame() |>  dplyr::arrange(desc(Freq)) |>  dplyr::rename(`Landform words` =
-                                                                    landform_words) |> dplyr::top_n(15)
+  table(parent_material_words) |>  as.data.frame() |>  dplyr::arrange(desc(Freq)) |>  dplyr::rename(`Parent material words` =
+                                                                    parent_material_words) |> dplyr::top_n(15)
   
 }
 
