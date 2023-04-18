@@ -2545,7 +2545,7 @@ if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated
 }
 ```
 
-**Parent material wordcloud**
+Wordcloud of acreage weighted parent material descriptions. The wordcloud should give an overview of the words used to describe the parent material, please view the full parent material strings above for explicit details. 
 ```{r, warning=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated in NASIS for this field.")
@@ -2573,7 +2573,18 @@ if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated
 
 ```
 
-Make sure to review the full parent material descriptions below to ensure accuracy of wordcloud. Wordcloud relies on prevalence of words used in landform descriptions which is not necessarily associated with the number of components associated with a landform or the number of acres.
+**Parent material wordcloud table**
+```{r, message=FALSE, warning=FALSE}
+if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  table(landform_words) |>  as.data.frame() |>  dplyr::arrange(desc(Freq)) |>  dplyr::rename(`Landform words` =
+                                                                    landform_words) |> dplyr::top_n(15)
+  
+}
+
+```
 
 #### **Surface texture**
 
@@ -3222,6 +3233,9 @@ if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated i
   
 } else{
   
+  if(all(EDIT_updates_filtered$restrict_kind == "")) {print("Restriction type blank for all components. This likely means no restriction was observed.")}
+  else{
+  
   
     
   restrict.kind.df <- EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, comp_acres)  
@@ -3231,18 +3245,8 @@ if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated i
     dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
 
 
-}
-```
-
-**Full texture string by frequency**
-```{r}
-if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated in NASIS for this field.")
+  }
   
-} else{
-  
-  EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, comp_acres) |>  dplyr::group_by(restrict_kind) |>  
-    dplyr::summarise(acres = sum(comp_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame()
-
 }
 ```
 
@@ -3585,7 +3589,7 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated
 
 #### **Organic matter depth**
 
-Organic matter depth is not a field in EDIT. Organic matter depth is provided for your own information, and will be referenced later association with subsurface fragments. 
+Organic matter depth is not a field in EDIT. Organic matter depth is provided for your own information, and will be referenced later in association with subsurface fragments. 
 
 Soil depth prep code
 ```{r, message=FALSE}
@@ -3696,7 +3700,7 @@ my_seq <- if(length(my_seq) == 1) {
 
 ```
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {print("No data populated in NASIS for this field.")
@@ -5306,17 +5310,15 @@ summary(ph_stats)
 
 ```
 
-#### **Subsurface frag (2 mm. - 3 inches), 0 - 60 inches.**
+#### **Subsurface frag (2 mm. - 3 inches)**
 
-The calculation of subsurface fragments is more difficult than other properties in this report for several reasons. Firstly, low and high values for different fragment sizes are independent in NASIS, but are not in-situ. For example, rock fragments over 3 inches (75 mm) include cobbles, stones, and boulders. Each fragment size has an independent low and high range. Cobbles could range from a low of 20% to a high of 50%, stones could range from 15-30%, and boulders could range from 20-40%. If you added the high ranges together it would equal 120%. This is of course impossible. In NASIS the ranges are independent of each other, but in-situ these values are correlated. It is unlikely that all fragment sizes will be at there maximum range at the same time, certainly not if it leads to a cumulative volume over 100%. Similarly, it is unlikely that all fragment sizes will be at their lowest range at the same time. 
+The calculation of subsurface fragments is more difficult than other properties in this report for several reasons. Firstly, adding component high and low values is not as simple we would like. If you add all the component high values for gravels, cobbles, stones, and boulders, you will very likely end up with an unrealistically high amount of fragments - potentially over 100%. Similarly, adding component low values will likely result in unrealistically low amounts of fragments. For this reason, there is not an exact calculation of subsurface rock fragments. Please consider the values provided to be estimates. 
 
-When cobbles and stones are high, boulders are low - or any other combination that accounts for that fact that all fragment classes are unlikely to be high at the same time and will never combine to greater than 100%. 
-
-The depth range for subsurface fragments needs to be user-defined. Subsurface frags are calculated from below the O horizon(s) to top of the first restriction, with one exception. In Histosols, subsurface frags are calculated from the top of the soil to the first restriction - O horizons are included in the calculation. Subsurface fragments are omitted from non-Histosol soils because rock fragments in those O horizons can be incompletely populated and inaccurate. 
+The depth range for subsurface fragments needs to be user-defined. Subsurface frags are calculated from below the O horizon(s) to top of the first restriction, except in Histosols, where rock fragments in the O horizon(s) are included. Subsurface fragments are omitted from non-Histosol soils because rock fragments in those O horizons can be incompletely populated and/or inaccurate. 
 
 Median RV values of O horizon(s) depth and depth to restriction are provided here to be used for the depth range of subsurface fragments. The soil orders are also provided so that you can determine whether O horizons from Histosols have been included. 
 
-Use as depth top - this value is the median of the acreage weighted component RV depth of O horizon(s). Why is the component RV used instead of the combined component high/low as is done in the majority of this script? Organic horizon data comes from the component horizon table, and high/low values from the component horizon table are incompletely populated. 
+Use the following value as depth top - this value is the median of the acreage weighted component RV depth of O horizon(s). Why is the component RV used instead of the combined component high/low as is done in the majority of this script? Organic horizon data comes from the component horizon table, and high/low values from the component horizon table are missing for many surveys.
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {print("No organic horizon depth populated in NASIS.")
@@ -5328,10 +5330,12 @@ median(o_horizon_stats, na.rm = TRUE)
 }
 
 ```
-Use as bottom depth - this value is the median of the acreage weighted combined component high/low depth to restriction: 
+
+
+Use the following value as depth bottom- this value is the median of the acreage weighted combined component high/low depth to restriction: 
 ```{r}
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
-    all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No restriction depth populated in NASIS.")
+    all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No restriction depth populated in NASIS. Use 60 inches as the bottom depth.")
   
 } else{
   
@@ -5456,7 +5460,7 @@ manipulateWidget::combineWidgets(subsurf_frag_h1,
 
 ```
 
-**Subsurface frag high (2 mm. - 3 inches), 0 - 60 inches, acreage weighted 95th percentile** - use as 'high (actual)'
+**Subsurface frag high (2 mm. - 3 inches), acreage weighted 95th percentile** - use as 'high (actual)'
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
   
@@ -5471,7 +5475,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data 
 
 ```
 
-**Subsurface frag high (2 mm. - 3 inches), 0 - 60 inches, acreage weighted summary statistics**
+**Subsurface frag high (2 mm. - 3 inches), acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
@@ -5536,7 +5540,7 @@ manipulateWidget::combineWidgets(subsurf_frags_l1,
 
 ```
 
-**Subsurface frag low (2 mm. - 3 inches), 0 - 60 inches, acreage weighted 5th percentile** - use as 'low (actual)'
+**Subsurface frag low (2 mm. - 3 inches), acreage weighted 5th percentile** - use as 'low (actual)'
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
   
@@ -5552,7 +5556,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in))) {print("No data 
 ```
 
 
-**Subsurface frag low (2 mm. - 3 inches), 0 - 60 inches, acreage weighted summary statistics**
+**Subsurface frag low (2 mm. - 3 inches), acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
@@ -5647,311 +5651,6 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in)) &
   summary(subsurf_frag_stats)
 
 }
-```
-
-#### **sieve_subsurface frag (2 mm. - 3 inches), 0 - 60 inches.**
-
-sieve_subsurface frag (2 mm. - 3 inches) prep code
-```{r, message=FALSE}
-# # NAs in sieve_subsurface frags generally mean zero sieve_subsurface frags
-# 
-# EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)
-# 
-# EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in)
-# 
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-#   
-# # Define bin width and round by measures
-# 
-# my_vector <- c(1, 2, 5, 10, 20)
-# 
-# my_factor <- diff(range(c(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, 
-#              EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in), na.rm = TRUE))/my_vector
-# 
-# reducer <- my_factor < 25
-# 
-# bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
-# 
-# round_by <- bin_width
-# 
-# # Prepare dataframe for component histogram
-# 
-# sieve_subsurf_frags.df <-
-#   EDIT_updates_filtered |>  dplyr::select(coiid, 
-#                                    sieve_subsurf_frags_hi_2mm.3in, sieve_subsurf_frags_lo_2mm.3in, comp_acres) |> 
-#   tidyr::pivot_longer(
-#     names_to = "frag",
-#     values_to = "value",
-#     cols = c("sieve_subsurf_frags_hi_2mm.3in", "sieve_subsurf_frags_lo_2mm.3in")) |> 
-#   dplyr::rename(acres = comp_acres)
-# 
-# # Sequence for axes
-#   
-# my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE), round_by, f = floor),
-#   plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
-# 
-# my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE) &
-#              min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE) - bin_width >= 0){
-#   seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, na.rm = TRUE), round_by, f = floor) - bin_width,
-#       plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
-# } else{
-#   
-#   my_seq   
-#   
-# }
-# 
-# my_seq <- if(length(my_seq) == 1) {
-#   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
-# } else {
-#   my_seq
-# }
-#   
-# }
-```
-
-
-```{r message=FALSE, warning=FALSE}
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-# 
-#   # Create component histogram
-# 
-# sieve_subsurf_frag_h1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert histogram to plotly
-# 
-# sieve_subsurf_frag_h1 <- plotly::ggplotly(sieve_subsurf_frag_h1, tooltip = "text")
-# 
-# # Acreage weighted histogram
-# 
-# sieve_subsurf_frag_h2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + 
-#   ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert to plotly
-# 
-# sieve_subsurf_frag_h2 <- plotly::ggplotly(sieve_subsurf_frag_h2, tooltip = "text")
-# 
-# # Join both figures
-# 
-# manipulateWidget::combineWidgets(sieve_subsurf_frag_h1,
-#                                  sieve_subsurf_frag_h2,
-#                                  nrow = 1,
-#                                  ncol = 2,
-#                                  colsize = c(1, 1))
-# 
-# }
-
-```
-
-**sieve_subsurface frag high (2 mm. - 3 inches), 0 - 60 inches, acreage weighted 95th percentile** - use as 'high (actual)'
-```{r, fig.show="hold", out.width="50%"}
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-#   
-#   sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
-#                                 accuracy = 1, f = round)) |> sort(na.last = NA)
-#   
-#   sieve_subsurf_frag_stats |> quantile(probs = c(0.95), na.rm = TRUE, type = 1)
-# 
-# }
-
-```
-
-**sieve_subsurface frag high (2 mm. - 3 inches), 0 - 60 inches, acreage weighted summary statistics**
-```{r}
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   summary(sieve_subsurf_frag_stats)
-# 
-# }
-```
-
-```{r message=FALSE, warning=FALSE}
-# Is variable NA?
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-# 
-# # Create component histogram
-# 
-# sieve_subsurf_frags_l1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert histogram to plotly
-# 
-# sieve_subsurf_frags_l1 <- plotly::ggplotly(sieve_subsurf_frags_l1, tooltip = "text")
-# 
-# # Acreage weighted histogram
-# 
-# sieve_subsurf_frags_l2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + 
-#   ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert to plotly
-# 
-# sieve_subsurf_frags_l2 <- plotly::ggplotly(sieve_subsurf_frags_l2, tooltip = "text")
-# 
-# # Join both figures
-# 
-# manipulateWidget::combineWidgets(sieve_subsurf_frags_l1,
-#                                  sieve_subsurf_frags_l2,
-#                                  nrow = 1,
-#                                  ncol = 2,
-#                                  colsize = c(1, 1))
-# 
-# }
-
-```
-
-**sieve_subsurface frag low (2 mm. - 3 inches), 0 - 60 inches, acreage weighted 5th percentile** - use as 'low (actual)'
-```{r, fig.show="hold", out.width="50%"}
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-#   
-#     sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
-#                                           accuracy = 1, f = round)) |> sort(na.last = NA)
-#     
-#     sieve_subsurf_frag_stats |>  quantile(probs = c(0.05), na.rm = TRUE, type = 1)
-# 
-# }
-
-```
-
-
-**sieve_subsurface frag low (2 mm. - 3 inches), 0 - 60 inches, acreage weighted summary statistics**
-```{r}
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   summary(sieve_subsurf_frag_stats)
-# 
-# }
-```
-
-
-```{r message=FALSE, warning=FALSE}
-# Is variable NA?
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-# 
-# # Create component histogram
-# 
-# sieve_subsurf_frag_r1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_2mm.3in", "sieve_subsurf_frags_lo_2mm.3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert histogram to plotly
-# 
-# sieve_subsurf_frag_r1 <- plotly::ggplotly(sieve_subsurf_frag_r1, tooltip = "text")
-# 
-# # Acreage weighted histogram
-# 
-# sieve_subsurf_frag_r2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_2mm.3in", "sieve_subsurf_frags_lo_2mm.3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag rep. (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert to plotly
-# 
-# sieve_subsurf_frag_r2 <- plotly::ggplotly(sieve_subsurf_frag_r2, tooltip = "text")
-# 
-# # Join both figures
-# 
-# manipulateWidget::combineWidgets(sieve_subsurf_frag_r1,
-#                                  sieve_subsurf_frag_r2,
-#                                  nrow = 1,
-#                                  ncol = 2,
-#                                  colsize = c(1, 1))
-# 
-# }
-
-```
-
-**sieve_subsurface frag representative (2 mm. - 3 inches) - combined component high/low 20th and 80th percentile** - use as 'low (representative)' & 'high (representative)' 
- 
-```{r, fig.show="hold", out.width="50%"}
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   sieve_subsurf_frag_stats <- rep(sieve_subsurf_frags.df$value, plyr::round_any(sieve_subsurf_frags.df$acres/comp_acreage_unit, 
-#                             accuracy = 1, f = round)) |> sort(na.last = NA)
-#   
-#   sieve_subsurf_frag_stats |>  quantile(c(0.2, 0.8), na.rm = TRUE, type = 1)
-# 
-# }
-
-```
-
-**sieve_subsurface frag representative acreage weighted summary statistics**
-```{r}
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_2mm.3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   summary(sieve_subsurf_frag_stats)
-# 
-# }
 ```
 
 
@@ -6261,314 +5960,6 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in)) &
   summary(subsurf_frag_stats)
 
 }
-```
-
-#### **sieve_subsurface frag (3+ inches)**
-
-sieve_subsurface frag (3+ inches) prep code
-```{r, message=FALSE}
-
-# EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)
-# 
-# EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in <- ifelse(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in), 0, EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in)
-# 
-# # Is variable NA?
-# 
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-#   
-# # Define bin width and round by measures
-# 
-# my_vector <- c(1, 2, 5, 10, 20)
-# 
-# my_factor <- diff(range(c(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, 
-#              EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in), na.rm = TRUE))/my_vector
-# 
-# reducer <- my_factor < 25
-# 
-# bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
-# 
-# round_by <- bin_width
-# 
-# # Default dataframe
-# 
-# sieve_subsurf_frags.df <-
-#   EDIT_updates_filtered |>  dplyr::select(coiid, sieve_subsurf_frags_lo_gt_3in,
-#                                    sieve_subsurf_frags_hi_gt_3in, comp_acres) |> 
-#   tidyr::pivot_longer(
-#     names_to = "frag",
-#     values_to = "value",
-#     cols = c("sieve_subsurf_frags_lo_gt_3in", "sieve_subsurf_frags_hi_gt_3in")) |> 
-#   dplyr::rename(acres = comp_acres)
-# 
-# # Sequence for axes
-#   
-# my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE), round_by, f = floor),
-#   plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
-# 
-# my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE) &
-#              min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE) - bin_width >= 0){
-#   seq(plyr::round_any(min(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, na.rm = TRUE), round_by, f = floor) - bin_width,
-#       plyr::round_any(max(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, na.rm = TRUE), round_by, f = ceiling), bin_width)
-# } else{
-#   
-#   my_seq    
-#   
-# }
-# 
-# my_seq <- if(length(my_seq) == 1) {
-#   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
-# } else {
-#   my_seq
-# }
-#   
-# }
-
-```
-
-
-```{r message=FALSE, warning=FALSE}
-# Is variable NA?
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-# 
-# # Create component histogram
-# 
-# sieve_subsurf_frag_h1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert histogram to plotly
-# 
-# sieve_subsurf_frag_h1 <- plotly::ggplotly(sieve_subsurf_frag_h1, tooltip = "text")
-# 
-# # Acreage weighted histogram
-# 
-# sieve_subsurf_frag_h2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + 
-#   ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert to plotly
-# 
-# sieve_subsurf_frag_h2 <- plotly::ggplotly(sieve_subsurf_frag_h2, tooltip = "text")
-# 
-# # Join both figures
-# 
-# manipulateWidget::combineWidgets(sieve_subsurf_frag_h1,
-#                                  sieve_subsurf_frag_h2,
-#                                  nrow = 1,
-#                                  ncol = 2,
-#                                  colsize = c(1, 1))
-# 
-# }
-
-```
-
-**sieve_subsurface frag high (3+ inches), 0 - 60 inches, acreage weighted 95th percentile** - use as 'high (actual)'
-```{r, fig.show="hold", out.width="50%"}
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-#   
-#   sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
-#                                 accuracy = 1, f = round)) |> sort(na.last = NA)
-#   
-#   sieve_subsurf_frag_stats |> quantile(probs = c(0.95), na.rm = TRUE, type = 1)
-# 
-# }
-
-```
-
-**sieve_subsurface frag high (3+ inches), 0 - 60 inches, acreage weighted summary statistics**
-```{r}
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   summary(sieve_subsurf_frag_stats)
-# 
-# }
-```
-
-
-```{r message=FALSE, warning=FALSE}
-# Is variable NA?
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-# 
-# # Create component histogram
-# 
-# sieve_subsurf_frag_l1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert histogram to plotly
-# 
-# sieve_subsurf_frag_l1 <- plotly::ggplotly(sieve_subsurf_frag_l1, tooltip = "text")
-# 
-# # Acreage weighted histogram
-# 
-# sieve_subsurf_frag_l2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag == "sieve_subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + 
-#   ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert to plotly
-# 
-# sieve_subsurf_frag_l2 <- plotly::ggplotly(sieve_subsurf_frag_l2, tooltip = "text")
-# 
-# # Join both figures
-# 
-# manipulateWidget::combineWidgets(sieve_subsurf_frag_l1,
-#                                  sieve_subsurf_frag_l2,
-#                                  nrow = 1,
-#                                  ncol = 2,
-#                                  colsize = c(1, 1))
-# 
-# }
-
-```
-
-**sieve_subsurface frag low (3+ inches), 0 - 60 inches, acreage weighted 5th percentile** - use as 'low (actual)'
-```{r, fig.show="hold", out.width="50%"}
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-#   
-#     sieve_subsurf_frag_stats <- rep(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in, plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, 
-#                                           accuracy = 1, f = round)) |> sort(na.last = NA)
-#     
-#     sieve_subsurf_frag_stats |>  quantile(probs = c(0.05), na.rm = TRUE, type = 1)
-# 
-# }
-
-```
-
-
-**sieve_subsurface frag low (3+ inches), 0 - 60 inches, acreage weighted summary statistics**
-```{r}
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   summary(sieve_subsurf_frag_stats)
-# 
-# }
-```
-
-```{r message=FALSE, warning=FALSE}
-# Is variable NA?
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-#   
-# } else{
-# 
-# # Create component histogram
-# 
-# sieve_subsurf_frag_r1 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_gt_3in", "sieve_subsurf_frags_lo_gt_3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of components") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert histogram to plotly
-# 
-# sieve_subsurf_frag_r1 <- plotly::ggplotly(sieve_subsurf_frag_r1, tooltip = "text")
-# 
-# # Acreage weighted histogram
-# 
-# sieve_subsurf_frag_r2 <- ggplot2::ggplot(sieve_subsurf_frags.df |>  dplyr::filter(frag %in% c("sieve_subsurf_frags_hi_gt_3in", "sieve_subsurf_frags_lo_gt_3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
-#   binwidth = bin_width,
-#   center = min(my_seq) + bin_width/2,
-#   color = "black",
-#   fill = "grey") + 
-#   ggplot2::ggtitle("sieve_subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-#   ggplot2::ylab("# of acres") + ggplot2::xlab("sieve_subsurface frag (%)") +
-#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
-# 
-# # Convert to plotly
-# 
-# sieve_subsurf_frag_r2 <- plotly::ggplotly(sieve_subsurf_frag_r2, tooltip = "text")
-# 
-# # Join both figures
-# 
-# manipulateWidget::combineWidgets(sieve_subsurf_frag_r1,
-#                                  sieve_subsurf_frag_r2,
-#                                  nrow = 1,
-#                                  ncol = 2,
-#                                  colsize = c(1, 1))
-# 
-# }
-
-```
-
-**sieve_subsurface frag representative (3+ inches), 0 - 60 inches, acreage weighted 20th and 80th percentile** -  use as 'low (representative)' and 'high (representative)' 
-```{r, fig.show="hold", out.width="50%"}
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   sieve_subsurf_frag_stats <- rep(sieve_subsurf_frags.df$value, plyr::round_any(sieve_subsurf_frags.df$acres/comp_acreage_unit, 
-#                             accuracy = 1, f = round)) |> sort(na.last = NA)
-#   
-#   sieve_subsurf_frag_stats |>  quantile(c(0.2, 0.8), na.rm = TRUE, type = 1)
-# 
-# }
-
-```
-
-**sieve_subsurface frag representative (3+ inches), 0 - 60 inches, acreage weighted summary statistics**
-```{r}
-
-# if (all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_hi_gt_3in)) &
-#     all(is.na(EDIT_updates_filtered$sieve_subsurf_frags_lo_gt_3in))) {print("No data populated in NASIS for this field.")
-# 
-# } else{
-# 
-#   summary(sieve_subsurf_frag_stats)
-# 
-# }
 ```
 
 #### **Component name**
