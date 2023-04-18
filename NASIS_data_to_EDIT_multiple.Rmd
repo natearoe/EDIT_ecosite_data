@@ -78,7 +78,7 @@ I would suggest that looking at components (1) is the best way to QC your data. 
 
 **Standardized calculations:**
 
-This report provides a standardized way of populating the range of properties for an ecosite. This is accomplished by weighting components by their acreage, hence why good correlations for high acreage components is important. Component properties are replicated by their associated acres. After replication, the following calculations are used:
+This report provides a standardized way of populating the range of properties for an ecosite. This is accomplished by weighting components by their acreage, hence why good correlations for high acreage components are important. Component properties are replicated by their associated acres. After replication, the following calculations are used:
 
 Low (actual) - 5th percentile of the component low values
 High (actual) - 95th percentile of the component high values
@@ -119,7 +119,7 @@ EDIT_updates_filtered$comp_acres <- ifelse(is.na(EDIT_updates_filtered$comp_acre
 
 #### **Landform** 
 
-Several properties in EDIT have the option to include multiple values, including landform. Other properties that allow for multiple values to be populated include parent material and surface texture. If there are multiple distinctly different properties that are associated with considerable acreage, than list them. For most situations, one to two values is ideal. More than three values is most likely excessive. 
+Several properties in EDIT have the option to include multiple values, including landform. Other properties that allow for multiple values to be populated include parent material and surface texture. If there are multiple distinctly different properties that are associated with considerable acreage, list them. For most situations, one to two values is ideal. More than three values is most likely excessive. 
 
 **Full landform string table by acreage and number of components**
 ```{r}
@@ -2857,7 +2857,7 @@ Depth to restriction prep code - this is the depth to the top of the horizon wit
 ```{r, message=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) & 
-    all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. Enter NA for high (actual).")
+    all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
@@ -2913,7 +2913,7 @@ my_seq <- if(length(my_seq) == 1) {
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field. Enter NA for high (actual).")
+if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
@@ -3015,7 +3015,7 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
 ```{r message=FALSE, warning=FALSE}
 # Is variable NA?
 
-if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. Enter NA for low (actual).")
+if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
@@ -3113,7 +3113,7 @@ summary(restriction_na_l_rem_expanded)
 # Is variable NA?
 
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
-    all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. Enter NA for low & high (representative).")
+    all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
   
 } else{
 
@@ -3970,7 +3970,7 @@ manipulateWidget::combineWidgets(surf_frag1,
 
 ```
 
-**Surface frag low (2 mm. - 3 inches) acreage weighted 5th percentile** - use as 'low (actual)'
+**Surface frag low (< 3 inches) acreage weighted 5th percentile** - use as 'low (actual)'
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf))) {print("No data populated in NASIS for this field.")
   
@@ -3985,7 +3985,7 @@ if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf))) {print("No data 
 
 ```
 
-**Surface frag low (2 mm. - 3 inches) acreage weighted summary statistics**
+**Surface frag low (< 3 inches) acreage weighted summary statistics**
 
 ```{r}
 
@@ -5310,7 +5310,7 @@ summary(ph_stats)
 
 ```
 
-#### **Subsurface frag (2 mm. - 3 inches)**
+#### **Subsurface frag (< 3 inches)**
 
 The calculation of subsurface fragments is more difficult than other properties in this report for several reasons. Firstly, adding component high and low values is not as simple we would like. If you add all the component high values for gravels, cobbles, stones, and boulders, you will very likely end up with an unrealistically high amount of fragments - potentially over 100%. Similarly, adding component low values will likely result in unrealistically low amounts of fragments. For this reason, there is not an exact calculation of subsurface rock fragments. Please consider the values provided to be estimates. 
 
@@ -5346,7 +5346,7 @@ median(restriction_r_sum_stats, na.rm = TRUE)
 ```
 
 
-Subsurface frag (2 mm. - 3 inches) prep code
+Subsurface frag (< 3 inches) prep code
 ```{r, message=FALSE}
 # NAs in subsurface frags generally mean zero subsurface frags
 
@@ -5421,7 +5421,7 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag high (2 mm. - 3 inches)") + 
+  ggplot2::ggtitle("Subsurface frag high (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5439,7 +5439,7 @@ subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag high (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Subsurface frag high (< 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)])
@@ -5460,7 +5460,7 @@ manipulateWidget::combineWidgets(subsurf_frag_h1,
 
 ```
 
-**Subsurface frag high (2 mm. - 3 inches), acreage weighted 95th percentile** - use as 'high (actual)'
+**Subsurface frag high (< 3 inches), acreage weighted 95th percentile** - use as 'high (actual)'
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
   
@@ -5475,7 +5475,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data 
 
 ```
 
-**Subsurface frag high (2 mm. - 3 inches), acreage weighted summary statistics**
+**Subsurface frag high (< 3 inches), acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data populated in NASIS for this field.")
@@ -5501,7 +5501,7 @@ subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag low (2 mm. - 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ggtitle("Subsurface frag low (< 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)])
@@ -5518,7 +5518,7 @@ subsurf_frags_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag low (2 mm. - 3 inches)") + 
+  ggplot2::ggtitle("Subsurface frag low (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
     ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5540,7 +5540,7 @@ manipulateWidget::combineWidgets(subsurf_frags_l1,
 
 ```
 
-**Subsurface frag low (2 mm. - 3 inches), acreage weighted 5th percentile** - use as 'low (actual)'
+**Subsurface frag low (< 3 inches), acreage weighted 5th percentile** - use as 'low (actual)'
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
   
@@ -5556,7 +5556,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in))) {print("No data 
 ```
 
 
-**Subsurface frag low (2 mm. - 3 inches), acreage weighted summary statistics**
+**Subsurface frag low (< 3 inches), acreage weighted summary statistics**
 ```{r}
 
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in))) {print("No data populated in NASIS for this field.")
@@ -5584,7 +5584,7 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + 
+  ggplot2::ggtitle("Subsurface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5601,7 +5601,7 @@ subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
   center = min(my_seq) + bin_width/2,
   color = "black",
   fill = "grey") + 
-  ggplot2::ggtitle("Subsurface frag rep. (2 mm. - 3 inches)") + 
+  ggplot2::ggtitle("Subsurface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5623,7 +5623,7 @@ manipulateWidget::combineWidgets(subsurf_frag_r1,
 
 ```
 
-**Subsurface frag representative (2 mm. - 3 inches) - combined component high/low 20th and 80th percentile** - use as 'low (representative)' & 'high (representative)' 
+**Subsurface frag representative (< 3 inches) - combined component high/low 20th and 80th percentile** - use as 'low (representative)' & 'high (representative)' 
  
 ```{r, fig.show="hold", out.width="50%"}
 if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in)) &
