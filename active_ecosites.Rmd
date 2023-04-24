@@ -27,21 +27,24 @@ MLRAs <- c("022", "018")
 NASIS_report <- read.csv("./ecosite_report.csv")
 ```
 
-only major components and non-miscellaneous areas
+non-miscellaneous areas
 ```{r}
-NASIS_report_reduced <- NASIS_report %>% filter(majcompflag == "yes") %>% filter(compkind != "miscellaneous area")
+NASIS_report_reduced <- NASIS_report  %>% filter(compkind != "miscellaneous area")
 ```
 
 which ecosites are active, and how many correlations are they associated with?
 ```{r}
-ecosite_df <- as.data.frame(table(NASIS_report_reduced$ecosite_id)) %>% 
-  rename(Ecosite = Var1, Count = Freq) %>% arrange(desc(Count))
-ecosite_df
+ecosite_df <- NASIS_report_reduced |> dplyr::group_by(ecosite_id) |> 
+  dplyr::summarise(Numb.Components = n(), 
+                   Maj.Components = sum(majcompflag == "yes"),
+                   Min.Components = sum(majcompflag == "no")) |> dplyr::arrange(desc(Numb.Components))
+
+print.data.frame(ecosite_df)
 ```
 
 are components from your MLRA of interest correlated to ecosites from other MLRAs?
 ```{r}
-ecosite_MLRAs <- unique(str_sub(ecosite_df$Ecosite, start = 2L, end = 4L))
+ecosite_MLRAs <- unique(str_sub(ecosite_df$ecosite_id, start = 2L, end = 4L))
 ecosite_MLRAs
 ```
 
@@ -50,7 +53,7 @@ Reduce to ecosites in MLRAs of interest
 MLRAs_vector <- NULL
 
  for(i in seq(MLRAs)){
-  MLRAs_new <- stringr::str_subset(ecosite_df$Ecosite, pattern = paste("(?<=R|F{1})", MLRAs[i], sep = ""))
+  MLRAs_new <- stringr::str_subset(ecosite_df$ecosite_id, pattern = paste("(?<=R|F{1})", MLRAs[i], sep = ""))
   MLRAs_vector <- c(MLRAs_vector, MLRAs_new)
  }
 
