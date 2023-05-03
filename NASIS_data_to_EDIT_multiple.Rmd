@@ -14,7 +14,10 @@ Contact: nateroe@gmail.com
 
 Date report was produced: `r format(Sys.time(), '%d %B, %Y')`
 
+Data generated using NASIS Reports > MLRA02_Davis > EXPORT - Ecological site concept data by MUKEY list v4
+
 Visit the [GitHub repository](https://github.com/natearoe/EDIT_ecosite_data) for version control information and instructions for producing these reports yourself. 
+
 
 <!-- This is the final step in the 'EDIT ecosite data' workflow. It will produce reports for all the ecosites that you provide -->
 <!-- to the corresponding for_loop_file.R.  -->
@@ -68,7 +71,9 @@ title: <center> `r EDIT_updates_filtered$ecosite_id[1]` ecosite report </center>
 
 **Purpose of this report:**
 
-This report summarizes data from components correlated to an ecosite. It could be used to populate EDIT, to QC component-ecosite correlations, or as documentation of ecosite properties. Of particular importance to QC, this document allows you to hover your cursor over graphs to see what coiids are being represented. This allows you to hover over values that look like outliers and identify which coiid(s) might be improperly correlated.
+This report summarizes data from components correlated to an ecosite. It could be used to populate EDIT, to QC component-ecosite correlations, or as documentation of ecosite properties. Of particular importance to QC, the user can hover their cursor over figures
+
+this document allows you to hover your cursor over figures to see what component ids (coiids) are being represented. This allows you to hover over values that look like outliers and identify which coiid(s) might be improperly correlated.
 
 **# of components vs. component acreage:**
 
@@ -202,22 +207,22 @@ if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in N
 # Component histogram 
 flood.freq1 <- ggplot2::ggplot(flood.freq.df, ggplot2::aes(flood_freq)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood frequency") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Flood frequency")
 
 # Convert to plotly
-flood.freq1 <- plotly::ggplotly(flood.freq1, tooltip = "text")
+flood.freq1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 flood.freq2 <- ggplot2::ggplot(flood.freq.df, ggplot2::aes(flood_freq, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood frequency") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Flood frequency")
 
 #Convert to plotly
-flood.freq2 <- plotly::ggplotly(flood.freq2, tooltip = "text")
+flood.freq2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(flood.freq1,
@@ -295,22 +300,22 @@ if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NA
 # Component histogram 
 flood.dur1 <- ggplot2::ggplot(flood.dur.df, ggplot2::aes(flood_dur)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Flood duration")
 
 # Convert to plotly
-flood.dur1 <- plotly::ggplotly(flood.dur1, tooltip = "text")
+flood.dur1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 flood.dur2 <- ggplot2::ggplot(flood.dur.df, ggplot2::aes(flood_dur, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Flood duration")
 
 #Convert to plotly
-flood.dur2 <- plotly::ggplotly(flood.dur2, tooltip = "text")
+flood.dur2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(flood.dur1,
@@ -385,22 +390,22 @@ if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NA
 # Component histogram 
 pond.freq1 <- ggplot2::ggplot(pond.freq.df, ggplot2::aes(pond_freq)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding freq.") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding freq.")
 
 # Convert to plotly
-pond.freq1 <- plotly::ggplotly(pond.freq1, tooltip = "text")
+pond.freq1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 pond.freq2 <- ggplot2::ggplot(pond.freq.df, ggplot2::aes(pond_freq, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding freq.") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding freq.")
 
 #Convert to plotly
-pond.freq2 <- plotly::ggplotly(pond.freq2, tooltip = "text")
+pond.freq2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(pond.freq1,
@@ -477,22 +482,22 @@ if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NAS
 # Component histogram 
 pond.dur1 <- ggplot2::ggplot(pond.dur.df, ggplot2::aes(pond_dur)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding duration")
 
 # Convert to plotly
-pond.dur1 <- plotly::ggplotly(pond.dur1, tooltip = "text")
+pond.dur1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 pond.dur2 <- ggplot2::ggplot(pond.dur.df, ggplot2::aes(pond_dur, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding duration")
 
 #Convert to plotly
-pond.dur2 <- plotly::ggplotly(pond.dur2, tooltip = "text")
+pond.dur2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(pond.dur1,
@@ -612,7 +617,7 @@ if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NA
 
 el_h1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = min(my_seq) + bin_width/2, color = "black", fill = "grey") + 
+  center = min(my_seq) + bin_width/2, color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
@@ -621,7 +626,7 @@ el_h1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2
 
 # Convert histogram to plotly
 
-el_h1 <- plotly::ggplotly(el_h1, tooltip = "text")
+el_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 
@@ -629,7 +634,7 @@ el_h2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
@@ -639,7 +644,7 @@ el_h2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2
 
 # Convert acreage histogram to plotly
 
-el_h2 <- plotly::ggplotly(el_h2, tooltip = "text")
+el_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -696,7 +701,7 @@ el_l1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
@@ -705,7 +710,7 @@ el_l1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2
 
 # Convert histogram to plotly
 
-el_l1 <- plotly::ggplotly(el_l1, tooltip = "text")
+el_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -713,7 +718,7 @@ el_l2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Elevation low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
@@ -722,7 +727,7 @@ el_l2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2
 
 # Convert to plotly
 
-el_l2 <- plotly::ggplotly(el_l2, tooltip = "text")
+el_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -772,20 +777,26 @@ if (all(is.na(EDIT_updates_filtered$elev_l_ft & EDIT_updates_filtered$elev_h_ft)
   
 } else{
   
-el_r1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  
+el_r1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")) |> 
+  dplyr::mutate(highlow = ifelse(elev == "elev_h_ft", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Elevation (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)])
 
+
 # Convert histogram to plotly
 
-el_r1 <- plotly::ggplotly(el_r1, tooltip = "text")
+el_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
+
 
 # Acreage weighted histogram
 
@@ -793,7 +804,7 @@ el_r2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "ele
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Elevation representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Elevation (ft.)") +
@@ -802,7 +813,7 @@ el_r2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "ele
 
 # Convert to plotly
 
-el_r2 <- plotly::ggplotly(el_r2, tooltip = "text")
+el_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -916,7 +927,7 @@ slope_h1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Slope high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -924,7 +935,7 @@ slope_h1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggpl
 
 # Convert histogram to plotly
 
-slope_h1 <- plotly::ggplotly(slope_h1, tooltip = "text")
+slope_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -932,7 +943,7 @@ slope_h2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Slope high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -940,7 +951,7 @@ slope_h2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggpl
 
 # Convert to plotly
 
-slope_h2 <- plotly::ggplotly(slope_h2, tooltip = "text")
+slope_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -994,7 +1005,7 @@ slope_l1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Slope low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Slope (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1002,7 +1013,7 @@ slope_l1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggpl
 
 # Convert histogram to plotly
 
-slope_l1 <- plotly::ggplotly(slope_l1, tooltip = "text")
+slope_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -1010,7 +1021,7 @@ slope_l2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Slope low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Slope (ft.)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1019,7 +1030,7 @@ slope_l2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggpl
 
 # Convert to plotly
 
-slope_l2 <- plotly::ggplotly(slope_l2, tooltip = "text")
+slope_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1069,12 +1080,15 @@ if (all(is.na(EDIT_updates_filtered$slope_h)) & all(is.na(EDIT_updates_filtered$
 } else{
 
 # Create component histogram
-
-slope_r1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+  
+slope_r1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")) |> 
+  dplyr::mutate(highlow = ifelse(slope == "slope_h", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Slope representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1082,15 +1096,18 @@ slope_r1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "
 
 # Convert histogram to plotly
 
-slope_r1 <- plotly::ggplotly(slope_r1, tooltip = "text")
+slope_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-slope_r2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+slope_r2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")) |> 
+  dplyr::mutate(highlow = ifelse(slope == "slope_h", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Slope representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Slope (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1098,7 +1115,7 @@ slope_r2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "
 
 # Convert to plotly
 
-slope_r2 <- plotly::ggplotly(slope_r2, tooltip = "text")
+slope_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1210,7 +1227,7 @@ pond_depth_h1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1218,7 +1235,7 @@ pond_depth_h1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
 
 # Convert histogram to plotly
 
-pond_depth_h1 <- plotly::ggplotly(pond_depth_h1, tooltip = "text")
+pond_depth_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -1226,7 +1243,7 @@ pond_depth_h2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1234,7 +1251,7 @@ pond_depth_h2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
 
 # Convert to plotly
 
-pond_depth_h2 <- plotly::ggplotly(pond_depth_h2, tooltip = "text")
+pond_depth_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1305,7 +1322,7 @@ pond_depth_l1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1313,7 +1330,7 @@ pond_depth_l1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
 
 # Convert histogram to plotly
 
-pond_depth_l1 <- plotly::ggplotly(pond_depth_l1, tooltip = "text")
+pond_depth_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -1321,7 +1338,7 @@ pond_depth_l2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1329,7 +1346,7 @@ pond_depth_l2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "
 
 # Convert to plotly
 
-pond_depth_l2 <- plotly::ggplotly(pond_depth_l2, tooltip = "text")
+pond_depth_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1396,11 +1413,14 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_l & EDIT_updates_filtered$pond_de
 
 # Create component histogram
 
-pond_depth_r1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_l", "pond_depth_h")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+pond_depth_r1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_h", "pond_depth_l")) |> 
+  dplyr::mutate(highlow = ifelse(pond_depth == "pond_depth_h", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding depth representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1408,15 +1428,18 @@ pond_depth_r1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in%
 
 # Convert histogram to plotly
 
-pond_depth_r1 <- plotly::ggplotly(pond_depth_r1, tooltip = "text")
+pond_depth_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-pond_depth_r2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_l", "pond_depth_h")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+pond_depth_r2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_h", "pond_depth_l")) |> 
+  dplyr::mutate(highlow = ifelse(pond_depth == "pond_depth_h", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding depth representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1424,7 +1447,7 @@ pond_depth_r2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in%
 
 # Convert to plotly
 
-pond_depth_r2 <- plotly::ggplotly(pond_depth_r2, tooltip = "text")
+pond_depth_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1444,8 +1467,8 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_l & EDIT_updates_filtered$pond_de
   
 } else{
   
-  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$pond_depth_h)) + sum(is.na(EDIT_updates_filtered$pond_depth_h)),
-             '% components NA' = 100*(sum(is.na(EDIT_updates_filtered$pond_depth_h)) + sum(is.na(EDIT_updates_filtered$pond_depth_h)))/
+  data.frame('# values NA' = sum(is.na(EDIT_updates_filtered$pond_depth_l)) + sum(is.na(EDIT_updates_filtered$pond_depth_h)),
+             '% values NA' = 100*(sum(is.na(EDIT_updates_filtered$pond_depth_h)) + sum(is.na(EDIT_updates_filtered$pond_depth_l)))/
                (length(EDIT_updates_filtered$pond_depth_h) * 2), check.names = FALSE)
   
 }
@@ -1555,7 +1578,7 @@ water_table_h1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Water table high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1563,7 +1586,7 @@ water_table_h1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
   
 # Convert histogram to plotly
 
-water_table_h1 <- plotly::ggplotly(water_table_h1, tooltip = "text")
+water_table_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -1571,7 +1594,7 @@ water_table_h2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Water table high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1579,7 +1602,7 @@ water_table_h2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
 
 # Convert to plotly
 
-water_table_h2 <- plotly::ggplotly(water_table_h2, tooltip = "text")
+water_table_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1648,7 +1671,7 @@ water_table_l1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Water table low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1656,7 +1679,7 @@ water_table_l1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
 
 # Convert histogram to plotly
 
-water_table_l1 <- plotly::ggplotly(water_table_l1, tooltip = "text")
+water_table_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -1664,7 +1687,7 @@ water_table_l2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Water table low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Water table (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -1672,7 +1695,7 @@ water_table_l2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table =
 
 # Convert to plotly
 
-water_table_l2 <- plotly::ggplotly(water_table_l2, tooltip = "text")
+water_table_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1739,13 +1762,15 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in)) & all(is.na(EDIT_updates_
 # Create component histogram
 
   water_table_r1 <-
-    ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table %in% c("water_table_l_in", "water_table_h_in")),
-                    ggplot2::aes(x = value)) + ggplot2::geom_histogram(
-                      ggplot2::aes(text = paste("coiid(s):", coiid)),
+    ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table %in% c("water_table_h_in", "water_table_l_in")) |> 
+  dplyr::mutate(highlow = ifelse(water_table == "water_table_h_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(
+                      ggplot2::aes(text = paste("coiid(s):", coiid2)),
                       binwidth = bin_width,
                       center = min(my_seq) + bin_width / 2,
                       color = "black",
-                      fill = "grey"
+                      fill = "grey", closed = "left"
                     ) +
     ggplot2::ggtitle("Water table representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
     ggplot2::ylab("# of components") + ggplot2::xlab("Water table (inches)") +
@@ -1754,18 +1779,20 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in)) & all(is.na(EDIT_updates_
 
 # Convert histogram to plotly
 
-water_table_r1 <- plotly::ggplotly(water_table_r1, tooltip = "text")
+water_table_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
   water_table_r2 <-
-    ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table %in% c("water_table_l_in", "water_table_h_in")),
-                    ggplot2::aes(x = value)) + ggplot2::geom_histogram(
-                      ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
+    ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table %in% c("water_table_h_in", "water_table_l_in")) |> 
+  dplyr::mutate(highlow = ifelse(water_table == "water_table_h_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(
+                      ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres),
                       binwidth = bin_width,
                       center = min(my_seq) + bin_width / 2,
                       color = "black",
-                      fill = "grey"
+                      fill = "grey", closed = "left"
                     ) +
     ggplot2::ggtitle("Water table representative") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
     ggplot2::ylab("# of acres") + ggplot2::xlab("Water table (inches)") +
@@ -1774,7 +1801,7 @@ water_table_r1 <- plotly::ggplotly(water_table_r1, tooltip = "text")
 
 # Convert to plotly
 
-water_table_r2 <- plotly::ggplotly(water_table_r2, tooltip = "text")
+water_table_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1794,8 +1821,8 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in)) & all(is.na(EDIT_updates_
   
 } else{
   
-  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$water_table_l_in)) + sum(is.na(EDIT_updates_filtered$water_table_h_in)),
-             '% components NA' = 100*(sum(is.na(EDIT_updates_filtered$water_table_h_in)) +
+  data.frame('# values NA' = sum(is.na(EDIT_updates_filtered$water_table_l_in)) + sum(is.na(EDIT_updates_filtered$water_table_h_in)),
+             '% values NA' = 100*(sum(is.na(EDIT_updates_filtered$water_table_h_in)) +
                                         sum(is.na(EDIT_updates_filtered$water_table_l_in)))/
                (length(EDIT_updates_filtered$water_table_l_in) * 2), check.names = FALSE)
 
@@ -1868,7 +1895,7 @@ aspect_r1 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep")
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Aspect") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Aspect (degrees)") +
   ggplot2::scale_x_continuous(limits = c(0, 360),
@@ -1876,7 +1903,7 @@ aspect_r1 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep")
 
 # Convert histogram to plotly
 
-aspect_r1 <- plotly::ggplotly(aspect_r1, tooltip = "text")
+aspect_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Sequence for axes
 
@@ -1899,7 +1926,7 @@ aspect_r2 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep")
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Aspect") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Aspect (degrees)") +
   ggplot2::scale_x_continuous(limits = c(0, 360),
@@ -1907,7 +1934,7 @@ aspect_r2 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep")
 
 # Convert to plotly
 
-aspect_r2 <- plotly::ggplotly(aspect_r2, tooltip = "text")
+aspect_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -1995,7 +2022,7 @@ map_h1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Mean Annual Precip. high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2003,7 +2030,7 @@ map_h1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
 
 # Convert histogram to plotly
 
-map_h1 <- plotly::ggplotly(map_h1, tooltip = "text")
+map_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -2011,7 +2038,7 @@ map_h2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Mean Annual Precip. high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2019,7 +2046,7 @@ map_h2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::
 
 # Convert to plotly
 
-map_h2 <- plotly::ggplotly(map_h2, tooltip = "text")
+map_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -2072,7 +2099,7 @@ map_l1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Mean Annual Precip. low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2080,7 +2107,7 @@ map_l1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
 
 # Convert histogram to plotly
 
-map_l1 <- plotly::ggplotly(map_l1, tooltip = "text")
+map_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -2088,7 +2115,7 @@ map_l2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Mean Annual Precip. low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip. (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -2096,7 +2123,7 @@ map_l2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::
 
 # Convert to plotly
 
-map_l2 <- plotly::ggplotly(map_l2, tooltip = "text")
+map_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -2150,11 +2177,14 @@ if (all(is.na(EDIT_updates_filtered$map_h_in)) &
   
 # Create component histogram
 
-map_r1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in") ), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+map_r1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in")) |> 
+  dplyr::mutate(highlow = ifelse(map == "map_h_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Mean Annual Precip. representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Mean Annual Precip. (inches)") +
@@ -2163,15 +2193,18 @@ map_r1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l
 
 # Convert histogram to plotly
 
-map_r1 <- plotly::ggplotly(map_r1, tooltip = "text")
+map_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-map_r2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in") ), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+map_r2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in")) |> 
+  dplyr::mutate(highlow = ifelse(map == "map_h_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Mean Annual Precip. representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Mean Annual Precip. (inches)") +
@@ -2180,7 +2213,7 @@ map_r2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l
 
 # Convert to plotly
 
-map_r2 <- plotly::ggplotly(map_r2, tooltip = "text")
+map_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -2294,7 +2327,7 @@ ffd_h1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
@@ -2303,7 +2336,7 @@ ffd_h1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
 
 # Convert histogram to plotly
 
-ffd_h1 <- plotly::ggplotly(ffd_h1, tooltip = "text")
+ffd_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -2311,7 +2344,7 @@ ffd_h2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Frost Free Days high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
@@ -2320,7 +2353,7 @@ ffd_h2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes
 
 # Convert to plotly
 
-ffd_h2 <- plotly::ggplotly(ffd_h2, tooltip = "text")
+ffd_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -2373,7 +2406,7 @@ ffd_l1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
@@ -2382,7 +2415,7 @@ ffd_l1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
 
 # Convert histogram to plotly
 
-ffd_l1 <- plotly::ggplotly(ffd_l1, tooltip = "text")
+ffd_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -2390,7 +2423,7 @@ ffd_l2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Frost Free Days low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
@@ -2399,7 +2432,7 @@ ffd_l2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes
 
 # Convert to plotly
 
-ffd_l2 <- plotly::ggplotly(ffd_l2, tooltip = "text")
+ffd_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -2450,11 +2483,14 @@ if (all(is.na(EDIT_updates_filtered$ffd_h)) &
 
 # Create component histogram
 
-ffd_r1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+ffd_r1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")) |> 
+  dplyr::mutate(highlow = ifelse(ffd == "ffd_h", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Frost Free Days") +
@@ -2463,15 +2499,18 @@ ffd_r1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l"))
 
 # Convert histogram to plotly
 
-ffd_r1 <- plotly::ggplotly(ffd_r1, tooltip = "text")
+ffd_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-ffd_r2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+ffd_r2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")) |> 
+  dplyr::mutate(highlow = ifelse(ffd == "ffd_h", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Frost Free Days representitive") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Frost Free Days") +
@@ -2480,7 +2519,7 @@ ffd_r2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l"))
 
 # Convert to plotly
 
-ffd_r2 <- plotly::ggplotly(ffd_r2, tooltip = "text")
+ffd_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -2600,24 +2639,24 @@ if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in
 # Component histogram 
 comp1 <- ggplot2::ggplot(comp.df, ggplot2::aes(surf_texture)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface texture") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface texture")
 
 # Convert to plotly
-comp1 <- plotly::ggplotly(comp1, tooltip = "text")
+comp1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 comp2 <- ggplot2::ggplot(comp.df, ggplot2::aes(surf_texture, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface texture") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface texture")
 
 #Convert to plotly
-comp2 <- plotly::ggplotly(comp2, tooltip = "text")
+comp2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(comp1,
@@ -2681,22 +2720,22 @@ my_levels <-  c(
 # Component histogram 
 drainage.class1 <- ggplot2::ggplot(drainage.class.df, ggplot2::aes(drainage_class)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Drainage class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Drainage class")
 
 # Convert to plotly
-drainage.class1 <- plotly::ggplotly(drainage.class1, tooltip = "text")
+drainage.class1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 drainage.class2 <- ggplot2::ggplot(drainage.class.df, ggplot2::aes(drainage_class, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Drainage class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Drainage class")
 
 #Convert to plotly
-drainage.class2 <- plotly::ggplotly(drainage.class2, tooltip = "text")
+drainage.class2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(drainage.class1,
@@ -2788,22 +2827,22 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated 
 # Component histogram 
 perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Permeability class")
 
 # Convert to plotly
-perm.class1 <- plotly::ggplotly(perm.class1, tooltip = "text")
+perm.class1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Permeability class")
 
 #Convert to plotly
-perm.class2 <- plotly::ggplotly(perm.class2, tooltip = "text")
+perm.class2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(perm.class1,
@@ -2853,8 +2892,12 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in_mod))) {print("No data popula
 
 #### **Depth to restriction**
 
-Depth to restriction prep code - this is the depth to the top of the horizon with a restriction. 
+Depth to restriction prep code - this is the top depth of the uppermost restriction in the component restriction table. All restriction types qualify. 
+
+Note: Consider whether restriction data is detailed enough to justify using values beyond depth classes. For many situations, it may be best to use depth class limits for restriction depth and soil depth. Depth classes are represented with red vertical lines in figures for reference. 
 ```{r, message=FALSE}
+
+depth_classes <- c(0, 20, 40, 60, 80)
 
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) & 
     all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
@@ -2905,6 +2948,8 @@ my_seq <- if(length(my_seq) == 1) {
   my_seq
 }
 
+depth_classes_reduced <- depth_classes[depth_classes >= min(my_seq) & depth_classes <= max(my_seq)]
+
 }
 
 ```
@@ -2921,37 +2966,47 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
 
 restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = 2.5,
+  center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 
 # Convert histogram to plotly
 
-restriction_h1 <- plotly::ggplotly(restriction_h1, tooltip = "text")
+#restriction_h1 <- plotly::ggplotly(restriction_h1, tooltip = "text")
+
+restriction_h1 <- plotly::ggplotly(tooltip = c("text", "value")) |> plotly::layout(title = list(text = paste0('Restriction depth high',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Acreage weighted histogram
 
 restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
-  center = 2.5,
+  center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 
 
 
 # Convert to plotly
 
-restriction_h2 <- plotly::ggplotly(restriction_h2, tooltip = "text")
+restriction_h2 <- plotly::ggplotly(tooltip = c("text", "value")) |> plotly::layout(title = list(text = paste0('Restriction depth high',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Join both figures
 
@@ -2964,7 +3019,6 @@ manipulateWidget::combineWidgets(restriction_h1,
 }
 
 ```
-
 
 **Restriction depth high table**
 
@@ -3023,34 +3077,42 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 
 restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
   binwidth = bin_width,
-  center = 2.5,
+  center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 
 # Convert histogram to plotly
 
-restriction_l1 <- plotly::ggplotly(restriction_l1, tooltip = "text")
+restriction_l1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth low',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Acreage weighted histogram
 
 restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
-  center = 2.5,
+  center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert to plotly
 
-restriction_l2 <- plotly::ggplotly(restriction_l2, tooltip = "text")
+restriction_l2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth low',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Join both figures
 
@@ -3119,25 +3181,28 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
 
 # Create component histogram
 
-restriction_r1 <- ggplot2::ggplot(restriction.df |>  
-                                    dplyr::filter(restriction %in% 
-                                                    c("restrict_depth_h_in", "restrict_depth_l_in")), 
-                                  ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %in% c("restrict_depth_h_in", "restrict_depth_l_in")) |> 
+  dplyr::mutate(highlow = ifelse(restriction == "restrict_depth_h_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
-  center = 2.5,
+  center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
-
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert histogram to plotly
 
-restriction_r1 <- plotly::ggplotly(restriction_r1, tooltip = "text")
+restriction_r1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth representative',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Acreage weighted histogram
 
@@ -3147,19 +3212,23 @@ restriction_r2 <- ggplot2::ggplot(restriction.df |>
                                   ggplot2::aes(x = value)) + 
   ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
-  center = 2.5,
+  center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)])
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 
 # Convert to plotly
 
-restriction_r2 <- plotly::ggplotly(restriction_r2, tooltip = "text")
+restriction_r2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth representative',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Join both figures
 
@@ -3182,9 +3251,9 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
   
 } else{
   
-  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$restrict_depth_h_in)) +
+  data.frame('# values NA' = sum(is.na(EDIT_updates_filtered$restrict_depth_h_in)) +
                sum(is.na(EDIT_updates_filtered$restrict_depth_l_in)),
-             '% components NA' = 100*(sum(is.na(EDIT_updates_filtered$restrict_depth_h_in)) +
+             '% values NA' = 100*(sum(is.na(EDIT_updates_filtered$restrict_depth_h_in)) +
                                         sum(is.na(EDIT_updates_filtered$restrict_depth_l_in)))/
                (length(EDIT_updates_filtered$restrict_depth_h_in) * 2), check.names = FALSE)
   
@@ -3306,11 +3375,16 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$soil_depth_r_in, na.rm = T
   
 }
 
+
+
 my_seq <- if(length(my_seq) == 1) {
   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
 } else {
   my_seq
 }
+
+depth_classes_reduced <- depth_classes[depth_classes >= min(my_seq) & depth_classes <= max(my_seq)]
+  
     } else {
       
     
@@ -3368,6 +3442,7 @@ my_seq <- if(length(my_seq) == 1) {
   my_seq
 }
     
+depth_classes_reduced <- depth_classes[depth_classes >= min(my_seq) & depth_classes <= max(my_seq)]
     
   }
 }
@@ -3388,16 +3463,20 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth high") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert histogram to plotly
 
-soil_depth1 <- plotly::ggplotly(soil_depth1, tooltip = "text")
+soil_depth1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth high',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Acreage weighted histogram
 
@@ -3405,16 +3484,20 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth high") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert to plotly
 
-soil_depth2 <- plotly::ggplotly(soil_depth2, tooltip = "text")
+soil_depth2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth high',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Join both figures
 
@@ -3459,16 +3542,20 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth low") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert histogram to plotly
 
-soil_depth1 <- plotly::ggplotly(soil_depth1, tooltip = "text")
+soil_depth1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth low',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Acreage weighted histogram
 
@@ -3476,16 +3563,20 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth low") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert to plotly
 
-soil_depth2 <- plotly::ggplotly(soil_depth2, tooltip = "text")
+soil_depth2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth low',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Join both figures
 
@@ -3530,16 +3621,20 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth RV") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert histogram to plotly
 
-soil_depth1 <- plotly::ggplotly(soil_depth1, tooltip = "text")
+soil_depth1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth representative',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Acreage weighted histogram
 
@@ -3547,16 +3642,20 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth RV") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
 
 # Convert to plotly
 
-soil_depth2 <- plotly::ggplotly(soil_depth2, tooltip = "text")
+soil_depth2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth representative',
+                                    '<br>',
+                                    '<sup>',
+                                    'Red line(s) represent depth class boundaries',
+                                    '</sup>')))
 
 # Join both figures
 
@@ -3713,7 +3812,7 @@ o_horizon1 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_ho
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Organic horizon(s) depth RV") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Organic horizon(s) depth (inches)") +
@@ -3722,7 +3821,7 @@ o_horizon1 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_ho
 
 # Convert histogram to plotly
 
-o_horizon1 <- plotly::ggplotly(o_horizon1, tooltip = "text")
+o_horizon1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -3730,7 +3829,7 @@ o_horizon2 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_ho
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Organic horizon(s) depth RV") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Organic horizon(s) depth (inches)") +
@@ -3739,7 +3838,7 @@ o_horizon2 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_ho
 
 # Convert to plotly
 
-o_horizon2 <- plotly::ggplotly(o_horizon2, tooltip = "text")
+o_horizon2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -3848,7 +3947,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag high (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
@@ -3857,7 +3956,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert histogram to plotly
 
-surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
+surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -3865,7 +3964,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag high (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
@@ -3874,7 +3973,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert to plotly
 
-surf_frag2 <- plotly::ggplotly(surf_frag2, tooltip = "text")
+surf_frag2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -3930,7 +4029,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag low (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
@@ -3939,7 +4038,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert histogram to plotly
 
-surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
+surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -3947,7 +4046,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag low (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
@@ -3956,7 +4055,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert to plotly
 
-surf_frag2 <- plotly::ggplotly(surf_frag2, tooltip = "text")
+surf_frag2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4012,7 +4111,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
@@ -4021,7 +4120,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
 
 # Convert histogram to plotly
 
-surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
+surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4030,7 +4129,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
@@ -4039,7 +4138,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
 
 # Convert to plotly
 
-surf_frag2 <- plotly::ggplotly(surf_frag2, tooltip = "text")
+surf_frag2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4163,7 +4262,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag high 3 inches +") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4171,7 +4270,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert histogram to plotly
 
-surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
+surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4179,7 +4278,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag high 3 inches +") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4187,7 +4286,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert to plotly
 
-surf_frag2 <- plotly::ggplotly(surf_frag2, tooltip = "text")
+surf_frag2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4242,7 +4341,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag low (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4250,7 +4349,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert histogram to plotly
 
-surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
+surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4258,7 +4357,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag low (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4266,7 +4365,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags
 
 # Convert to plotly
 
-surf_frag2 <- plotly::ggplotly(surf_frag2, tooltip = "text")
+surf_frag2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4322,7 +4421,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag representative (3 inches +)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Surface frag (%)") +
@@ -4331,7 +4430,7 @@ surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
 
 # Convert histogram to plotly
 
-surf_frag1 <- plotly::ggplotly(surf_frag1, tooltip = "text")
+surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4340,7 +4439,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface frag representative (3 inches +)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Surface frag (%)") +
@@ -4349,7 +4448,7 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
 
 # Convert to plotly
 
-surf_frag2 <- plotly::ggplotly(surf_frag2, tooltip = "text")
+surf_frag2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4462,7 +4561,7 @@ awc_h1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
@@ -4472,7 +4571,7 @@ awc_h1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
 
 # Convert histogram to plotly
 
-awc_h1 <- plotly::ggplotly(awc_h1, tooltip = "text")
+awc_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4480,7 +4579,7 @@ awc_h2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("AWC high (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
@@ -4490,7 +4589,7 @@ awc_h2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggpl
 
 # Convert to plotly
 
-awc_h2 <- plotly::ggplotly(awc_h2, tooltip = "text")
+awc_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4545,7 +4644,7 @@ awc_l1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("AWC") +
@@ -4555,7 +4654,7 @@ awc_l1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
 
 # Convert histogram to plotly
 
-awc_l1 <- plotly::ggplotly(awc_l1, tooltip = "text")
+awc_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4563,7 +4662,7 @@ awc_l2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("AWC low (0 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("AWC") +
@@ -4573,7 +4672,7 @@ awc_l2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggpl
 
 # Convert to plotly
 
-awc_l2 <- plotly::ggplotly(awc_l2, tooltip = "text")
+awc_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4625,11 +4724,14 @@ if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in)) &
 
 # Create component histogram
 
-awc_r1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+awc_r1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")) |> 
+  dplyr::mutate(highlow = ifelse(awc == "awc_h_0_40_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("AWC representative (0 - 40 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
@@ -4640,15 +4742,18 @@ awc_r1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "
 
 # Convert histogram to plotly
 
-awc_r1 <- plotly::ggplotly(awc_r1, tooltip = "text")
+awc_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-awc_r2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+awc_r2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")) |> 
+  dplyr::mutate(highlow = ifelse(awc == "awc_h_0_40_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("AWC representative (0 - 40 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 35)) +
@@ -4659,7 +4764,7 @@ awc_r2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "
 
 # Convert to plotly
 
-awc_r2 <- plotly::ggplotly(awc_r2, tooltip = "text")
+awc_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4774,7 +4879,7 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("pH high (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4783,7 +4888,7 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
 
 # Convert histogram to plotly
 
-ph_h1 <- plotly::ggplotly(ph_h1, tooltip = "text")
+ph_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4792,7 +4897,7 @@ ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("pH high (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4800,7 +4905,7 @@ ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::
 
 # Convert to plotly
 
-ph_h2 <- plotly::ggplotly(ph_h2, tooltip = "text")
+ph_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4855,7 +4960,7 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("pH low (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4864,7 +4969,7 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
 
 # Convert histogram to plotly
 
-ph_l1 <- plotly::ggplotly(ph_l1, tooltip = "text")
+ph_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -4873,7 +4978,7 @@ ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("pH low (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4882,7 +4987,7 @@ ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::
 
 # Convert to plotly
 
-ph_l2 <- plotly::ggplotly(ph_l2, tooltip = "text")
+ph_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -4933,11 +5038,14 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in)) &
 
 # Create component histogram
 
-ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_0_10in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_0_10in", "pH_l_0_10in")) |> 
+  dplyr::mutate(highlow = ifelse(ph == "pH_h_0_10in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("pH representative (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4945,16 +5053,19 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_
 
 # Convert histogram to plotly
 
-ph_r1 <- plotly::ggplotly(ph_r1, tooltip = "text")
+ph_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_0_10in")), ggplot2::aes(x = value)) +
+ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_0_10in", "pH_l_0_10in")) |> 
+  dplyr::mutate(highlow = ifelse(ph == "pH_h_0_10in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) +
   ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("pH representative (0 - 10 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -4963,7 +5074,7 @@ ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_0_10in", "pH_h_
 
 # Convert to plotly
 
-ph_r2 <- plotly::ggplotly(ph_r2, tooltip = "text")
+ph_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5078,7 +5189,7 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2:
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") +
+  fill = "grey", closed = "left") +
   ggplot2::ggtitle("pH high (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5086,7 +5197,7 @@ ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2:
 
 # Convert histogram to plotly
 
-ph_h1 <- plotly::ggplotly(ph_h1, tooltip = "text")
+ph_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -5095,7 +5206,7 @@ ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2:
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") +
+  fill = "grey", closed = "left") +
   #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH high (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
@@ -5104,7 +5215,7 @@ ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2:
 
 # Convert to plotly
 
-ph_h2 <- plotly::ggplotly(ph_h2, tooltip = "text")
+ph_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5116,6 +5227,20 @@ manipulateWidget::combineWidgets(ph_h1,
 
 }
 
+```
+
+NAs in pH (10-40) likely mean that soils are less than 10 inches deep. NA's are not represented in the figures above. Please observe the table below to determine if NAs exist in your dataset.
+```{r}
+if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$pH_h_10_40in)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$pH_h_10_40in))/length(EDIT_updates_filtered$pH_h_10_40in),
+             check.names = FALSE)
+
+  
+}
 ```
 
 **pH high (10-40 inches) acreage weighted 95th percentile** -  use as 'high (actual)'
@@ -5159,7 +5284,7 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2:
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") +
+  fill = "grey", closed = "left") +
   #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH low (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
@@ -5168,7 +5293,7 @@ ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2:
 
 # Convert histogram to plotly
 
-ph_l1 <- plotly::ggplotly(ph_l1, tooltip = "text")
+ph_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -5176,7 +5301,7 @@ ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2:
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") +
+  fill = "grey", closed = "left") +
   #ggplot2::theme_minimal() +
   ggplot2::ggtitle("pH low (10 - 40 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
@@ -5185,7 +5310,7 @@ ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2:
 
 # Convert to plotly
 
-ph_l2 <- plotly::ggplotly(ph_l2, tooltip = "text")
+ph_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5195,6 +5320,19 @@ manipulateWidget::combineWidgets(ph_l1,
                                  ncol = 2,
                                  colsize = c(1, 1))
 
+}
+
+```
+
+NAs in pH (10-40) likely mean that soils are less than 10 inches deep. NA's are not represented in the figures above. Please observe the table below to determine if NAs exist in your dataset.
+```{r}
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  data.frame('# components NA' = sum(is.na(EDIT_updates_filtered$pH_l_10_40in)),
+             '% components NA' = 100*sum(is.na(EDIT_updates_filtered$pH_l_10_40in))/length(EDIT_updates_filtered$pH_l_10_40in),
+             check.names = FALSE)
 }
 
 ```
@@ -5236,11 +5374,14 @@ if (all(is.na(EDIT_updates_filtered$pH_l_10_40in)) &
 
 # Create component histogram
 
-ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h_10_40in") ), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)),
+ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_10_40in", "pH_l_10_40in")) |> 
+  dplyr::mutate(highlow = ifelse(ph == "pH_h_10_40in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") +
+  fill = "grey", closed = "left") +
   ggplot2::ggtitle("pH representative (10 - 40 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("pH") +
@@ -5249,16 +5390,19 @@ ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h
 
 # Convert histogram to plotly
 
-ph_r1 <- plotly::ggplotly(ph_r1, tooltip = "text")
+ph_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h_10_40in") ), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
+ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_10_40in", "pH_l_10_40in")) |> 
+  dplyr::mutate(highlow = ifelse(ph == "pH_h_10_40in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") +
+  fill = "grey", closed = "left") +
   ggplot2::ggtitle("pH representative (10 - 40 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("pH") +
@@ -5267,7 +5411,7 @@ ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_l_10_40in", "pH_h
 
 # Convert to plotly
 
-ph_r2 <- plotly::ggplotly(ph_r2, tooltip = "text")
+ph_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5280,6 +5424,22 @@ manipulateWidget::combineWidgets(ph_r1,
 }
 
 ```
+
+NAs in pH (10-40) likely mean that soils are less than 10 inches deep. NA's are not represented in the figures above. Please observe the table below to determine if NAs exist in your dataset.
+```{r}
+if (all(is.na(EDIT_updates_filtered$pH_l_10_40in)) &
+    all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  data.frame('# values NA' = sum(is.na(EDIT_updates_filtered$pH_l_10_40in)) + sum(is.na(EDIT_updates_filtered$pH_h_10_40in)),
+             '% values NA' = 100*(sum(is.na(EDIT_updates_filtered$pH_l_10_40in)) + sum(is.na(EDIT_updates_filtered$pH_h_10_40in)))/
+               (length(EDIT_updates_filtered$pH_l_10_40in) * 2), check.names = FALSE)
+  
+}
+
+```
+
 
 **pH (10-40 inches) representative - combined component high/low 20th and 80th percentile** - use as 'low (representative)' & 'high (representative)' 
 ```{r}
@@ -5312,11 +5472,13 @@ summary(ph_stats)
 
 #### **Subsurface frag (< 3 inches)**
 
-The calculation of subsurface fragments is more difficult than other properties in this report for several reasons. Firstly, adding component high and low values is not as simple we would like. If you add all the component high values for gravels, cobbles, stones, and boulders, you will very likely end up with an unrealistically high amount of fragments - potentially over 100%. Similarly, adding component low values will likely result in unrealistically low amounts of fragments. For this reason, there is not an exact calculation of subsurface rock fragments. Please consider the values provided to be estimates. 
+The calculation of subsurface fragments is more difficult than other properties in this report for several reasons. Firstly, adding component high and low values is not as simple we would like. If you add all the component high values for gravels, cobbles, stones, and boulders, you will very likely end up with an unrealistically high amount of fragments - potentially over 100%. Similarly, adding component low values will likely result in unrealistically low amounts of fragments. For this reason, there is not an exact calculation of subsurface rock fragments. **Please consider the values provided to be estimates.** 
 
 The depth range for subsurface fragments needs to be user-defined. Subsurface frags are calculated from below the O horizon(s) to top of the first restriction, except in Histosols, where rock fragments in the O horizon(s) are included. Subsurface fragments are omitted from non-Histosol soils because rock fragments in those O horizons can be incompletely populated and/or inaccurate. 
 
 Median RV values of O horizon(s) depth and depth to restriction are provided here to be used for the depth range of subsurface fragments. The soil orders are also provided so that you can determine whether O horizons from Histosols have been included. 
+
+Note: Below are proposed values to. Consider whether your data has sufficient detail to use a depth range beyond the depth class. 
 
 Use the following value as depth top - this value is the median of the acreage weighted component RV depth of O horizon(s). Why is the component RV used instead of the combined component high/low as is done in the majority of this script? Organic horizon data comes from the component horizon table, and high/low values from the component horizon table are missing for many surveys.
 ```{r}
@@ -5420,7 +5582,7 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag high (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
@@ -5429,7 +5591,7 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 # Convert histogram to plotly
 
-subsurf_frag_h1 <- plotly::ggplotly(subsurf_frag_h1, tooltip = "text")
+subsurf_frag_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -5438,7 +5600,7 @@ subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag high (< 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5446,7 +5608,7 @@ subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 # Convert to plotly
 
-subsurf_frag_h2 <- plotly::ggplotly(subsurf_frag_h2, tooltip = "text")
+subsurf_frag_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5500,7 +5662,7 @@ subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag low (< 3 inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5508,7 +5670,7 @@ subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
 
 # Convert histogram to plotly
 
-subsurf_frags_l1 <- plotly::ggplotly(subsurf_frags_l1, tooltip = "text")
+subsurf_frags_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -5517,7 +5679,7 @@ subsurf_frags_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag low (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
@@ -5526,7 +5688,7 @@ subsurf_frags_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "
 
 # Convert to plotly
 
-subsurf_frags_l2 <- plotly::ggplotly(subsurf_frags_l2, tooltip = "text")
+subsurf_frags_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5579,11 +5741,14 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in)) &
 
 # Create component histogram
 
-subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")) |> 
+  dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_2mm.3in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
@@ -5592,15 +5757,18 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
 
 # Convert histogram to plotly
 
-subsurf_frag_r1 <- plotly::ggplotly(subsurf_frag_r1, tooltip = "text")
+subsurf_frag_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")) |> 
+  dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_2mm.3in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag rep. (< 3 inches)") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
@@ -5609,7 +5777,7 @@ subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
 
 # Convert to plotly
 
-subsurf_frag_r2 <- plotly::ggplotly(subsurf_frag_r2, tooltip = "text")
+subsurf_frag_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5733,7 +5901,7 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5741,7 +5909,7 @@ subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 # Convert histogram to plotly
 
-subsurf_frag_h1 <- plotly::ggplotly(subsurf_frag_h1, tooltip = "text")
+subsurf_frag_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -5750,7 +5918,7 @@ subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag high (3 inches +)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5758,7 +5926,7 @@ subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 # Convert to plotly
 
-subsurf_frag_h2 <- plotly::ggplotly(subsurf_frag_h2, tooltip = "text")
+subsurf_frag_h2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5814,7 +5982,7 @@ subsurf_frag_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5822,7 +5990,7 @@ subsurf_frag_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 # Convert histogram to plotly
 
-subsurf_frag_l1 <- plotly::ggplotly(subsurf_frag_l1, tooltip = "text")
+subsurf_frag_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
@@ -5831,7 +5999,7 @@ subsurf_frag_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag low (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5839,7 +6007,7 @@ subsurf_frag_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "s
 
 # Convert to plotly
 
-subsurf_frag_l2 <- plotly::ggplotly(subsurf_frag_l2, tooltip = "text")
+subsurf_frag_l2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5891,11 +6059,14 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in)) &
 
 # Create component histogram
 
-subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")) |> 
+  dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_gt_3in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5903,15 +6074,18 @@ subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
 
 # Convert histogram to plotly
 
-subsurf_frag_r1 <- plotly::ggplotly(subsurf_frag_r1, tooltip = "text")
+subsurf_frag_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")) |> 
+  dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_gt_3in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey") + 
+  fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Subsurface frag rep. (3+ inches)") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Subsurface frag (%)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -5919,7 +6093,7 @@ subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% 
 
 # Convert to plotly
 
-subsurf_frag_r2 <- plotly::ggplotly(subsurf_frag_r2, tooltip = "text")
+subsurf_frag_r2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 
@@ -5981,24 +6155,24 @@ if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NAS
 # Component histogram 
 comp1 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Component name")
 
 # Convert to plotly
-comp1 <- plotly::ggplotly(comp1, tooltip = "text")
+comp1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 comp2 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey") + 
+                    color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Component name")
 
 #Convert to plotly
-comp2 <- plotly::ggplotly(comp2, tooltip = "text")
+comp2 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Join both figures
 manipulateWidget::combineWidgets(comp1,
