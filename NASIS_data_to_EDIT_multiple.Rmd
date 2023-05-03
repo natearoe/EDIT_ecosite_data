@@ -2948,8 +2948,6 @@ my_seq <- if(length(my_seq) == 1) {
   my_seq
 }
 
-depth_classes_reduced <- depth_classes[depth_classes >= min(my_seq) & depth_classes <= max(my_seq)]
-
 }
 
 ```
@@ -2972,7 +2970,7 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 
 # Convert histogram to plotly
@@ -2995,7 +2993,7 @@ restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 
 
@@ -3083,7 +3081,7 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 
 # Convert histogram to plotly
@@ -3104,7 +3102,7 @@ restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert to plotly
 
@@ -3194,7 +3192,7 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert histogram to plotly
 
@@ -3219,7 +3217,7 @@ restriction_r2 <- ggplot2::ggplot(restriction.df |>
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+                              breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 
 # Convert to plotly
@@ -3383,8 +3381,6 @@ my_seq <- if(length(my_seq) == 1) {
   my_seq
 }
 
-depth_classes_reduced <- depth_classes[depth_classes >= min(my_seq) & depth_classes <= max(my_seq)]
-  
     } else {
       
     
@@ -3442,8 +3438,6 @@ my_seq <- if(length(my_seq) == 1) {
   my_seq
 }
     
-depth_classes_reduced <- depth_classes[depth_classes >= min(my_seq) & depth_classes <= max(my_seq)]
-    
   }
 }
 
@@ -3468,7 +3462,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert histogram to plotly
 
@@ -3489,7 +3483,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert to plotly
 
@@ -3547,7 +3541,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert histogram to plotly
 
@@ -3568,7 +3562,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert to plotly
 
@@ -3626,7 +3620,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert histogram to plotly
 
@@ -3647,7 +3641,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes_reduced, colour="red")
+  breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
 # Convert to plotly
 
