@@ -48,7 +48,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == 'F022AB100CA')
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -2975,9 +2975,8 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
 
 # Convert histogram to plotly
 
-#restriction_h1 <- plotly::ggplotly(restriction_h1, tooltip = "text")
 
-restriction_h1 <- plotly::ggplotly(tooltip = c("text", "value")) |> plotly::layout(title = list(text = paste0('Restriction depth high',
+restriction_h1 <- plotly::ggplotly() |> plotly::layout(title = list(text = paste0('Restriction depth high',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3000,7 +2999,7 @@ restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
 
 # Convert to plotly
 
-restriction_h2 <- plotly::ggplotly(tooltip = c("text", "value")) |> plotly::layout(title = list(text = paste0('Restriction depth high',
+restriction_h2 <- plotly::ggplotly() |> plotly::layout(title = list(text = paste0('Restriction depth high',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3086,7 +3085,7 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
 
 # Convert histogram to plotly
 
-restriction_l1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth low',
+restriction_l1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Restriction depth low',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3106,7 +3105,7 @@ restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
 
 # Convert to plotly
 
-restriction_l2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth low',
+restriction_l2 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Restriction depth low',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3196,7 +3195,7 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
 
 # Convert histogram to plotly
 
-restriction_r1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth representative',
+restriction_r1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Restriction depth representative',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3222,7 +3221,7 @@ restriction_r2 <- ggplot2::ggplot(restriction.df |>
 
 # Convert to plotly
 
-restriction_r2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Restriction depth representative',
+restriction_r2 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Restriction depth representative',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3466,7 +3465,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
 
 # Convert histogram to plotly
 
-soil_depth1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth high',
+soil_depth1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Soil depth high',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3487,7 +3486,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
 
 # Convert to plotly
 
-soil_depth2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth high',
+soil_depth2 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Soil depth high',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3545,7 +3544,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
 
 # Convert histogram to plotly
 
-soil_depth1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth low',
+soil_depth1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Soil depth low',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3566,7 +3565,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
 
 # Convert to plotly
 
-soil_depth2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth low',
+soil_depth2 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Soil depth low',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3624,7 +3623,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
 
 # Convert histogram to plotly
 
-soil_depth1 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth representative',
+soil_depth1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Soil depth representative',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3645,7 +3644,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
 
 # Convert to plotly
 
-soil_depth2 <- plotly::ggplotly(tooltip = c("text", "value")) |>  plotly::layout(title = list(text = paste0('Soil depth representative',
+soil_depth2 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0('Soil depth representative',
                                     '<br>',
                                     '<sup>',
                                     'Red line(s) represent depth class boundaries',
@@ -3864,6 +3863,8 @@ if (all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {print("No data popula
 ```
 
 #### **Surface frag (< 3 inches)**
+
+**Please consider the values provided for surface fragments to be estimates.** There is not an exact calculation for surface fragments. The primary challenge is that fragments of different sizes/shapes all have low and high values. If you add the high values together, you will likely end up with an unrealistically high value - possibly over 100%. A method more restrictive than simply adding is used but high values can still be unrealistically high. Please do your own research for populating this field. 
 
 Surface frag (< 3 inches) prep code
 ```{r, message=FALSE}
@@ -4176,6 +4177,8 @@ if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf)) &
 ```
 
 #### **Surface frag (3+ inches)** 
+
+**Please consider the values provided for surface fragments to be estimates.** There is not an exact calculation for surface fragments. The primary challenge is that fragments of different sizes/shapes all have low and high values. If you add the high values together, you will likely end up with an unrealistically high value - possibly over 100%. A method more restrictive than simply adding is used but high values can still be unrealistically high. Please do your own research for populating this field. 
 
 Surface frag (3+ inches) prep code
 ```{r, message=FALSE}
