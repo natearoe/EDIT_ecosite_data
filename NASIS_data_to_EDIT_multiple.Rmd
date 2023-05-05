@@ -48,7 +48,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == 'F022AB100CA')
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -800,7 +800,10 @@ el_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-el_r2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+el_r2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")) |> 
+  dplyr::mutate(highlow = ifelse(elev == "elev_h_ft", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4102,7 +4105,10 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf)) &
 
 # Create component histogram
 
-surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf") ), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf")) |> 
+  dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_2mm_3in_on_surf", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4119,8 +4125,11 @@ surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf") ), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf")) |> 
+  dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_2mm_3in_on_surf", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
+                         ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4414,7 +4423,10 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_gt_3in_on_surf)) &
 
 # Create component histogram
 
-surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf") ), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf")) |> 
+  dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_gt_3in_on_surf", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4431,8 +4443,11 @@ surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf") ), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf")) |> 
+  dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_gt_3in_on_surf", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
+                         ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
