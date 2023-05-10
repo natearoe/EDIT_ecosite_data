@@ -1158,6 +1158,58 @@ if (all(is.na(EDIT_updates_filtered$slope_h)) & all(is.na(EDIT_updates_filtered$
 
 }
 ```
+#### **Slope shape**
+In development
+
+```{r}
+### all possible slope shape combinations
+possible_shapes <- expand.grid(c("convex", "linear", "concave"), c("convex", "linear", "concave")) |> 
+  dplyr::rename(across = Var1, down = Var2)
+
+possible_shapes$acres <- NA
+possible_shapes$combined <- paste0(possible_shapes$across, "/", possible_shapes$down)
+
+### now let's look at the slope shapes that exist in our data
+slope_shape <- EDIT_updates_filtered |> dplyr::select(comp_acres, slope_shp_across_down)
+
+# some components have multiple slope shapes described. for those we will 
+# divide the acres evenly between the two slope shapes. 
+slope_shape$comp_acres2 <- ifelse(stringr::str_detect(slope_shape$slope_shp_across_down, ",") == TRUE,
+                                  slope_shape$comp_acres/2, slope_shape$comp_acres)
+
+
+# now we split the multiple slope shapes into singles, thereby making more rows
+slope_shape2 <- slope_shape |> dplyr::filter(stringr::str_detect(slope_shape$slope_shp_across_down, ",") == TRUE)
+
+slope_shape2$slope_shp_across_down <- slope_shape2$slope_shp_across_down |> 
+  stringr::str_extract("(?<=,).+")
+slope_shape2$slope_shp_across_down <- gsub(" ", "", slope_shape2$slope_shp_across_down)
+
+slope_shape$slope_shp_across_down <- ifelse(stringr::str_detect(slope_shape$slope_shp_across_down, ",") == TRUE,
+                                            slope_shape$slope_shp_across_down |> 
+                                              stringr::str_extract(".+(?=,)"),
+                                            slope_shape$slope_shp_across_down)
+
+# now combine them and summarize
+slope_shape_combined <- rbind(slope_shape, slope_shape2) |> 
+  dplyr::group_by(slope_shp_across_down) |> dplyr::summarise(sum = sum(comp_acres2))
+
+# merge all possible with actual slope shapes
+slope_shape_combined_all <- dplyr::full_join(possible_shapes, slope_shape_combined |> dplyr::rename(combined = slope_shp_across_down)) |> 
+  dplyr::select(-acres) |> dplyr::rename(acres = sum)
+slope_shape_combined_all$acres[is.na(slope_shape_combined_all$acres)] <- 0
+
+# plot
+ggplot(slope_shape_combined_all |> dplyr::select(-combined), aes(x = across, y = down)) +
+  ggplot2::geom_raster(aes(fill = acres)) + 
+  ggplot2::scale_fill_gradient(low = "grey90", high = "red") +
+  labs(x = "across", y = "down", title = "Slope shape")
+
+
+
+```
+
+
 
 #### **Ponding depth**
 
