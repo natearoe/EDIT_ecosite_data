@@ -48,7 +48,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == "R022AB001CA")
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -3114,7 +3114,7 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey", closed = "left") + 
+  fill = "grey") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -3136,7 +3136,7 @@ restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey", closed = "left") + 
+  fill = "grey") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -3224,7 +3224,7 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey", closed = "left") + 
+  fill = "grey") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -3245,7 +3245,7 @@ restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey", closed = "left") + 
+  fill = "grey") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
@@ -3334,7 +3334,7 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey", closed = "left") + 
+  fill = "grey") + 
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
@@ -3351,15 +3351,15 @@ restriction_r1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = past
 
 # Acreage weighted histogram
 
-restriction_r2 <- ggplot2::ggplot(restriction.df |>  
-                                    dplyr::filter(restriction %in% 
-                                                    c("restrict_depth_h_in", "restrict_depth_l_in")), 
-                                  ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+restriction_r2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %in% c("restrict_depth_h_in", "restrict_depth_l_in")) |> 
+  dplyr::mutate(highlow = ifelse(restriction == "restrict_depth_h_in", "high", "low")) |> 
+  dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
+                ggplot2::aes(x = value)) + 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
-  fill = "grey", closed = "left") + 
+  fill = "grey") + 
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
