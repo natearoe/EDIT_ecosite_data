@@ -48,7 +48,7 @@ EDIT_updates <- EDIT_updates |>  dplyr::filter(compkind != "miscellaneous area")
 
 <!-- **Define ecosite of interest** -->
 ```{r  class.source = "fold-show", echo=FALSE}
-EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == "R022AB001CA")
+EDIT_updates_filtered <- EDIT_updates |>  dplyr::filter(ecosite_id == ecosites_of_interest)
 ```
 
 <!-- **Determine component acreage unit** -->
@@ -3827,189 +3827,6 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated
 }
 ```
 
-#### **Organic matter depth**
-
-Organic matter depth is not a field in EDIT. Organic matter depth is provided for your own information, and will be referenced later in association with subsurface fragments. 
-
-Soil depth prep code
-```{r, message=FALSE}
-  if(all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {
-    
-    
-# Define bin width and round by measures
-  
-my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
-
-my_factor <- diff(range(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE))/my_vector
-
-reducer <- my_factor < 25
-
-bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
-
-round_by <- bin_width
-
-# Default dataframe
-  
-o.horizon.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, o_horizon_depth_in, comp_acres) |> 
-  tidyr::pivot_longer(
-    names_to = "o.horizon",
-    values_to = "value",
-    cols = c("o_horizon_depth_in")) |> 
-  dplyr::rename(acres = comp_acres)
-
-# Sequence for axes
-
-my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = floor),
-  plyr::round_any(max(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
-
-my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE) &
-             min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE) - bin_width >= 0){
-  seq(plyr::round_any(min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = floor) - bin_width,
-      plyr::round_any(max(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
-} else{
-  
-  my_seq  
-  
-}
-
-my_seq <- if(length(my_seq) == 1) {
-  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
-} else {
-  my_seq
-}
-    } else {
-      
-    
-    # Define bin width and round by measures
-  
-my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
-
-my_factor <- diff(range(c(EDIT_updates_filtered$soil_depth_h_in, 
-             EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$o_horizon_depth_in), 
-             na.rm = TRUE))/my_vector
-
-
-
-reducer <- my_factor < 25
-
-bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
-
-round_by <- bin_width
-
-# Default dataframe
-  
-o.horizon.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_h_in, soil_depth_l_in,  o_horizon_depth_in,
-                                          comp_acres) |> 
-  tidyr::pivot_longer(
-    names_to = "o.horizon",
-    values_to = "value",
-    cols = c("o_horizon_depth_in")) |> 
-  dplyr::rename(acres = comp_acres)
-
-# Sequence for axes
-
-my_seq <- seq(plyr::round_any(min(c(EDIT_updates_filtered$soil_depth_l_in, 
-                                    EDIT_updates_filtered$o_horizon_depth_in), na.rm = TRUE), round_by, f = floor),
-  plyr::round_any(max(c(EDIT_updates_filtered$soil_depth_h_in, EDIT_updates_filtered$o_horizon_depth_in), 
-                      na.rm = TRUE), round_by, f = ceiling), bin_width)
-
-my_seq <- if(min(my_seq) == min(c(EDIT_updates_filtered$soil_depth_l_in, 
-                                    EDIT_updates_filtered$o_horizon_depth_in), na.rm = TRUE) &
-             min(c(EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$o_horizon_depth_in), 
-                 na.rm = TRUE) - bin_width >= 0){
-  seq(plyr::round_any(min(c(EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$o_horizon_depth_in), 
-                          na.rm = TRUE), round_by, f = floor) - bin_width,
-      plyr::round_any(max(c(EDIT_updates_filtered$soil_depth_h_in, 
-                                    EDIT_updates_filtered$o_horizon_depth_in), na.rm = TRUE), round_by, f = ceiling), bin_width)
-} else{
-  
-  my_seq  
-  
-}
-
-my_seq <- if(length(my_seq) == 1) {
-  my_seq <- c(my_seq[1], my_seq[1] + bin_width)
-} else {
-  my_seq
-}
-    
-    
-  }
-
-```
-
-```{r, message=FALSE, warning=FALSE}
-# Is variable NA?
-
-if (all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {print("No data populated in NASIS for this field.")
-  
-} else{
-
-# Create component histogram
-
-o_horizon1 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_horizon_depth_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
-  binwidth = bin_width,
-  center = min(my_seq) + bin_width/2,
-  color = "black",
-  fill = "grey", closed = "left") + 
-  ggplot2::ggtitle("Organic horizon(s) depth RV") + 
-  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Organic horizon(s) depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
-
-# Convert histogram to plotly
-
-o_horizon1 <- plotly::ggplotly(tooltip = c("text", "value"))
-
-# Acreage weighted histogram
-
-o_horizon2 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_horizon_depth_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
-  binwidth = bin_width,
-  center = min(my_seq) + bin_width/2,
-  color = "black",
-  fill = "grey", closed = "left") + 
-  ggplot2::ggtitle("Organic horizon(s) depth RV") + 
-  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Organic horizon(s) depth (inches)") +
-  ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
-  breaks = my_seq[seq(1, length(my_seq), by = 2)])
-
-# Convert to plotly
-
-o_horizon2 <- plotly::ggplotly(tooltip = c("text", "value"))
-
-# Join both figures
-
-manipulateWidget::combineWidgets(o_horizon1,
-                                 o_horizon2,
-                                 nrow = 1,
-                                 ncol = 2,
-                                 colsize = c(1, 1))
-
-}
-
-```
-
-**Organic horizon(s) depth RV acreage weighted summary statistics**
-```{r}
-
-if (all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {print("No data populated in NASIS for this field.")
-
-} else{
-  
-  o_horizon_stats <- rep(EDIT_updates_filtered$o_horizon_depth_in,
-                             plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
-                        f = round)) |> sort(na.last = NA)
-    
-
-  summary(o_horizon_stats)
-
-}
-```
-
 #### **Surface frag (< 3 inches)**
 
 **Please consider the values provided for surface fragments to be estimates.** There is not an exact calculation for surface fragments. The primary challenge is that fragments of different sizes/shapes all have low and high values. If you add the high values together, you will likely end up with an unrealistically high value - possibly over 100%. A method more restrictive than simply adding is used but high values can still be unrealistically high. Please do your own research for populating this field. 
@@ -5625,6 +5442,193 @@ summary(ph_stats)
 
 }
 
+```
+
+
+```{r, message=FALSE, echo=FALSE}
+  
+# #### **Subsurface fragments top depth (pseudo-organic matter depth)**
+# 
+# Subsurface fragments top depth is equivalent to organic matter except for Histosols. Organic matter depth is not a field that needs to be populated in EDIT. It is included here for your own information and to be used in determining the depth range that subsurface fragments are being reported for. Rock fragments are not calculated for
+# 
+# Subsurface fragments top depth
+
+
+# if(all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {
+#     
+#     
+# # Define bin width and round by measures
+#   
+# my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
+# 
+# my_factor <- diff(range(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE))/my_vector
+# 
+# reducer <- my_factor < 25
+# 
+# bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+# 
+# round_by <- bin_width
+# 
+# # Default dataframe
+#   
+# o.horizon.df <-
+#   EDIT_updates_filtered |>  dplyr::select(coiid, o_horizon_depth_in, comp_acres) |> 
+#   tidyr::pivot_longer(
+#     names_to = "o.horizon",
+#     values_to = "value",
+#     cols = c("o_horizon_depth_in")) |> 
+#   dplyr::rename(acres = comp_acres)
+# 
+# # Sequence for axes
+# 
+# my_seq <- seq(plyr::round_any(min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = floor),
+#   plyr::round_any(max(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+# 
+# my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE) &
+#              min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE) - bin_width >= 0){
+#   seq(plyr::round_any(min(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = floor) - bin_width,
+#       plyr::round_any(max(EDIT_updates_filtered$o_horizon_depth_in, na.rm = TRUE), round_by, f = ceiling), bin_width)
+# } else{
+#   
+#   my_seq  
+#   
+# }
+# 
+# my_seq <- if(length(my_seq) == 1) {
+#   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+# } else {
+#   my_seq
+# }
+#     } else {
+#       
+#     
+#     # Define bin width and round by measures
+#   
+# my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
+# 
+# my_factor <- diff(range(c(EDIT_updates_filtered$soil_depth_h_in, 
+#              EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$o_horizon_depth_in), 
+#              na.rm = TRUE))/my_vector
+# 
+# 
+# 
+# reducer <- my_factor < 25
+# 
+# bin_width <- my_vector[reducer][which.min(abs(my_factor[reducer] - 15))]
+# 
+# round_by <- bin_width
+# 
+# # Default dataframe
+#   
+# o.horizon.df <-
+#   EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_h_in, soil_depth_l_in,  o_horizon_depth_in,
+#                                           comp_acres) |> 
+#   tidyr::pivot_longer(
+#     names_to = "o.horizon",
+#     values_to = "value",
+#     cols = c("o_horizon_depth_in")) |> 
+#   dplyr::rename(acres = comp_acres)
+# 
+# # Sequence for axes
+# 
+# my_seq <- seq(plyr::round_any(min(c(EDIT_updates_filtered$soil_depth_l_in, 
+#                                     EDIT_updates_filtered$o_horizon_depth_in), na.rm = TRUE), round_by, f = floor),
+#   plyr::round_any(max(c(EDIT_updates_filtered$soil_depth_h_in, EDIT_updates_filtered$o_horizon_depth_in), 
+#                       na.rm = TRUE), round_by, f = ceiling), bin_width)
+# 
+# my_seq <- if(min(my_seq) == min(c(EDIT_updates_filtered$soil_depth_l_in, 
+#                                     EDIT_updates_filtered$o_horizon_depth_in), na.rm = TRUE) &
+#              min(c(EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$o_horizon_depth_in), 
+#                  na.rm = TRUE) - bin_width >= 0){
+#   seq(plyr::round_any(min(c(EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$o_horizon_depth_in), 
+#                           na.rm = TRUE), round_by, f = floor) - bin_width,
+#       plyr::round_any(max(c(EDIT_updates_filtered$soil_depth_h_in, 
+#                                     EDIT_updates_filtered$o_horizon_depth_in), na.rm = TRUE), round_by, f = ceiling), bin_width)
+# } else{
+#   
+#   my_seq  
+#   
+# }
+# 
+# my_seq <- if(length(my_seq) == 1) {
+#   my_seq <- c(my_seq[1], my_seq[1] + bin_width)
+# } else {
+#   my_seq
+# }
+#     
+#     
+#   }
+
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+# Is variable NA?
+
+# if (all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {print("No data populated in NASIS for this field.")
+#   
+# } else{
+
+# Create component histogram
+
+# o_horizon1 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_horizon_depth_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+#   binwidth = bin_width,
+#   center = min(my_seq) + bin_width/2,
+#   color = "black",
+#   fill = "grey", closed = "left") + 
+#   ggplot2::ggtitle("Organic horizon(s) depth RV") + 
+#   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+#   ggplot2::ylab("# of components") + ggplot2::xlab("Organic horizon(s) depth (inches)") +
+#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
+# 
+# # Convert histogram to plotly
+# 
+# o_horizon1 <- plotly::ggplotly(tooltip = c("text", "value"))
+# 
+# # Acreage weighted histogram
+# 
+# o_horizon2 <- ggplot2::ggplot(o.horizon.df |>  dplyr::filter(o.horizon ==  "o_horizon_depth_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+#   binwidth = bin_width,
+#   center = min(my_seq) + bin_width/2,
+#   color = "black",
+#   fill = "grey", closed = "left") + 
+#   ggplot2::ggtitle("Organic horizon(s) depth RV") + 
+#   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+#   ggplot2::ylab("# of acres") + ggplot2::xlab("Organic horizon(s) depth (inches)") +
+#   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
+#   breaks = my_seq[seq(1, length(my_seq), by = 2)])
+# 
+# # Convert to plotly
+# 
+# o_horizon2 <- plotly::ggplotly(tooltip = c("text", "value"))
+# 
+# # Join both figures
+# 
+# manipulateWidget::combineWidgets(o_horizon1,
+#                                  o_horizon2,
+#                                  nrow = 1,
+#                                  ncol = 2,
+#                                  colsize = c(1, 1))
+
+# }
+
+```
+
+**Organic horizon(s) depth RV acreage weighted summary statistics**
+```{r, echo=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$o_horizon_depth_in))) {print("No data populated in NASIS for this field.")
+
+} else{
+  
+  o_horizon_stats <- rep(EDIT_updates_filtered$o_horizon_depth_in,
+                             plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
+                        f = round)) |> sort(na.last = NA)
+    
+
+  summary(o_horizon_stats)
+
+}
 ```
 
 #### **Subsurface frag (< 3 inches)**
