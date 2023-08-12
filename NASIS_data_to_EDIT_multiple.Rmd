@@ -109,7 +109,7 @@ NA_acreage <- paste(EDIT_updates_filtered |> dplyr::filter(is.na(comp_acres)) |>
 NA_acreage <- ifelse(length(NA_acreage) == 0, "No components missing acreage.")
 
 acreage_zero <- paste(EDIT_updates_filtered |> dplyr::filter(comp_acres == 0) |> dplyr::pull(coiid))
-acreage_zero <- ifelse(length(acreage_zero) == 0, "No components with zero acreage.")
+acreage_zero <- ifelse(length(acreage_zero) == 0, "No components with zero acreage.", acreage_zero)
 
 data.frame(`Comp missing acreage` = NA_acreage,
            `Comp acreage zero` = acreage_zero, check.names = FALSE) |> knitr::kable()
