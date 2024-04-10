@@ -3045,7 +3045,11 @@ Depth to restriction prep code - this is the top depth of the uppermost restrict
 Note: Consider whether restriction data is detailed enough to justify using values beyond depth classes. For many situations, it may be best to use depth class limits for restriction depth and soil depth. Depth classes are represented with red vertical lines in figures for reference. 
 ```{r, message=FALSE}
 
-depth_classes <- c(0, 20, 40, 60, 80)
+depth_classes <- c(0, 25, 50, 100, 150)
+
+EDIT_updates_filtered$restrict_depth_h_in <- EDIT_updates_filtered$restrict_depth_h_in * 2.54
+EDIT_updates_filtered$restrict_depth_l_in <- EDIT_updates_filtered$restrict_depth_l_in * 2.54
+EDIT_updates_filtered$restrict_depth_r_in <- EDIT_updates_filtered$restrict_depth_r_in * 2.54
 
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) & 
     all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field.")
@@ -3116,7 +3120,7 @@ restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   color = "black",
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
                               breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3138,7 +3142,7 @@ restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   color = "black",
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
                               breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3191,8 +3195,10 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
   
     restriction_na_h_rem_expanded <- c(rep(EDIT_updates_filtered$restrict_depth_h_in,
                                              EDIT_updates_filtered$comp_acres/comp_acreage_unit)) |> sort(na.last = TRUE)
-
-    data.frame("95%" = restriction_na_h_rem_expanded[ceiling(0.95 * length(restriction_na_h_rem_expanded))], 
+    
+    data.frame(meaurement = c("cm", "inches"), "95%" = 
+             c(restriction_na_h_rem_expanded[ceiling(0.95 * length(restriction_na_h_rem_expanded))],
+             2.54*restriction_na_h_rem_expanded[ceiling(0.95 * length(restriction_na_h_rem_expanded))]), 
              check.names = FALSE)
   
 }
@@ -3205,8 +3211,10 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
   
 } else{
-
+  # centimeters
   summary(restriction_na_h_rem_expanded)
+  # inches
+  summary(restriction_na_h_rem_expanded * 2.54)
   
 }
 ```
@@ -3226,7 +3234,7 @@ restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   color = "black",
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
                               breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3247,7 +3255,7 @@ restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction =
   color = "black",
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth low") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
                               breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3297,7 +3305,9 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 
     restriction_na_l_rem_expanded <- rep(EDIT_updates_filtered$restrict_depth_l_in, EDIT_updates_filtered$comp_acres/comp_acreage_unit)           |> sort(na.last = TRUE)
 
-    data.frame("5%" = restriction_na_l_rem_expanded[ceiling(0.05 * length(restriction_na_l_rem_expanded))], 
+    data.frame(meaurement = c("cm", "inches"), "5%" = 
+                 c(restriction_na_l_rem_expanded[ceiling(0.05 * length(restriction_na_l_rem_expanded))],
+                  2.54 * restriction_na_l_rem_expanded[ceiling(0.05 * length(restriction_na_l_rem_expanded))]), 
              check.names = FALSE)
   
 }
@@ -3310,8 +3320,12 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
   
 } else{
-  
+# centimeters  
 summary(restriction_na_l_rem_expanded)
+  
+# inches
+summary(2.54 * restriction_na_l_rem_expanded)
+
 
 }
 ```
@@ -3337,7 +3351,7 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Restriction depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
                               breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3362,7 +3376,7 @@ restriction_r2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
   fill = "grey") + 
   ggplot2::ggtitle("Restriction depth representative") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Restriction depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
                               breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3417,8 +3431,11 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
   
   restriction_r_sum_stats <- rep(restriction.df$value, plyr::round_any(restriction.df$acres/comp_acreage_unit, accuracy = 1, f = round)) |> sort(na.last = TRUE)
 
-  data.frame("20%" = restriction_r_sum_stats[ceiling(0.2 * length(restriction_r_sum_stats))],
-             "80%" = restriction_r_sum_stats[ceiling(0.8 * length(restriction_r_sum_stats))],
+  data.frame(meaurement = c("cm", "inches"), "20%" = 
+               c(restriction_r_sum_stats[ceiling(0.2 * length(restriction_r_sum_stats))],
+                 2.54 * restriction_r_sum_stats[ceiling(0.2 * length(restriction_r_sum_stats))]),
+                "80%" = c(restriction_r_sum_stats[ceiling(0.8 * length(restriction_r_sum_stats))],
+                          2.54 * restriction_r_sum_stats[ceiling(0.8 * length(restriction_r_sum_stats))]),
              check.names = FALSE)
   
 }
@@ -3432,8 +3449,12 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
     all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
   
 } else{
-  
+# centimeters  
 summary(restriction_r_sum_stats)
+  
+# inches
+summary(restriction_r_sum_stats * 2.54)
+
 
 }
 ```
@@ -3607,7 +3628,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth high") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3628,7 +3649,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth high") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3663,8 +3684,12 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_h_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-
+  # centimeters
   summary(soil_depth_stats)
+  
+  # inches
+  summary(soil_depth_stats * 2.54)
+
 
 }
 ```
@@ -3686,7 +3711,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth low") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3707,7 +3732,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth low") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3742,7 +3767,10 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_l_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-
+  # centimeters
+  summary(soil_depth_stats)
+  
+  # inches
   summary(soil_depth_stats)
 
 }
@@ -3765,7 +3793,7 @@ soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth RV") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Soil depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3786,7 +3814,7 @@ soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "s
   fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Soil depth RV") + 
   ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (inches)") +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Soil depth (cm)") +
   ggplot2::scale_x_continuous(limits = c(min(my_seq), max(my_seq)),
   breaks = my_seq[seq(1, length(my_seq), by = 2)]) + ggplot2::geom_vline(xintercept = depth_classes, colour="red")
 
@@ -3821,8 +3849,12 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-
+  # centimeters
   summary(soil_depth_stats)
+  
+  # inches
+  summary(soil_depth_stats * 2.54)
+
 
 }
 ```
