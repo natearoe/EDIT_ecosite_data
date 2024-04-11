@@ -3198,7 +3198,7 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
     
     data.frame(meaurement = c("cm", "inches"), "95%" = 
              c(restriction_na_h_rem_expanded[ceiling(0.95 * length(restriction_na_h_rem_expanded))],
-             2.54*restriction_na_h_rem_expanded[ceiling(0.95 * length(restriction_na_h_rem_expanded))]), 
+             restriction_na_h_rem_expanded[ceiling(0.95 * length(restriction_na_h_rem_expanded))] / 2.54), 
              check.names = FALSE)
   
 }
@@ -3211,10 +3211,24 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
 if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
   
 } else{
-  # centimeters
-  summary(restriction_na_h_rem_expanded)
-  # inches
-  summary(restriction_na_h_rem_expanded * 2.54)
+  
+  rest_h_cm <- summary(restriction_na_h_rem_expanded)
+  rest_h_in <- summary(restriction_na_h_rem_expanded / 2.54)
+
+  data.frame(Measurement = c("cm", "in"),
+             Min = c(rest_h_cm[[1]],
+                     rest_h_in[[1]]),
+             "1st Qu." = c(rest_h_cm[[2]],
+                     rest_h_in[[2]]),
+             "Median" = c(rest_h_cm[[3]],
+                     rest_h_in[[3]]),
+             "Mean" = c(rest_h_cm[[4]],
+                     rest_h_in[[4]]),
+             "3rd Qu." = c(rest_h_cm[[5]],
+                     rest_h_in[[5]]),
+             "Max" = c(rest_h_cm[[6]],
+                     rest_h_in[[6]])
+             )
   
 }
 ```
@@ -3307,7 +3321,7 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 
     data.frame(meaurement = c("cm", "inches"), "5%" = 
                  c(restriction_na_l_rem_expanded[ceiling(0.05 * length(restriction_na_l_rem_expanded))],
-                  2.54 * restriction_na_l_rem_expanded[ceiling(0.05 * length(restriction_na_l_rem_expanded))]), 
+                  restriction_na_l_rem_expanded[ceiling(0.05 * length(restriction_na_l_rem_expanded))] / 2.54), 
              check.names = FALSE)
   
 }
@@ -3320,12 +3334,24 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
   
 } else{
-# centimeters  
-summary(restriction_na_l_rem_expanded)
   
-# inches
-summary(2.54 * restriction_na_l_rem_expanded)
+  rest_l_cm <- summary(restriction_na_l_rem_expanded)
+  rest_l_in <- summary(restriction_na_l_rem_expanded / 2.54)
 
+  data.frame(Measurement = c("cm", "in"),
+             Min = c(rest_l_cm[[1]],
+                     rest_l_in[[1]]),
+             "1st Qu." = c(rest_l_cm[[2]],
+                     rest_l_in[[2]]),
+             "Median" = c(rest_l_cm[[3]],
+                     rest_l_in[[3]]),
+             "Mean" = c(rest_l_cm[[4]],
+                     rest_l_in[[4]]),
+             "3rd Qu." = c(rest_l_cm[[5]],
+                     rest_l_in[[5]]),
+             "Max" = c(rest_l_cm[[6]],
+                     rest_l_in[[6]])
+             )
 
 }
 ```
@@ -3433,9 +3459,9 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
 
   data.frame(meaurement = c("cm", "inches"), "20%" = 
                c(restriction_r_sum_stats[ceiling(0.2 * length(restriction_r_sum_stats))],
-                 2.54 * restriction_r_sum_stats[ceiling(0.2 * length(restriction_r_sum_stats))]),
+                 restriction_r_sum_stats[ceiling(0.2 * length(restriction_r_sum_stats))] / 2.54),
                 "80%" = c(restriction_r_sum_stats[ceiling(0.8 * length(restriction_r_sum_stats))],
-                          2.54 * restriction_r_sum_stats[ceiling(0.8 * length(restriction_r_sum_stats))]),
+                          restriction_r_sum_stats[ceiling(0.8 * length(restriction_r_sum_stats))] / 2.54),
              check.names = FALSE)
   
 }
@@ -3449,11 +3475,24 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in)) &
     all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data populated in NASIS for this field. For restriction, this likely means no restriction was observed.")
   
 } else{
-# centimeters  
-summary(restriction_r_sum_stats)
   
-# inches
-summary(restriction_r_sum_stats * 2.54)
+  rest_r_cm <- summary(restriction_r_sum_stats)
+  rest_r_in <- summary(restriction_r_sum_stats / 2.54)
+
+  data.frame(Measurement = c("cm", "in"),
+             Min = c(rest_r_cm[[1]],
+                     rest_r_in[[1]]),
+             "1st Qu." = c(rest_r_cm[[2]],
+                     rest_r_in[[2]]),
+             "Median" = c(rest_r_cm[[3]],
+                     rest_r_in[[3]]),
+             "Mean" = c(rest_r_cm[[4]],
+                     rest_r_in[[4]]),
+             "3rd Qu." = c(rest_r_cm[[5]],
+                     rest_r_in[[5]]),
+             "Max" = c(rest_r_cm[[6]],
+                     rest_r_in[[6]])
+             )
 
 
 }
@@ -3684,12 +3723,23 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_h_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-  # centimeters
-  summary(soil_depth_stats)
-  
-  # inches
-  summary(soil_depth_stats * 2.54)
+  depth_h_cm <- summary(soil_depth_stats)
+  depth_h_in <- summary(soil_depth_stats / 2.54)
 
+  data.frame(Measurement = c("cm", "in"),
+             Min = c(depth_h_cm[[1]],
+                     depth_h_in[[1]]),
+             "1st Qu." = c(depth_h_cm[[2]],
+                     depth_h_in[[2]]),
+             "Median" = c(depth_h_cm[[3]],
+                     depth_h_in[[3]]),
+             "Mean" = c(depth_h_cm[[4]],
+                     depth_h_in[[4]]),
+             "3rd Qu." = c(depth_h_cm[[5]],
+                     depth_h_in[[5]]),
+             "Max" = c(depth_h_cm[[6]],
+                     depth_h_in[[6]])
+             )
 
 }
 ```
@@ -3767,11 +3817,23 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_l_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-  # centimeters
-  summary(soil_depth_stats)
-  
-  # inches
-  summary(soil_depth_stats)
+  depth_l_cm <- summary(soil_depth_stats)
+  depth_l_in <- summary(soil_depth_stats / 2.54)
+
+  data.frame(Measurement = c("cm", "in"),
+             Min = c(depth_l_cm[[1]],
+                     depth_l_in[[1]]),
+             "1st Qu." = c(depth_l_cm[[2]],
+                     depth_l_in[[2]]),
+             "Median" = c(depth_l_cm[[3]],
+                     depth_l_in[[3]]),
+             "Mean" = c(depth_l_cm[[4]],
+                     depth_l_in[[4]]),
+             "3rd Qu." = c(depth_l_cm[[5]],
+                     depth_l_in[[5]]),
+             "Max" = c(depth_l_cm[[6]],
+                     depth_l_in[[6]])
+             )
 
 }
 ```
@@ -3849,13 +3911,24 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-  # centimeters
-  summary(soil_depth_stats)
+  depth_r_cm <- summary(soil_depth_stats)
+  depth_r_in <- summary(soil_depth_stats / 2.54)
+
+  data.frame(Measurement = c("cm", "in"),
+             Min = c(depth_r_cm[[1]],
+                     depth_r_in[[1]]),
+             "1st Qu." = c(depth_r_cm[[2]],
+                     depth_r_in[[2]]),
+             "Median" = c(depth_r_cm[[3]],
+                     depth_r_in[[3]]),
+             "Mean" = c(depth_r_cm[[4]],
+                     depth_r_in[[4]]),
+             "3rd Qu." = c(depth_r_cm[[5]],
+                     depth_r_in[[5]]),
+             "Max" = c(depth_r_cm[[6]],
+                     depth_r_in[[6]])
+             )
   
-  # inches
-  summary(soil_depth_stats * 2.54)
-
-
 }
 ```
 
