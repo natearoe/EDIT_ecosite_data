@@ -106,7 +106,8 @@ This report relies on component acreage for calculating standardized values and 
 
 ```{r}
 NA_acreage <- paste(EDIT_updates_filtered |> dplyr::filter(is.na(comp_acres)) |> dplyr::pull(coiid))
-NA_acreage <- ifelse(length(NA_acreage) == 0, "No components missing acreage.")
+NA_acreage <- ifelse(length(NA_acreage) == 0, "No components missing acreage.", NA_acreage)
+
 
 acreage_zero <- paste(EDIT_updates_filtered |> dplyr::filter(comp_acres == 0) |> dplyr::pull(coiid))
 acreage_zero <- ifelse(length(acreage_zero) == 0, "No components with zero acreage.", acreage_zero)
