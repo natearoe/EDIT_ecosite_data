@@ -3727,8 +3727,8 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_h_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-  depth_h_cm <- summary(soil_depth_stats)
-  depth_h_in <- summary(soil_depth_stats / 2.54)
+  depth_h_cm <- summary(soil_depth_stats * 2.54)
+  depth_h_in <- summary(soil_depth_stats)
 
   data.frame(Measurement = c("cm", "in"),
              Min = c(depth_h_cm[[1]],
@@ -3822,8 +3822,8 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_l_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-  depth_l_cm <- summary(soil_depth_stats)
-  depth_l_in <- summary(soil_depth_stats / 2.54)
+  depth_l_cm <- summary(soil_depth_stats * 2.54)
+  depth_l_in <- summary(soil_depth_stats)
 
   data.frame(Measurement = c("cm", "in"),
              Min = c(depth_l_cm[[1]],
@@ -3917,8 +3917,8 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated
                              plyr::round_any(EDIT_updates_filtered$comp_acres/comp_acreage_unit, accuracy = 1, 
                         f = round)) |> sort(na.last = NA)
     
-  depth_r_cm <- summary(soil_depth_stats)
-  depth_r_in <- summary(soil_depth_stats / 2.54)
+  depth_r_cm <- summary(soil_depth_stats * 2.54)
+  depth_r_in <- summary(soil_depth_stats)
 
   data.frame(Measurement = c("cm", "in"),
              Min = c(depth_r_cm[[1]],
