@@ -3554,7 +3554,7 @@ if(all(is.na(EDIT_updates_filtered$soil_depth_l_in)) &
     
 # Define bin width and round by measures
   
-my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
+my_vector <- c(5, 10, 15, 25, 30, 50, 75)
 
 my_factor <- diff(range(EDIT_updates_filtered$soil_depth_r_in, na.rm = TRUE))/my_vector
 
@@ -3602,7 +3602,7 @@ my_seq <- if(length(my_seq) == 1) {
     
     # Define bin width and round by measures
   
-my_vector <- c(1, 5, 10, 15, 20, 25, 40, 50)
+my_vector <- c(5, 10, 15, 25, 30, 50, 75)
 
 my_factor <- diff(range(c(EDIT_updates_filtered$soil_depth_h_in, 
              EDIT_updates_filtered$soil_depth_l_in, EDIT_updates_filtered$soil_depth_r_in), 
