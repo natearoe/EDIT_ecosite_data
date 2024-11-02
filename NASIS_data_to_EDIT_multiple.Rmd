@@ -2932,11 +2932,117 @@ if (all(is.na(EDIT_updates_filtered$drainage_class))) {print("No data populated 
 }
 ```
 
-#### **Permeability class**
+#### **Ksat class**
 
 ```{r, warning=FALSE, message=FALSE}
 
 if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+    my_levels <-  c(
+    "very low",
+    "low",
+    "mod. low",
+    "mod. high",
+    "high",
+    "very high"
+  )
+  
+  # EDIT_updates_filtered$ksat_l_0_40_in_mod <-
+  #   plyr::mapvalues(
+  #     EDIT_updates_filtered$ksat_l_0_40_in,
+  #     from = c(
+  #       "very low",
+  #       "low",
+  #       "moderately low",
+  #       "moderately high",
+  #       "high",
+  #       "very high"
+  #     ),
+  #     to = c(
+  #       "very slow",
+  #       "slow",
+  #       "moderately slow",
+  #       "moderately rapid",
+  #       "rapid",
+  #       "very rapid"
+  #     )
+  #   )   
+  
+  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in, comp_acres)  
+  
+# Component histogram 
+perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey", closed = "left") + 
+  ggplot2::ggtitle("Ksat class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Ksat class")
+
+# Convert to plotly
+perm.class1 <- plotly::ggplotly(tooltip = c("text", "value"))
+
+# Acreage histogram
+perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+                    color = "black", fill = "grey", closed = "left") + 
+  ggplot2::ggtitle("Ksat class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Ksat class")
+
+#Convert to plotly
+perm.class2 <- plotly::ggplotly(tooltip = c("text", "value"))
+
+# Join both figures
+manipulateWidget::combineWidgets(perm.class1,
+                                 perm.class2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+  
+}
+
+```
+
+**Ksat table**
+
+```{r}
+if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in, comp_acres) |>  dplyr::group_by(ksat_l_0_40_in) |>  
+    dplyr::summarise(acres = sum(comp_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame()
+
+}
+```
+
+**Ksat acreage weighted percentiles**
+
+Actual low (5%) and actual high (95%). Representative low (20%) and representative high (80%).
+```{r}
+if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  
+    expanded_perm_class <- rep(EDIT_updates_filtered$ksat_l_0_40_in, EDIT_updates_filtered$comp_acres)
+    expanded_perm_class <- expanded_perm_class[order(match(expanded_perm_class, my_levels))]
+    
+    data.frame("5%" = expanded_perm_class[ceiling(0.05 * length(expanded_perm_class))],
+      "20%" = expanded_perm_class[ceiling(0.20 * length(expanded_perm_class))],
+             "80%" = expanded_perm_class[ceiling(0.80 * length(expanded_perm_class))],
+      "95%" = expanded_perm_class[ceiling(0.95 * length(expanded_perm_class))],
+             check.names = FALSE)
+  
+  
+}
+```
+
+#### **Permeability**
+
+```{r, warning=FALSE, message=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$perm_1_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
   
@@ -2950,31 +3056,31 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated 
     "very rapid"
   )
   
-  EDIT_updates_filtered$ksat_l_0_40_in_mod <-
-    plyr::mapvalues(
-      EDIT_updates_filtered$ksat_l_0_40_in,
-      from = c(
-        "very low",
-        "low",
-        "moderately low",
-        "moderately high",
-        "high",
-        "very high"
-      ),
-      to = c(
-        "very slow",
-        "slow",
-        "moderately slow",
-        "moderately rapid",
-        "rapid",
-        "very rapid"
-      )
-    )   
+  # EDIT_updates_filtered$ksat_l_0_40_in_mod <-
+  #   plyr::mapvalues(
+  #     EDIT_updates_filtered$ksat_l_0_40_in,
+  #     from = c(
+  #       "very low",
+  #       "low",
+  #       "moderately low",
+  #       "moderately high",
+  #       "high",
+  #       "very high"
+  #     ),
+  #     to = c(
+  #       "very slow",
+  #       "slow",
+  #       "moderately slow",
+  #       "moderately rapid",
+  #       "rapid",
+  #       "very rapid"
+  #     )
+  #   )   
   
-  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in, comp_acres)  
+  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, perm_1_0_40_in, comp_acres)  
   
 # Component histogram 
-perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) + 
+perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(perm_1_0_40_in)) + 
   ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
@@ -2984,7 +3090,7 @@ perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) +
 perm.class1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
-perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in, comp_acres)) +
+perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(perm_1_0_40_in, comp_acres)) +
   ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
@@ -3007,11 +3113,11 @@ manipulateWidget::combineWidgets(perm.class1,
 **Permeability table**
 
 ```{r}
-if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$perm_1_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
   
-  EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in_mod, comp_acres) |>  dplyr::group_by(ksat_l_0_40_in_mod) |>  
+  EDIT_updates_filtered |>  dplyr::select(coiid, perm_1_0_40_in, comp_acres) |>  dplyr::group_by(perm_1_0_40_in) |>  
     dplyr::summarise(acres = sum(comp_acres),  '# components' = dplyr::n()) |>  dplyr::arrange(desc(acres)) |>  as.data.frame()
 
 }
@@ -3021,12 +3127,12 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated 
 
 Actual low (5%) and actual high (95%). Representative low (20%) and representative high (80%).
 ```{r}
-if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in_mod))) {print("No data populated in NASIS for this field.")
+if (all(is.na(EDIT_updates_filtered$perm_1_0_40_in))) {print("No data populated in NASIS for this field.")
   
 } else{
   
   
-    expanded_perm_class <- rep(EDIT_updates_filtered$ksat_l_0_40_in_mod, EDIT_updates_filtered$comp_acres)
+    expanded_perm_class <- rep(EDIT_updates_filtered$perm_1_0_40_in, EDIT_updates_filtered$comp_acres)
     expanded_perm_class <- expanded_perm_class[order(match(expanded_perm_class, my_levels))]
     
     data.frame("5%" = expanded_perm_class[ceiling(0.05 * length(expanded_perm_class))],
