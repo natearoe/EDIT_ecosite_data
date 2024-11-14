@@ -33,7 +33,7 @@ Visit the [GitHub repository](https://github.com/natearoe/EDIT_ecosite_data) for
 ```
 
 ```{r include = FALSE, echo=FALSE}
-knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
+# knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 ```
 
 <!-- **Read in NASIS report** -->
@@ -71,24 +71,27 @@ title: <center> `r EDIT_updates_filtered$ecosite_id[1]` ecosite report </center>
 
 **Purpose of this report:**
 
-This report summarizes data from components correlated to an ecosite. It could be used to populate EDIT, to QC component-ecosite correlations, or as documentation of ecosite properties. Of particular importance to QC, the user can hover their cursor over figures
-
-this document allows you to hover your cursor over figures to see what component ids (coiids) are being represented. This allows you to hover over values that look like outliers and identify which coiid(s) might be improperly correlated.
+This report summarizes data from components correlated to an ecosite. It could be used to populate EDIT, to QC component-ecosite correlations, or as documentation of ecosite properties. Of particular importance to QC, the user can hover their cursor over figures to see what component ids (coiids) are being represented. This allows you to hover over values that look like outliers and identify which coiid(s) might be improperly correlated.
 
 **# of components vs. component acreage:**
 
-The following analysis provides two ways of looking at data - (1) by component and (2) by component acreage. Looking at components (1) means that we treat all components equally, regardless of whether one component has a total acreage of 5 acres and another component has a total acreage of 50,000 acres. Looking at data by component acreage (2) acknowledges that components may differ in their importance based on their acreage. Therefore, you will see figures below that summarize data both by component (1) and by component acreage (2). 
+The following analysis provides two ways of looking at data - (1) by component and (2) by component acreage. Looking at components (1) means that we treat all components equally, regardless of their associated acreage. Looking at data by component acreage (2) acknowledges that components may differ in their importance based on their acreage. Therefore, you will see figures below that summarize data both by component (1) and by component acreage (2). 
 
-I would suggest that looking at components (1) is the best way to QC your data. The correlation of components to ecosites should be assessed based on the *similarity of properties* between the ecosite and component. A bad component-ecosite correlation can just as easily happen for a component with low acreage as it can for a component with high acreage. For the QC process, you should think of component acreage as a metric of how important it is to have a good component-ecosite correlation. A bad component-ecosite correlation for a high acreage component will be more disruptive to the ecosite concept than a bad component-ecosite correlation for a low acreage component. Why? Continue reading...
+I would suggest that looking at data by components (1) is the best way to QC your data. The correlation of components to ecosites should be assessed based on the *similarity of properties* between the ecosite and component. A bad component-ecosite correlation can just as easily happen for a component with low acreage as it can for a component with high acreage. For the QC process, you should think of component acreage as a metric of how important it is to have a good component-ecosite correlation. A bad component-ecosite correlation for a high acreage component will be more disruptive to the ecosite concept than a bad component-ecosite correlation for a low acreage component because component acreage is used to weight standard calculations. 
 
 **Standardized calculations:**
 
-This report provides a standardized way of populating the range of properties for an ecosite. This is accomplished by weighting components by their acreage, hence why good correlations for high acreage components are important. Component properties are replicated by their associated acres. After replication, the following calculations are used:
+This report provides a standardized way of populating the range of properties for an ecosite. 
 
-Low (actual) - 5th percentile of the component low values
-High (actual) - 95th percentile of the component high values
-Low (representative) - 20th percentile of the combined component high and component low values
-High (representative) - 80th percentile of the combined component high and component low values
+
+This is accomplished by weighting components by their acreage, hence why good correlations for high acreage components are important. Component properties are replicated by their associated acres. After replication, the following calculations are used:
+
+Low (actual) - 5th percentile of the component low values\
+High (actual) - 95th percentile of the component high values\
+Low (representative) - 20th percentile of the combined component high and component low values\
+High (representative) - 80th percentile of the combined component high and component low values\
+
+Notice that RV values are not used in any of these calculations. This is intentional - RV values may not be truly representative for all properties of a component. This is due to the fact that component RV values are often times populated from a representative component pedon, and no pedon perfectly exemplifies the overall concept. In theory, the best available pedon is used, but it may be abnormal in some of its properties. 
 
 As an example of the replication process, let's say we have two components - Component A and Component B. Component A has an acreage of 1. Component B has an acreage of 5. The elevation of Component A is 100 ft. The elevation of Component B is 500 ft. The resulting data set would be: 100, 500, 500, 500, 500, 500. Those values would be used to calculate percentiles. 
 
@@ -121,6 +124,72 @@ data.frame(`Comp missing acreage` = NA_acreage,
 EDIT_updates_filtered$comp_acres <- ifelse(is.na(EDIT_updates_filtered$comp_acres), 0, EDIT_updates_filtered$comp_acres)
 ```
 
+#### **Correlated components**
+
+```{r, message=FALSE, warning=FALSE}
+
+if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+  if (length(unique(EDIT_updates_filtered$compname)) <= 15) {
+    
+    comp.df <- EDIT_updates_filtered |>  dplyr::select(coiid, compname, comp_acres)  
+    
+    #|>  dplyr::group_by(compname) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres), coiid = toString(coiid)) |>  dplyr::ungroup() 
+
+    
+# Component histogram 
+comp1 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname)) + 
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
+                    color = "black", fill = "grey", closed = "left") + 
+  ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
+  ggplot2::ylab("# of components") + ggplot2::xlab("Component name")
+
+# Convert to plotly
+comp1 <- plotly::ggplotly(tooltip = c("text", "value"))
+
+# Acreage histogram
+comp2 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname, comp_acres)) +
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
+                    color = "black", fill = "grey", closed = "left") + 
+  ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
+  ggplot2::ylab("# of acres") + ggplot2::xlab("Component name")
+
+#Convert to plotly
+comp2 <- plotly::ggplotly(tooltip = c("text", "value"))
+
+# Join both figures
+manipulateWidget::combineWidgets(comp1,
+                                 comp2,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 colsize = c(1, 1))
+
+
+  } 
+}
+
+```
+
+Table of correlated components and associated acreage
+```{r, message=FALSE, warning=FALSE}
+if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NASIS for this field.")
+  
+} else{
+  
+    EDIT_updates_filtered |> dplyr::select(compname, comp_acres, coiid) |> dplyr::group_by(compname) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
+
+}
+
+```
+
 <center><h3> **Physiographic features tab:** </h3></center>
 
 #### **Landform** 
@@ -134,8 +203,9 @@ if (all(is.na(EDIT_updates_filtered$landform)) |
   
 } else{
   
-    landform.df <- EDIT_updates_filtered |> dplyr::select(landform, comp_acres, coiid) |> dplyr::group_by(landform) |> 
-    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    landform.df <- EDIT_updates_filtered |> dplyr::select(landform, comp_acres, coiid, compname) |> dplyr::group_by(landform) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid),
+                     compname = toString(compname)) |> 
     dplyr::arrange(dplyr::desc(acres)) 
   
     landform.df |> knitr::kable()
@@ -201,13 +271,14 @@ if (all(is.na(EDIT_updates_filtered$flood_freq))) {print("No data populated in N
     "very frequent"
   )
   
-  flood.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_freq, comp_acres)  
+  flood.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_freq, comp_acres, compname)  
   
   flood.freq.df$flood_freq <- factor(flood.freq.df$flood_freq, levels = my_levels)
     
 # Component histogram 
 flood.freq1 <- ggplot2::ggplot(flood.freq.df, ggplot2::aes(flood_freq)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood frequency") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Flood frequency")
@@ -217,7 +288,8 @@ flood.freq1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 flood.freq2 <- ggplot2::ggplot(flood.freq.df, ggplot2::aes(flood_freq, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood frequency") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Flood frequency")
@@ -294,13 +366,14 @@ if (all(is.na(EDIT_updates_filtered$flood_dur))) {print("No data populated in NA
     "very long"
   )
   
-  flood.dur.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_dur, comp_acres)  
+  flood.dur.df <- EDIT_updates_filtered |>  dplyr::select(coiid, flood_dur, comp_acres, compname)  
   
   flood.dur.df$flood_dur <- factor(flood.dur.df$flood_dur, levels = my_levels)
     
 # Component histogram 
 flood.dur1 <- ggplot2::ggplot(flood.dur.df, ggplot2::aes(flood_dur)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Flood duration")
@@ -310,7 +383,8 @@ flood.dur1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 flood.dur2 <- ggplot2::ggplot(flood.dur.df, ggplot2::aes(flood_dur, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Flood duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Flood duration")
@@ -384,13 +458,14 @@ if (all(is.na(EDIT_updates_filtered$pond_freq))) {print("No data populated in NA
     "common"
   )
   
-  pond.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_freq, comp_acres)  
+  pond.freq.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_freq, comp_acres, compname)  
   
   pond.freq.df$pond_freq <- factor(pond.freq.df$pond_freq, levels = my_levels)
     
 # Component histogram 
 pond.freq1 <- ggplot2::ggplot(pond.freq.df, ggplot2::aes(pond_freq)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding freq.") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding freq.")
@@ -400,7 +475,8 @@ pond.freq1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 pond.freq2 <- ggplot2::ggplot(pond.freq.df, ggplot2::aes(pond_freq, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding freq.") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding freq.")
@@ -476,13 +552,14 @@ if (all(is.na(EDIT_updates_filtered$pond_dur))) {print("No data populated in NAS
     "very long"
   )
   
-  pond.dur.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_dur, comp_acres)  
+  pond.dur.df <- EDIT_updates_filtered |>  dplyr::select(coiid, pond_dur, comp_acres, compname)  
   
   pond.dur.df$pond_dur <- factor(pond.dur.df$pond_dur, levels = my_levels)
     
 # Component histogram 
 pond.dur1 <- ggplot2::ggplot(pond.dur.df, ggplot2::aes(pond_dur)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ponding duration")
@@ -492,7 +569,8 @@ pond.dur1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 pond.dur2 <- ggplot2::ggplot(pond.dur.df, ggplot2::aes(pond_dur, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ponding duration") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ponding duration")
@@ -574,7 +652,7 @@ round_by <- bin_width
 # Default dataframe
   
 elev.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, elev_h_ft, elev_l_ft, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, elev_h_ft, elev_l_ft, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "elev",
     values_to = "value",
@@ -616,7 +694,8 @@ if (all(is.na(EDIT_updates_filtered$elev_h_ft))) {print("No data populated in NA
 
 # Create component histogram
 
-el_h1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+el_h1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2, color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Elevation high") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
@@ -631,7 +710,8 @@ el_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 
-el_h2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+el_h2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_h_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -698,7 +778,8 @@ if (all(is.na(EDIT_updates_filtered$elev_l_ft))) {print("No data populated in NA
 
 # Create component histogram
 
-el_l1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+el_l1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -715,7 +796,8 @@ el_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-el_l2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+el_l2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev == "elev_l_ft"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -782,7 +864,8 @@ if (all(is.na(EDIT_updates_filtered$elev_l_ft & EDIT_updates_filtered$elev_h_ft)
 el_r1 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")) |> 
   dplyr::mutate(highlow = ifelse(elev == "elev_h_ft", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
-                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                                                                      "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -804,7 +887,8 @@ el_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 el_r2 <- ggplot2::ggplot(elev.df |>  dplyr::filter(elev %in% c("elev_h_ft", "elev_l_ft")) |> 
   dplyr::mutate(highlow = ifelse(elev == "elev_h_ft", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
-                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                                                                      "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -886,7 +970,7 @@ round_by <- bin_width
 # Default dataframe
 
 slope.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, slope_h, slope_l, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, slope_h, slope_l, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "slope",
     values_to = "value",
@@ -927,7 +1011,8 @@ if (all(is.na(EDIT_updates_filtered$slope_h))) {print("No data populated in NASI
 
 # Create component histogram
 
-slope_h1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+slope_h1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -943,7 +1028,8 @@ slope_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-slope_h2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+slope_h2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1005,7 +1091,8 @@ if (all(is.na(EDIT_updates_filtered$slope_l))) {print("No data populated in NASI
 
 # Create component histogram
 
-slope_l1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+slope_l1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1021,7 +1108,8 @@ slope_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-slope_l2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+slope_l2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope == "slope_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+      "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1088,7 +1176,8 @@ if (all(is.na(EDIT_updates_filtered$slope_h)) & all(is.na(EDIT_updates_filtered$
 slope_r1 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")) |> 
   dplyr::mutate(highlow = ifelse(slope == "slope_h", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                                                             "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1107,7 +1196,8 @@ slope_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 slope_r2 <- ggplot2::ggplot(slope.df |>  dplyr::filter(slope %in% c("slope_h", "slope_l")) |> 
   dplyr::mutate(highlow = ifelse(slope == "slope_h", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                                                             "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1210,8 +1300,9 @@ if (all(is.na(EDIT_updates_filtered$slope_shp_across_down))) {print("No data pop
   
 } else{
     
-    EDIT_updates_filtered |> dplyr::select(slope_shp_across_down, comp_acres, coiid) |> dplyr::group_by(slope_shp_across_down) |> 
-    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    EDIT_updates_filtered |> dplyr::select(slope_shp_across_down, comp_acres, coiid, compname) |> dplyr::group_by(slope_shp_across_down) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid),
+                     compnames = toString(compname)) |> 
     dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
   
 
@@ -1226,7 +1317,7 @@ if (all(is.na(EDIT_updates_filtered$hillslope_profile))) {print("No data populat
   
 } else{
 
-hillslope <- EDIT_updates_filtered |> dplyr::select(hillslope_profile, coiid, comp_acres)
+hillslope <- EDIT_updates_filtered |> dplyr::select(hillslope_profile, coiid, comp_acres, compname)
 
 # some components have multiple slope shapes described. for those we will 
 # divide the acres by the number of terms used to describe it 
@@ -1244,7 +1335,8 @@ hillslope_new$hillslope_new <- gsub(" ", "", hillslope_new$hillslope_new)
 #   dplyr::group_by(hillslope_new) |> dplyr::summarise(acres = sum(comp_acres2), coiids = toString(coiid))
 
 hillslope_combined <- hillslope_new |> 
-  dplyr::group_by(hillslope_new) |> dplyr::summarise(acres = sum(comp_acres2), coiids = toString(coiid))
+  dplyr::group_by(hillslope_new) |> dplyr::summarise(acres = sum(comp_acres2), coiids = toString(coiid),
+                                                     compnames = toString(compname))
 
 
 # plotting
@@ -1262,7 +1354,8 @@ hillslope_new$hillslope_new <- factor(hillslope_new$hillslope_new, levels = my_l
     
 # Component histogram 
 hillslope1 <- ggplot2::ggplot(hillslope_new, ggplot2::aes(hillslope_new)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Hillslope profile") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Hillslope profile")
@@ -1272,7 +1365,8 @@ hillslope1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 hillslope2 <- ggplot2::ggplot(hillslope_new, ggplot2::aes(hillslope_new, comp_acres2)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                              "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Hillslope profile") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Hillslope profile")
@@ -1297,8 +1391,9 @@ if (all(is.na(EDIT_updates_filtered$hillslope_profile))) {print("No data populat
   
 } else{
     
-    EDIT_updates_filtered |> dplyr::select(hillslope_profile, comp_acres, coiid) |> dplyr::group_by(hillslope_profile) |> 
-    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    EDIT_updates_filtered |> dplyr::select(hillslope_profile, comp_acres, coiid, compname) |> dplyr::group_by(hillslope_profile) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid),
+                     compnames = toString(compname)) |> 
     dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
   
 
@@ -1331,7 +1426,7 @@ round_by <- bin_width
 # Default dataframe
 
 pond_depth.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, pond_depth_l, pond_depth_h, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, pond_depth_l, pond_depth_h, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "pond_depth",
     values_to = "value",
@@ -1372,7 +1467,8 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_h))) {print("No data populated in
 
 # Create component histogram
 
-pond_depth_h1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+pond_depth_h1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1388,7 +1484,8 @@ pond_depth_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-pond_depth_h2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+pond_depth_h2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1467,7 +1564,8 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_l))) {print("No data populated in
 
 # Create component histogram
 
-pond_depth_l1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+pond_depth_l1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1483,7 +1581,8 @@ pond_depth_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-pond_depth_l2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+pond_depth_l2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth == "pond_depth_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1565,7 +1664,8 @@ if (all(is.na(EDIT_updates_filtered$pond_depth_l & EDIT_updates_filtered$pond_de
 pond_depth_r1 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_h", "pond_depth_l")) |> 
   dplyr::mutate(highlow = ifelse(pond_depth == "pond_depth_h", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1584,7 +1684,8 @@ pond_depth_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 pond_depth_r2 <- ggplot2::ggplot(pond_depth.df |>  dplyr::filter(pond_depth %in% c("pond_depth_h", "pond_depth_l")) |> 
   dplyr::mutate(highlow = ifelse(pond_depth == "pond_depth_h", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1682,7 +1783,7 @@ round_by <- bin_width
 # Default dataframe
 
 water_table.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, water_table_l_in, water_table_h_in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, water_table_l_in, water_table_h_in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "water_table",
     values_to = "value",
@@ -1723,7 +1824,8 @@ if (all(is.na(EDIT_updates_filtered$water_table_h_in))) {print("No data populate
 
 # Create component histogram
 
-water_table_h1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+water_table_h1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1739,7 +1841,8 @@ water_table_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-water_table_h2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+water_table_h2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1816,7 +1919,8 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in))) {print("No data populate
 
 # Create component histogram
 
-water_table_l1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+water_table_l1 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1832,7 +1936,8 @@ water_table_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-water_table_l2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+water_table_l2 <- ggplot2::ggplot(water_table.df |>  dplyr::filter(water_table == "water_table_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -1915,7 +2020,8 @@ if (all(is.na(EDIT_updates_filtered$water_table_l_in)) & all(is.na(EDIT_updates_
   dplyr::mutate(highlow = ifelse(water_table == "water_table_h_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
                 ggplot2::aes(x = value)) + ggplot2::geom_histogram(
-                      ggplot2::aes(text = paste("coiid(s):", coiid2)),
+                      ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)),
                       binwidth = bin_width,
                       center = min(my_seq) + bin_width / 2,
                       color = "black",
@@ -1937,7 +2043,8 @@ water_table_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
   dplyr::mutate(highlow = ifelse(water_table == "water_table_h_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
                 ggplot2::aes(x = value)) + ggplot2::geom_histogram(
-                      ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres),
+                      ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres),
                       binwidth = bin_width,
                       center = min(my_seq) + bin_width / 2,
                       color = "black",
@@ -2031,7 +2138,7 @@ round_by <- 30
 # Default dataframe
 
 aspect.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, aspect_rep, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, aspect_rep, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "aspect",
     values_to = "value",
@@ -2040,7 +2147,8 @@ aspect.df <-
 
 # Create component histogram
 
-aspect_r1 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+aspect_r1 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2071,7 +2179,8 @@ my_seq <- if(min(my_seq) == min(EDIT_updates_filtered$aspect_rep, na.rm = TRUE) 
 
 # Acreage weighted histogram
 
-aspect_r2 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+aspect_r2 <- ggplot2::ggplot(aspect.df |>  dplyr::filter(aspect == "aspect_rep"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2126,7 +2235,7 @@ round_by <- bin_width
 # Default dataframe
 
 map.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, map_h_in, map_l_in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, map_h_in, map_l_in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "map",
     values_to = "value",
@@ -2167,7 +2276,8 @@ if (all(is.na(EDIT_updates_filtered$map_h_in))) {print("No data populated in NAS
 
 # Create component histogram
 
-map_h1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+map_h1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2183,7 +2293,8 @@ map_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-map_h2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+map_h2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2244,7 +2355,8 @@ if (all(is.na(EDIT_updates_filtered$map_l_in))) {print("No data populated in NAS
 
 # Create component histogram
   
-map_l1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+map_l1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2260,7 +2372,8 @@ map_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-map_l2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+map_l2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map == "map_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2329,7 +2442,8 @@ if (all(is.na(EDIT_updates_filtered$map_h_in)) &
 map_r1 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in")) |> 
   dplyr::mutate(highlow = ifelse(map == "map_h_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2349,7 +2463,8 @@ map_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 map_r2 <- ggplot2::ggplot(map.df |>  dplyr::filter(map %in% c("map_h_in", "map_l_in")) |> 
   dplyr::mutate(highlow = ifelse(map == "map_h_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2430,7 +2545,7 @@ round_by <- bin_width
 # Default dataframe
 
 ffd.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, ffd_h, ffd_l, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, ffd_h, ffd_l, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "ffd",
     values_to = "value",
@@ -2472,7 +2587,8 @@ if (all(is.na(EDIT_updates_filtered$ffd_h))) {print("No data populated in NASIS 
 
 # Create component histogram
 
-ffd_h1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+ffd_h1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2489,7 +2605,8 @@ ffd_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-ffd_h2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+ffd_h2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_h"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2551,7 +2668,8 @@ if (all(is.na(EDIT_updates_filtered$ffd_l))) {print("No data populated in NASIS 
 
 # Create component histogram
 
-ffd_l1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+ffd_l1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2568,7 +2686,8 @@ ffd_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-ffd_l2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+ffd_l2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd == "ffd_l"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2635,7 +2754,8 @@ if (all(is.na(EDIT_updates_filtered$ffd_h)) &
 ffd_r1 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")) |> 
   dplyr::mutate(highlow = ifelse(ffd == "ffd_h", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2655,7 +2775,8 @@ ffd_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 ffd_r2 <- ggplot2::ggplot(ffd.df |>  dplyr::filter(ffd %in% c("ffd_h", "ffd_l")) |> 
   dplyr::mutate(highlow = ifelse(ffd == "ffd_h", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -2726,8 +2847,9 @@ if (all(is.na(EDIT_updates_filtered$parent_material))) {print("No data populated
   
 } else{
 
-    EDIT_updates_filtered |> dplyr::select(parent_material, comp_acres, coiid) |> dplyr::group_by(parent_material) |> 
-    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+    EDIT_updates_filtered |> dplyr::select(parent_material, comp_acres, coiid, compname) |> dplyr::group_by(parent_material) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid),
+                     compnames = toString(compname)) |> 
     dplyr::arrange(dplyr::desc(acres)) |> dplyr::rename(`parent material` = parent_material)|> knitr::kable()
  
 }
@@ -2783,11 +2905,12 @@ if (all(is.na(EDIT_updates_filtered$surf_texture))) {print("No data populated in
   
   if (length(unique(EDIT_updates_filtered$surf_texture <= 15))) {
     
-    comp.df <- EDIT_updates_filtered |>  dplyr::select(coiid, surf_texture, comp_acres)  
+    comp.df <- EDIT_updates_filtered |>  dplyr::select(coiid, surf_texture, comp_acres, compname)  
     
 # Component histogram 
 comp1 <- ggplot2::ggplot(comp.df, ggplot2::aes(surf_texture)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface texture") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
@@ -2798,7 +2921,8 @@ comp1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 comp2 <- ggplot2::ggplot(comp.df, ggplot2::aes(surf_texture, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Surface texture") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
                                                       axis.text.x = ggplot2::element_text(angle = 45)) +
@@ -2862,13 +2986,14 @@ my_levels <-  c(
     "excessively"
   )
   
-  drainage.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, drainage_class, comp_acres)  
+  drainage.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, drainage_class, comp_acres, compname)  
   
   drainage.class.df$drainage_class <- factor(drainage.class.df$drainage_class, levels = my_levels)
     
 # Component histogram 
 drainage.class1 <- ggplot2::ggplot(drainage.class.df, ggplot2::aes(drainage_class)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Drainage class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Drainage class")
@@ -2878,7 +3003,8 @@ drainage.class1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 drainage.class2 <- ggplot2::ggplot(drainage.class.df, ggplot2::aes(drainage_class, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Drainage class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Drainage class")
@@ -2970,11 +3096,12 @@ if (all(is.na(EDIT_updates_filtered$ksat_l_0_40_in))) {print("No data populated 
   #     )
   #   )   
   
-  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in, comp_acres)  
+  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, ksat_l_0_40_in, comp_acres, compname)  
   
 # Component histogram 
 perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ksat class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Ksat class")
@@ -2984,7 +3111,8 @@ perm.class1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(ksat_l_0_40_in, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Ksat class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Ksat class")
@@ -3077,11 +3205,12 @@ if (all(is.na(EDIT_updates_filtered$perm_1_0_40_in))) {print("No data populated 
   #     )
   #   )   
   
-  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, perm_1_0_40_in, comp_acres)  
+  perm.class.df <- EDIT_updates_filtered |>  dplyr::select(coiid, perm_1_0_40_in, comp_acres, compname)  
   
 # Component histogram 
 perm.class1 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(perm_1_0_40_in)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of components") + ggplot2::xlab("Permeability class")
@@ -3091,7 +3220,8 @@ perm.class1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage histogram
 perm.class2 <- ggplot2::ggplot(perm.class.df, ggplot2::aes(perm_1_0_40_in, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
+  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
                     color = "black", fill = "grey", closed = "left") + 
   ggplot2::ggtitle("Permeability class") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
   ggplot2::ylab("# of acres") + ggplot2::xlab("Permeability class")
@@ -3179,7 +3309,7 @@ round_by <- bin_width
 # Default dataframe
 
 restriction.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, restrict_depth_h_in, restrict_depth_l_in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, restrict_depth_h_in, restrict_depth_l_in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "restriction",
     values_to = "value",
@@ -3221,7 +3351,8 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_h_in))) {print("No data popul
 
 # Create component histogram
 
-restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+restriction_h1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3243,7 +3374,8 @@ restriction_h1 <- plotly::ggplotly() |> plotly::layout(title = list(text = paste
 
 # Acreage weighted histogram
 
-restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+restriction_h2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3350,7 +3482,8 @@ if (all(is.na(EDIT_updates_filtered$restrict_depth_l_in))) {print("No data popul
 
 # Create component histogram
 
-restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+restriction_l1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3371,7 +3504,8 @@ restriction_l1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = past
 
 # Acreage weighted histogram
 
-restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+restriction_l2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction == "restrict_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3479,7 +3613,8 @@ restriction_r1 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
   dplyr::mutate(highlow = ifelse(restriction == "restrict_depth_h_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
                 ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3504,7 +3639,8 @@ restriction_r2 <- ggplot2::ggplot(restriction.df |>  dplyr::filter(restriction %
   dplyr::mutate(highlow = ifelse(restriction == "restrict_depth_h_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
                 ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3622,10 +3758,11 @@ if (all(is.na(EDIT_updates_filtered$restrict_kind))) {print("No data populated i
   
   
     
-  restrict.kind.df <- EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, comp_acres)  
+  restrict.kind.df <- EDIT_updates_filtered |>  dplyr::select(coiid, restrict_kind, comp_acres, compname)  
   
-  EDIT_updates_filtered |> dplyr::select(restrict_kind, comp_acres, coiid) |> dplyr::group_by(restrict_kind) |> 
-    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
+  EDIT_updates_filtered |> dplyr::select(restrict_kind, comp_acres, coiid, compname) |> dplyr::group_by(restrict_kind) |> 
+    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid),
+                     compnames = toString(compname)) |> 
     dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
 
 
@@ -3673,7 +3810,7 @@ round_by <- bin_width
 # Default dataframe
   
 soil.depth.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_r_in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_r_in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "soil.depth",
     values_to = "value",
@@ -3775,7 +3912,8 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_h_in))) {print("No data populated
 
 # Create component histogram
 
-soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3796,7 +3934,8 @@ soil_depth1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0(
 
 # Acreage weighted histogram
 
-soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_h_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3870,7 +4009,8 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_l_in))) {print("No data populated
 
 # Create component histogram
 
-soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3891,7 +4031,8 @@ soil_depth1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0(
 
 # Acreage weighted histogram
 
-soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_l_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3965,7 +4106,8 @@ if (all(is.na(EDIT_updates_filtered$soil_depth_r_in))) {print("No data populated
 
 # Create component histogram
 
-soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_r_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+soil_depth1 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_r_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -3986,7 +4128,8 @@ soil_depth1 <- plotly::ggplotly() |>  plotly::layout(title = list(text = paste0(
 
 # Acreage weighted histogram
 
-soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_r_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+soil_depth2 <- ggplot2::ggplot(soil.depth.df |>  dplyr::filter(soil.depth ==  "soil_depth_r_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4086,7 +4229,7 @@ round_by <- bin_width
 
 surf_frag.df <-
   EDIT_updates_filtered |>  
-  dplyr::select(coiid, frags_hi_2mm_3in_on_surf, frags_lo_2mm_3in_on_surf, comp_acres) |> 
+  dplyr::select(coiid, frags_hi_2mm_3in_on_surf, frags_lo_2mm_3in_on_surf, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "surf_frag",
     values_to = "value",
@@ -4126,7 +4269,8 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf))) {print("No data 
 
 # Create component histogram
 
-surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4143,7 +4287,8 @@ surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4208,7 +4353,8 @@ if (all(is.na(EDIT_updates_filtered$frags_lo_2mm_3in_on_surf))) {print("No data 
 
 # Create component histogram
 
-surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4225,7 +4371,8 @@ surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_2mm_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4293,7 +4440,8 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_2mm_3in_on_surf)) &
 surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_2mm_3in_on_surf", "frags_lo_2mm_3in_on_surf")) |> 
   dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_2mm_3in_on_surf", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
-                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4314,7 +4462,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_2mm_3in_on_surf", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
                          ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4409,7 +4558,8 @@ surf_frag.df <-
   dplyr::select(coiid,
                 frags_lo_gt_3in_on_surf,
                 frags_hi_gt_3in_on_surf,
-                comp_acres) |>
+                comp_acres,
+                compname) |>
   tidyr::pivot_longer(
     names_to = "surf_frag",
     values_to = "value",
@@ -4449,7 +4599,8 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_gt_3in_on_surf))) {print("No data p
 
 # Create component histogram
 
-surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4465,7 +4616,8 @@ surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_hi_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4528,7 +4680,8 @@ if (all(is.na(EDIT_updates_filtered$frags_lo_gt_3in_on_surf))) {print("No data p
 
 # Create component histogram
 
-surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4544,7 +4697,8 @@ surf_frag1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag == "frags_lo_gt_3in_on_surf"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4611,7 +4765,8 @@ if (all(is.na(EDIT_updates_filtered$frags_hi_gt_3in_on_surf)) &
 surf_frag1 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("frags_hi_gt_3in_on_surf", "frags_lo_gt_3in_on_surf")) |> 
   dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_gt_3in_on_surf", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
-                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                         ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4632,7 +4787,8 @@ surf_frag2 <- ggplot2::ggplot(surf_frag.df |>  dplyr::filter(surf_frag %in% c("f
   dplyr::mutate(highlow = ifelse(surf_frag == "frags_hi_gt_3in_on_surf", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")),
                          ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4713,7 +4869,7 @@ round_by <- bin_width
 # Default dataframe
 
 awc.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, awc_l_0_40_in, awc_h_0_40_in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, awc_l_0_40_in, awc_h_0_40_in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "awc",
     values_to = "value",
@@ -4754,7 +4910,8 @@ if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in))) {print("No data populated i
 
 # Create component histogram
 
-awc_h1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+awc_h1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4772,7 +4929,8 @@ awc_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-awc_h2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weighted = acres), 
+awc_h2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_h_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weighted = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4837,7 +4995,8 @@ if (all(is.na(EDIT_updates_filtered$awc_l_0_40_in))) {print("No data populated i
 
 # Create component histogram
 
-awc_l1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+awc_l1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4855,7 +5014,8 @@ awc_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-awc_l2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+awc_l2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc == "awc_l_0_40_in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4924,7 +5084,8 @@ if (all(is.na(EDIT_updates_filtered$awc_h_0_40_in)) &
 awc_r1 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")) |> 
   dplyr::mutate(highlow = ifelse(awc == "awc_h_0_40_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -4946,7 +5107,8 @@ awc_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 awc_r2 <- ggplot2::ggplot(awc.df |>  dplyr::filter(awc %in% c("awc_h_0_40_in", "awc_l_0_40_in")) |> 
   dplyr::mutate(highlow = ifelse(awc == "awc_h_0_40_in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5030,7 +5192,7 @@ round_by <- bin_width
 # Default dataframe
 
 ph.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, pH_h_0_10in, pH_l_0_10in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, pH_h_0_10in, pH_l_0_10in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "ph",
     values_to = "value",
@@ -5072,7 +5234,8 @@ if (all(is.na(EDIT_updates_filtered$pH_h_0_10in))) {print("No data populated in 
 
 # Create component histogram
 
-ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5090,7 +5253,8 @@ ph_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 # Acreage weighted histogram
 
 ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_0_10in"), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5153,7 +5317,8 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in))) {print("No data populated in 
 
 # Create component histogram
 
-ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5171,7 +5336,8 @@ ph_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 # Acreage weighted histogram
 
 ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_0_10in"), ggplot2::aes(x = value)) +
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5238,7 +5404,8 @@ if (all(is.na(EDIT_updates_filtered$pH_l_0_10in)) &
 ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_0_10in", "pH_l_0_10in")) |> 
   dplyr::mutate(highlow = ifelse(ph == "pH_h_0_10in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5258,7 +5425,8 @@ ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_0_10in", "pH_l_
   dplyr::mutate(highlow = ifelse(ph == "pH_h_0_10in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
                 ggplot2::aes(x = value)) +
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5339,7 +5507,7 @@ round_by <- bin_width
 # Default dataframe
 
 ph.df <-
-  EDIT_updates_filtered |>  dplyr::select(coiid, pH_h_10_40in, pH_l_10_40in, comp_acres) |> 
+  EDIT_updates_filtered |>  dplyr::select(coiid, pH_h_10_40in, pH_l_10_40in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "ph",
     values_to = "value",
@@ -5382,7 +5550,8 @@ if (all(is.na(EDIT_updates_filtered$pH_h_10_40in))) {print("No data populated in
 # Create component histogram
 
 ph_h1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2::aes(x = value)) +
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5399,7 +5568,8 @@ ph_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 # Acreage weighted histogram
 
 ph_h2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_h_10_40in"), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres),
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5477,7 +5647,8 @@ if (all(is.na(EDIT_updates_filtered$pH_l_10_40in))) {print("No data populated in
 
 # Create component histogram
 
-ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)),
+ph_l1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5494,7 +5665,8 @@ ph_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 
 # Acreage weighted histogram
 
-ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)),
+ph_l2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph == "pH_l_10_40in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5574,7 +5746,8 @@ if (all(is.na(EDIT_updates_filtered$pH_l_10_40in)) &
 ph_r1 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_10_40in", "pH_l_10_40in")) |> 
   dplyr::mutate(highlow = ifelse(ph == "pH_h_10_40in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)),
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5595,7 +5768,8 @@ ph_r2 <- ggplot2::ggplot(ph.df |>  dplyr::filter(ph %in% c("pH_h_10_40in", "pH_l
   dplyr::mutate(highlow = ifelse(ph == "pH_h_10_40in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
                 ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres),
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres),
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5922,7 +6096,7 @@ round_by <- bin_width
 
 subsurf_frags.df <-
   EDIT_updates_filtered |>  dplyr::select(coiid, 
-                                   subsurf_frags_hi_2mm.3in, subsurf_frags_lo_2mm.3in, comp_acres) |> 
+                                   subsurf_frags_hi_2mm.3in, subsurf_frags_lo_2mm.3in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "frag",
     values_to = "value",
@@ -5962,7 +6136,8 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_2mm.3in))) {print("No data 
 
   # Create component histogram
 
-subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -5980,7 +6155,8 @@ subsurf_frag_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 # Acreage weighted histogram
 
 subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_2mm.3in"), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6042,7 +6218,8 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in))) {print("No data 
 
 # Create component histogram
 
-subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+subsurf_frags_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6059,7 +6236,8 @@ subsurf_frags_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 # Acreage weighted histogram
 
 subsurf_frags_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_2mm.3in"), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6128,7 +6306,8 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_2mm.3in)) &
 subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")) |> 
   dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_2mm.3in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6148,7 +6327,8 @@ subsurf_frag_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_2mm.3in", "subsurf_frags_lo_2mm.3in")) |> 
   dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_2mm.3in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6239,7 +6419,7 @@ round_by <- bin_width
 
 subsurf_frags.df <-
   EDIT_updates_filtered |>  dplyr::select(coiid, subsurf_frags_lo_gt_3in,
-                                   subsurf_frags_hi_gt_3in, comp_acres) |> 
+                                   subsurf_frags_hi_gt_3in, comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "frag",
     values_to = "value",
@@ -6281,7 +6461,8 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in))) {print("No data p
 
 # Create component histogram
 
-subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+subsurf_frag_h1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6298,7 +6479,8 @@ subsurf_frag_h1 <- plotly::ggplotly(tooltip = c("text", "value"))
 # Acreage weighted histogram
 
 subsurf_frag_h2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_hi_gt_3in"), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6362,7 +6544,8 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_lo_gt_3in))) {print("No data p
 
 # Create component histogram
 
-subsurf_frag_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid)), 
+subsurf_frag_l1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6379,7 +6562,8 @@ subsurf_frag_l1 <- plotly::ggplotly(tooltip = c("text", "value"))
 # Acreage weighted histogram
 
 subsurf_frag_l2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag == "subsurf_frags_lo_gt_3in"), ggplot2::aes(x = value)) + 
-  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid), weight = acres), 
+  ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6446,7 +6630,8 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in)) &
 subsurf_frag_r1 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")) |> 
   dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_gt_3in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2)), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname)), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6465,7 +6650,8 @@ subsurf_frag_r1 <- plotly::ggplotly(tooltip = c("text", "value"))
 subsurf_frag_r2 <- ggplot2::ggplot(subsurf_frags.df |>  dplyr::filter(frag %in% c("subsurf_frags_hi_gt_3in", "subsurf_frags_lo_gt_3in")) |> 
   dplyr::mutate(highlow = ifelse(frag == "subsurf_frags_hi_gt_3in", "high", "low")) |> 
   dplyr::mutate(coiid2 = paste0(coiid, " (", highlow, ")")), 
-                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2), weight = acres), 
+                ggplot2::aes(x = value)) + ggplot2::geom_histogram(ggplot2::aes(text = paste("coiid(s):", coiid2,
+                                                  "<br>compname:", compname), weight = acres), 
   binwidth = bin_width,
   center = min(my_seq) + bin_width/2,
   color = "black",
@@ -6520,62 +6706,7 @@ if (all(is.na(EDIT_updates_filtered$subsurf_frags_hi_gt_3in)) &
 }
 ```
 
-#### **Component name**
-
-If there are 15 or fewer components, a histogram and table will be shown. Else, only a table will be shown. 
-```{r, message=FALSE, warning=FALSE}
-
-if (all(is.na(EDIT_updates_filtered$compname))) {print("No data populated in NASIS for this field.")
-  
-} else{
-  
-  if (length(unique(EDIT_updates_filtered$compname)) <= 15) {
-    
-    comp.df <- EDIT_updates_filtered |>  dplyr::select(coiid, compname, comp_acres)  
-    
-    #|>  dplyr::group_by(compname) |>  dplyr::summarise(count = dplyr::n(), acres = sum(comp_acres), coiid = toString(coiid)) |>  dplyr::ungroup() 
-
-    
-# Component histogram 
-comp1 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname)) + 
-  ggplot2::geom_bar(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey", closed = "left") + 
-  ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
-                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
-  ggplot2::ylab("# of components") + ggplot2::xlab("Component name")
-
-# Convert to plotly
-comp1 <- plotly::ggplotly(tooltip = c("text", "value"))
-
-# Acreage histogram
-comp2 <- ggplot2::ggplot(comp.df, ggplot2::aes(compname, comp_acres)) +
-  ggplot2::geom_col(ggplot2::aes(text = paste("coiid(s):", coiid)),
-                    color = "black", fill = "grey", closed = "left") + 
-  ggplot2::ggtitle("Component name") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
-                                                      axis.text.x = ggplot2::element_text(angle = 45)) +
-  ggplot2::ylab("# of acres") + ggplot2::xlab("Component name")
-
-#Convert to plotly
-comp2 <- plotly::ggplotly(tooltip = c("text", "value"))
-
-# Join both figures
-manipulateWidget::combineWidgets(comp1,
-                                 comp2,
-                                 nrow = 1,
-                                 ncol = 2,
-                                 colsize = c(1, 1))
 
 
-  } else {
-    
-    EDIT_updates_filtered |> dplyr::select(compname, comp_acres, coiid) |> dplyr::group_by(compname) |> 
-    dplyr::summarise(acres = sum(comp_acres), `# components` = dplyr::n(), coiids = toString(coiid)) |> 
-    dplyr::arrange(dplyr::desc(acres)) |> knitr::kable()
-    
-  }
-
-}
-
-```
 
 
