@@ -3863,7 +3863,7 @@ round_by <- bin_width
   
 soil.depth.df <-
   EDIT_updates_filtered |>  dplyr::select(coiid, soil_depth_h_in, soil_depth_l_in,  soil_depth_r_in,
-                                          comp_acres) |> 
+                                          comp_acres, compname) |> 
   tidyr::pivot_longer(
     names_to = "soil.depth",
     values_to = "value",
